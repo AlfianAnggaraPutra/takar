@@ -1,0 +1,130 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Plus+Jakarta+Sans:wght@500&display=swap');
+
+.lp-panggung {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 8vh;
+  background:
+    radial-gradient(circle at 50% 46%, rgba(47, 86, 121, 0.5), rgba(10, 31, 51, 0) 62%),
+    var(--biru-laut-900, #0a1f33);
+  color: var(--krem-kertas, #f6f3ec);
+  overflow: hidden;
+  z-index: 1000;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: max(8vh, env(safe-area-inset-bottom, 0px));
+}
+
+/* .lp-lockup adalah CSS Grid 2 kolom (ikon | teks) — cara paling tepat
+   untuk kebutuhan ini: kolom kanan (AKAR & tagline) HARUS rata kiri sejajar
+   satu sama lain (huruf T di "Tentukan" pas di bawah huruf A pertama di
+   "AKAR"). Semua ini murni CSS, tanpa pengukuran JavaScript sama sekali:
+   - baris 1: ikon (kolom 1) + "AKAR" (kolom 2, rata kiri)
+   - baris 2: tagline (kolom 2 saja, rata kiri — otomatis sejajar "AKAR")
+   Saat fase masih "sendirian" (cuma ikon, kolom 2 kosong), lebar wrapper
+   ini otomatis menciut mengikuti ikon saja karena kolom "1fr" yang kosong
+   tidak memaksa lebar tambahan pada grid yang ukurannya mengikuti isi
+   (inline-grid). Ikon dibuat sedikit lebih tinggi dari huruf "AKAR" (lihat
+   .lp-logo--kecil) justru supaya tatakan bawahnya turun sampai kira-kira
+   level tagline, tanpa perlu elemen garis maupun margin negatif. */
+.lp-lockup {
+  display: inline-grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  column-gap: clamp(10px, 2vw, 22px);
+  row-gap: 0; /* tagline langsung di bawah baris ikon+AKAR, jaraknya diatur
+                 lewat margin-top kecil di .lp-tagline sendiri */
+}
+
+.lp-logo {
+  grid-column: 1;
+  grid-row: 1;
+  width: auto;
+  overflow: visible;
+  opacity: 0; /* dimunculkan lewat autoAlpha oleh GSAP di awal timeline */
+}
+
+/* Ukuran BESAR: dipakai selama ikon masih sendirian, jadi boleh cukup
+   dominan di layar. Ukuran KECIL: ukuran akhir berdampingan dengan teks —
+   nilainya dibuat mendekati cap-height "AKAR" di .lp-akar supaya serasi. */
+.lp-logo--besar {
+  height: clamp(120px, min(42vw, 38vh), 260px);
+}
+.lp-logo--kecil {
+  /* Sedikit lebih besar dari tinggi huruf "AKAR" (bukan lebih kecil lagi
+     seperti sebelumnya) — supaya tatakan bawah timbangan turun sedikit
+     melewati baseline "AKAR", dan tagline di bawahnya terasa sejajar
+     level dengan tatakan itu. */
+  height: clamp(120px, min(30vw, 32vh), 300px);
+}
+
+.lp-akar {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: start;
+  margin: 0;
+  display: flex;
+  font-family: 'Fraunces', Georgia, serif;
+  font-weight: 600;
+  font-size: clamp(48px, min(19vw, 18vh), 128px);
+  letter-spacing: 0.02em;
+  line-height: 1;
+  color: var(--krem-kertas, #f6f3ec);
+}
+.lp-huruf {
+  display: inline-block;
+  opacity: 0; /* jaring pengaman — nilai nyata & animasinya diatur GSAP */
+}
+
+.lp-tagline {
+  /* Kolom 2 saja + rata kiri (justify-self:start) — otomatis sejajar
+     persis dengan huruf "A" pertama di "AKAR" di atasnya, karena keduanya
+     sama-sama sel kolom 2 yang rata kiri. Ini yang membuat huruf T di
+     "Tentukan" pas di bawah A, tanpa perlu dihitung manual.
+     Garis horizontal sudah dihapus (tidak diperlukan), jadi tagline kini
+     langsung di baris grid ke-2, tepat setelah baris ikon+AKAR — dan
+     karena ikon sekarang dibuat sedikit lebih tinggi dari huruf "AKAR",
+     tatakan bawah timbangan turun sampai kira-kira level tagline ini,
+     tanpa perlu margin negatif yang rawan tabrakan seperti sebelumnya. */
+  grid-column: 2;
+  grid-row: 2;
+  justify-self: start;
+  margin-top: -40px;
+  text-align: left;
+  text-transform: uppercase;
+  font-family: 'Fraunces', Georgia, serif;
+  font-style: normal;
+  font-weight: 500;
+  font-size: clamp(14px, 3.4vw, 18px);
+  letter-spacing: 0.14em;
+  /* Krem-kertas yang sama dengan "AKAR" tapi diredupkan ke 75% opacity —
+     supaya "AKAR" tetap jadi fokus utama mata (hierarki tipografi), dan
+     tagline terasa seperti keterangan resmi di bawahnya, bukan bersaing
+     sama terangnya dengan headline. */
+  color: rgba(246, 243, 236, 0.75);
+  opacity: 0;
+}
+
+.lp-lewati {
+  position: absolute;
+  left: 50%;
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  font: 500 13px 'Plus Jakarta Sans', system-ui, sans-serif;
+  color: #9db6c9;
+  background: transparent;
+  border: 1px solid rgba(157, 182, 201, 0.35);
+  border-radius: 999px;
+  padding: 9px 18px;
+  cursor: pointer;
+}
+.lp-lewati:hover {
+  border-color: #9db6c9;
+}
+.lp-lewati:focus-visible {
+  outline: 2px solid var(--kunyit-500, #e3a32b);
+  outline-offset: 3px;
+}
