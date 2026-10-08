@@ -1,0 +1,112 @@
+.ftr {
+  position: relative;
+  background: var(--laut-950);
+  border-top: 1px solid rgba(236, 181, 78, 0.28);
+}
+.ftr__atas {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1.2fr 1.4fr;
+  gap: clamp(28px, 4vw, 64px);
+  padding: 72px 0 56px;
+}
+.ftr__tautan-merek {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+.ftr__logo {
+  width: auto;
+  height: 52px;
+}
+.ftr__teks {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+.ftr__nama {
+  font-family: var(--font-judul);
+  font-weight: 600;
+  font-size: 1.5rem;
+  letter-spacing: 0.16em;
+}
+.ftr__tagline {
+  margin-top: 5px;
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--teks-halus);
+}
+.ftr__uraian {
+  margin-top: 22px;
+  max-width: 38ch;
+  font-size: 0.92rem;
+  color: var(--teks-redup);
+}
+
+.ftr__kolom h2 {
+  margin-bottom: 20px;
+  font-family: var(--font-isi);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--kunyit-400);
+}
+.ftr__kolom ul {
+  display: grid;
+  gap: 12px;
+}
+.ftr__kolom li a {
+  display: inline-block;
+  font-size: 0.93rem;
+  color: var(--teks-redup);
+  transition: color 0.3s, transform 0.3s;
+}
+.ftr__kolom li a:hover {
+  color: var(--kunyit-300);
+  transform: translateX(4px);
+}
+.ftr__catatan {
+  font-size: 0.9rem;
+  color: var(--teks-redup);
+}
+.ftr__admin {
+  display: inline-block;
+  margin-top: 20px;
+  padding-bottom: 2px;
+  border-bottom: 1px solid rgba(236, 181, 78, 0.5);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--kunyit-300);
+  transition: color 0.3s, border-color 0.3s;
+}
+.ftr__admin:hover {
+  color: var(--krem);
+  border-color: var(--krem);
+}
+
+.ftr__bawah {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 32px;
+  padding: 26px 0 36px;
+  border-top: 1px solid var(--garis);
+  font-size: 0.82rem;
+  color: var(--teks-halus);
+}
+
+@media (max-width: 960px) {
+  .ftr__atas {
+    grid-template-columns: 1fr 1fr;
+  }
+  .ftr__merek {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 560px) {
+  .ftr__atas {
+    grid-template-columns: 1fr;
+    padding-top: 56px;
+  }
+}
