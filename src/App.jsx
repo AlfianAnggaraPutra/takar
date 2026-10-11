@@ -5,6 +5,7 @@ import LayarPembuka from './components/LayarPembuka'
 import Header from './components/Header'
 import Footer from './components/Footer'
 import Beranda from './pages/Beranda'
+import Konsultasi from './pages/Konsultasi'
 import HalamanSegera from './pages/HalamanSegera'
 import useScrollHalus from './hooks/useScrollHalus'
 
@@ -28,15 +29,7 @@ function Rangka() {
       <main>
         <Routes>
           <Route path="/" element={<Beranda />} />
-          <Route
-            path="/konsultasi"
-            element={
-              <HalamanSegera
-                judul="Konsultasi Profil Risiko"
-                uraian="Formulir 40 pernyataan sedang kami siapkan. Sebentar lagi Anda bisa mengenali profil risiko di sini."
-              />
-            }
-          />
+          <Route path="/konsultasi" element={<Konsultasi />} />
           <Route
             path="/edukasi"
             element={
