@@ -1,0 +1,464 @@
+/* Halaman masuk admin. Warna mengikuti palet TAKAR di index.css. */
+.masuk {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 100svh;
+  padding: calc(var(--tinggi-header) + 32px) 0 56px;
+  overflow: hidden;
+  background: var(--laut-950);
+}
+.masuk__isi {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+  padding-inline: 20px;
+}
+
+/* ---------- Kartu ---------- */
+.masuk__kartu {
+  --x: 50%;
+  --y: 0%;
+  position: relative;
+  width: min(440px, 100%);
+  padding: clamp(28px, 5vw, 40px);
+  border: 1px solid rgba(246, 243, 236, 0.16);
+  border-radius: 28px;
+  background: linear-gradient(165deg, rgba(18, 48, 76, 0.9), rgba(8, 25, 43, 0.92) 70%);
+  backdrop-filter: blur(16px) saturate(1.1);
+  -webkit-backdrop-filter: blur(16px) saturate(1.1);
+  box-shadow: 0 40px 100px rgba(1, 6, 14, 0.6), 0 0 0 1px rgba(236, 181, 78, 0.07);
+  overflow: hidden;
+}
+.masuk__kartu::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--kunyit-400), transparent);
+  opacity: 0.85;
+}
+.masuk__kartu--goyang {
+  animation: masuk-goyang 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+@keyframes masuk-goyang {
+  10%,
+  90% {
+    transform: translateX(-2px);
+  }
+  20%,
+  80% {
+    transform: translateX(4px);
+  }
+  30%,
+  50%,
+  70% {
+    transform: translateX(-7px);
+  }
+  40%,
+  60% {
+    transform: translateX(7px);
+  }
+}
+
+/* Cahaya lembut yang mengikuti kursor */
+.masuk__kilau {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s;
+  background: radial-gradient(260px circle at var(--x) var(--y), rgba(236, 181, 78, 0.12), transparent 70%);
+}
+.masuk__kartu:hover .masuk__kilau {
+  opacity: 1;
+}
+
+/* Isi kartu muncul bergantian */
+.masuk__muncul {
+  animation: masuk-muncul 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation-delay: calc(0.45s + var(--urut, 0) * 0.08s);
+}
+@keyframes masuk-muncul {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------- Kepala kartu ---------- */
+.masuk__kepala {
+  display: grid;
+  justify-items: center;
+  margin-bottom: 26px;
+  text-align: center;
+}
+.masuk__logo-bungkus {
+  display: grid;
+  place-items: center;
+  width: 68px;
+  height: 68px;
+  margin-bottom: 18px;
+  border: 1px solid rgba(236, 181, 78, 0.38);
+  border-radius: 50%;
+  background: rgba(236, 181, 78, 0.12);
+  color: var(--kunyit-400);
+  animation: masuk-napas 4.5s ease-in-out infinite;
+}
+@keyframes masuk-napas {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(236, 181, 78, 0.28);
+  }
+  50% {
+    box-shadow: 0 0 0 12px rgba(236, 181, 78, 0);
+  }
+}
+.masuk__logo {
+  width: 36px;
+  height: 36px;
+}
+.masuk__label {
+  margin-bottom: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--kunyit-400);
+}
+.masuk__judul {
+  margin-bottom: 8px;
+  font-family: var(--font-judul);
+  font-weight: 500;
+  font-size: clamp(1.8rem, 5vw, 2.2rem);
+  line-height: 1.15;
+  color: var(--krem);
+}
+.masuk__uraian {
+  max-width: 34ch;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--teks-redup);
+}
+
+/* ---------- Formulir ---------- */
+.masuk__form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 4px;
+}
+.masuk__nama {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--krem);
+}
+.masuk__kolom {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border: 1px solid rgba(246, 243, 236, 0.2);
+  border-radius: 14px;
+  background: rgba(5, 15, 28, 0.62);
+  transition: border-color 0.3s, box-shadow 0.3s, background 0.3s;
+}
+.masuk__kolom:hover {
+  border-color: rgba(246, 243, 236, 0.38);
+}
+.masuk__kolom:focus-within {
+  border-color: var(--kunyit-400);
+  background: rgba(5, 15, 28, 0.78);
+  box-shadow: 0 0 0 4px rgba(236, 181, 78, 0.16);
+}
+.masuk__kolom--benar {
+  border-color: rgba(77, 179, 198, 0.55);
+}
+.masuk__kolom--salah,
+.masuk__kolom--salah:hover {
+  border-color: var(--terakota-300);
+}
+.masuk__kolom--salah:focus-within {
+  border-color: var(--terakota-300);
+  box-shadow: 0 0 0 4px rgba(232, 131, 107, 0.2);
+}
+.masuk__ikon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 46px;
+  color: var(--teks-halus);
+  transition: color 0.3s;
+}
+.masuk__kolom:focus-within .masuk__ikon {
+  color: var(--kunyit-400);
+}
+.masuk__kolom--salah .masuk__ikon {
+  color: var(--terakota-300);
+}
+.masuk__input {
+  flex: 1;
+  min-width: 0;
+  padding: 14px 14px 14px 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--krem);
+  font: inherit;
+  font-size: 0.97rem;
+}
+.masuk__input::placeholder {
+  color: rgba(246, 243, 236, 0.42);
+}
+.masuk__input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+/* Latar isian otomatis browser tidak boleh memutihkan kolom */
+.masuk__input:-webkit-autofill {
+  -webkit-text-fill-color: var(--krem);
+  caret-color: var(--krem);
+  -webkit-box-shadow: 0 0 0 100px #0a1b2e inset;
+  transition: background-color 9999s ease-in-out 0s;
+}
+.masuk__input--sandi {
+  padding-right: 4px;
+}
+.masuk__mata {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  color: var(--teks-halus);
+  transition: color 0.3s, background 0.3s, transform 0.3s;
+}
+.masuk__mata:hover:not(:disabled) {
+  color: var(--kunyit-300);
+  background: rgba(246, 243, 236, 0.07);
+}
+.masuk__mata:active:not(:disabled) {
+  transform: scale(0.9);
+}
+.masuk__mata:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Pesan di bawah kolom: ruangnya disediakan supaya tampilan tidak melompat */
+.masuk__pesan {
+  min-height: 1.35em;
+  margin: 5px 2px 6px;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: var(--terakota-300);
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.3s, transform 0.3s;
+}
+.masuk__pesan--tampil {
+  opacity: 1;
+  transform: none;
+}
+.masuk__pesan--info {
+  color: var(--kunyit-300);
+}
+
+/* Pesan galat dari server */
+.masuk__galat {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding: 12px 14px;
+  border: 1px solid rgba(232, 131, 107, 0.5);
+  border-radius: 14px;
+  background: rgba(217, 105, 79, 0.14);
+  color: #f6c4b6;
+  font-size: 0.86rem;
+  line-height: 1.5;
+  animation: masuk-galat 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.masuk__galat svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--terakota-300);
+}
+.masuk__galat--jaringan,
+.masuk__galat--server,
+.masuk__galat--konfigurasi,
+.masuk__galat--terlalu-sering {
+  border-color: rgba(236, 181, 78, 0.5);
+  background: rgba(236, 181, 78, 0.12);
+  color: var(--kunyit-300);
+}
+.masuk__galat--jaringan svg,
+.masuk__galat--server svg,
+.masuk__galat--konfigurasi svg,
+.masuk__galat--terlalu-sering svg {
+  color: var(--kunyit-400);
+}
+@keyframes masuk-galat {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------- Tombol masuk ---------- */
+.masuk__kirim {
+  width: 100%;
+  justify-content: center;
+  padding: 15px 26px;
+  font-size: 1rem;
+}
+.masuk__kirim:disabled {
+  cursor: not-allowed;
+  background: rgba(246, 243, 236, 0.1);
+  border-color: rgba(246, 243, 236, 0.14);
+  color: rgba(246, 243, 236, 0.62);
+  box-shadow: none;
+  transform: none;
+}
+.masuk__kirim:disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+.masuk__kirim:disabled:hover svg {
+  transform: none;
+}
+/* Saat memeriksa atau berhasil, tombol tetap berwarna emas agar jelas sedang berjalan */
+.masuk__kirim--proses:disabled,
+.masuk__kirim--berhasil:disabled {
+  background: linear-gradient(135deg, #f0cd82, #e3a32b 55%, #c98a17);
+  border-color: transparent;
+  color: #1b2733;
+  box-shadow: 0 10px 30px rgba(227, 163, 43, 0.25);
+}
+.masuk__kirim--berhasil:disabled {
+  background: linear-gradient(135deg, #7fd0dd, #4db3c6 55%, #1f7a8c);
+  box-shadow: 0 10px 30px rgba(77, 179, 198, 0.3);
+  animation: masuk-berhasil 0.5s cubic-bezier(0.2, 0.9, 0.2, 1) both;
+}
+@keyframes masuk-berhasil {
+  from {
+    transform: scale(0.97);
+  }
+  to {
+    transform: none;
+  }
+}
+.masuk__putar {
+  display: inline-block;
+  width: 17px;
+  height: 17px;
+  border: 2.5px solid rgba(27, 39, 51, 0.28);
+  border-top-color: #1b2733;
+  border-radius: 50%;
+  animation: masuk-putar 0.75s linear infinite;
+}
+.masuk__putar--besar {
+  width: 30px;
+  height: 30px;
+  border-color: rgba(246, 243, 236, 0.18);
+  border-top-color: var(--kunyit-400);
+}
+@keyframes masuk-putar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.masuk__periksa {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  padding: 26px 0 20px;
+  color: var(--teks-redup);
+  font-size: 0.92rem;
+}
+
+.masuk__petunjuk {
+  max-height: 0;
+  margin: 0;
+  overflow: hidden;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  text-align: center;
+  color: var(--teks-redup);
+  opacity: 0;
+  transition: max-height 0.4s, opacity 0.3s, margin 0.4s;
+}
+.masuk__petunjuk--tampil {
+  max-height: 4.5em;
+  margin-top: 12px;
+  opacity: 1;
+}
+
+/* ---------- Kaki kartu ---------- */
+.masuk__kaki {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--garis);
+}
+.masuk__kembali {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--teks-redup);
+  transition: color 0.3s, gap 0.3s;
+}
+.masuk__kembali:hover {
+  gap: 12px;
+  color: var(--kunyit-300);
+}
+.masuk__aman {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.78rem;
+  color: var(--teks-halus);
+}
+.masuk__aman svg {
+  width: 14px;
+  height: 14px;
+}
+
+@media (max-width: 520px) {
+  .masuk {
+    padding-top: calc(var(--tinggi-header) + 20px);
+    padding-bottom: 36px;
+  }
+  .masuk__kaki {
+    justify-content: center;
+    text-align: center;
+  }
+}
+@media (max-height: 760px) and (min-width: 521px) {
+  .masuk__kepala {
+    margin-bottom: 18px;
+  }
+  .masuk__logo-bungkus {
+    width: 56px;
+    height: 56px;
+    margin-bottom: 12px;
+  }
+}

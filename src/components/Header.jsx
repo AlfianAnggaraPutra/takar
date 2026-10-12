@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import LogoTimbangan from './LogoTimbangan'
+import { useSesiAdmin } from '../lib/autentikasi'
 import './Header.css'
 
 const MENU = [
@@ -26,6 +27,8 @@ export default function Header() {
   const [bergulir, setBergulir] = useState(false)
   const barProgres = useRef(null)
   const { pathname } = useLocation()
+  const { sesi } = useSesiAdmin()
+  const labelAdmin = sesi ? 'Panel Admin' : 'Login Admin'
 
   // Header berubah tampilan saat halaman digulir, dan bar tipis di atas menunjukkan seberapa jauh Anda membaca.
   useEffect(() => {
@@ -89,7 +92,7 @@ export default function Header() {
 
         <Link to="/admin" className="hdr__admin">
           <IkonGembok />
-          <span>Login Admin</span>
+          <span>{labelAdmin}</span>
         </Link>
 
         <button
@@ -121,7 +124,7 @@ export default function Header() {
         </nav>
         <Link to="/admin" tabIndex={menuTerbuka ? 0 : -1} className="hdr__admin hdr__admin--laci">
           <IkonGembok />
-          <span>Login Admin</span>
+          <span>{labelAdmin}</span>
         </Link>
       </div>
     </header>

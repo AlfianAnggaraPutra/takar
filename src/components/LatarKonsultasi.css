@@ -1,0 +1,105 @@
+.latar {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background: #07172a;
+}
+.latar__gambar {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  animation: latar-masuk 1.6s ease both;
+}
+@keyframes latar-masuk {
+  from {
+    opacity: 0;
+    transform: scale(1.04);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Foto opsional: public/latar-admin.jpg. Bila berkas tidak ada, lapisan ini tidak menampilkan apa pun. */
+.latar__foto {
+  position: absolute;
+  inset: 0;
+  background: url('/latar-admin.jpg') center / cover no-repeat;
+  opacity: 0.55;
+  mix-blend-mode: luminosity;
+}
+
+/* Selubung gelap: menjaga tulisan dan kartu login tetap terbaca di atas gambar apa pun. */
+.latar__selubung {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 46% 60% at 50% 52%, rgba(5, 15, 28, 0.78), rgba(5, 15, 28, 0.2) 100%),
+    linear-gradient(180deg, rgba(5, 15, 28, 0.74) 0%, rgba(5, 15, 28, 0.18) 28%, rgba(5, 15, 28, 0.34) 100%);
+}
+
+/* Gerak halus */
+.latar__garis {
+  stroke-dasharray: 700;
+  stroke-dashoffset: 700;
+  animation: latar-garis 2.4s cubic-bezier(0.3, 0.7, 0.2, 1) 0.6s forwards;
+}
+@keyframes latar-garis {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.latar__gelembung {
+  animation: latar-apung 6.5s ease-in-out infinite;
+}
+.latar__gelembung--b {
+  animation-delay: -3s;
+}
+@keyframes latar-apung {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-14px);
+  }
+}
+.latar__pakar,
+.latar__klien {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: latar-napas 5.5s ease-in-out infinite;
+}
+.latar__klien {
+  animation-delay: -2.6s;
+}
+@keyframes latar-napas {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(1.012);
+  }
+}
+.latar__titik circle {
+  animation: latar-kelip 3.6s ease-in-out infinite;
+}
+.latar__titik circle:nth-child(2n) {
+  animation-delay: -1.4s;
+}
+.latar__titik circle:nth-child(3n) {
+  animation-delay: -2.4s;
+}
+@keyframes latar-kelip {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 0.95;
+  }
+}

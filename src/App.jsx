@@ -6,6 +6,8 @@ import Header from './components/Header'
 import Footer from './components/Footer'
 import Beranda from './pages/Beranda'
 import Konsultasi from './pages/Konsultasi'
+import MasukAdmin from './pages/MasukAdmin'
+import RiwayatAdmin from './pages/RiwayatAdmin'
 import HalamanSegera from './pages/HalamanSegera'
 import useScrollHalus from './hooks/useScrollHalus'
 
@@ -66,15 +68,8 @@ function Rangka() {
               />
             }
           />
-          <Route
-            path="/admin"
-            element={
-              <HalamanSegera
-                judul="Login Admin"
-                uraian="Halaman ini khusus pengelola untuk melihat riwayat konsultasi."
-              />
-            }
-          />
+          <Route path="/admin" element={<MasukAdmin />} />
+          <Route path="/admin/riwayat" element={<RiwayatAdmin />} />
           <Route
             path="*"
             element={<HalamanSegera judul="Halaman tidak ditemukan" uraian="Alamat yang Anda buka tidak tersedia. Silakan kembali ke beranda." />}

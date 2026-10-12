@@ -548,7 +548,8 @@ export function rakitLaporan(JsPDF, { identitas, jawaban, hasil, nomorKonsultasi
 // Dipanggil dari halaman hasil. jsPDF diunduh baru saat dibutuhkan agar halaman lain tetap ringan.
 export async function buatLaporanPdf(data) {
   const { jsPDF } = await import('jspdf')
-  const waktu = new Date()
+  // Dari halaman riwayat admin, waktu konsultasi asli dikirim agar PDF memuat tanggal saat konsultasi terjadi.
+  const waktu = data.waktu instanceof Date && !Number.isNaN(data.waktu.getTime()) ? data.waktu : new Date()
   const doc = rakitLaporan(jsPDF, { ...data, waktu })
   const berkas = namaBerkas(data.identitas.nama, waktu)
   doc.save(berkas)

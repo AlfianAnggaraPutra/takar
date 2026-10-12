@@ -1,8 +1,9 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import gsap from 'gsap'
 import { PILIHAN_JAWABAN, REKOMENDASI_INSTRUMEN } from '../data/basisPengetahuan'
 import { KETERANGAN_INSTRUMEN, LABEL_RISIKO, URAIAN_PROFIL } from '../data/profilRisiko'
+import ModalKonfirmasi from '../components/ModalKonfirmasi'
 import './HasilKonsultasi.css'
 
 /* ---------- Pemformatan angka gaya Indonesia ---------- */
@@ -68,6 +69,18 @@ const Ikon = {
       <path d="M5 12h14M13 6l6 6-6 6" />
     </svg>
   ),
+  peringatan: (
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M12 3.5l9.2 16H2.8L12 3.5z" />
+      <path d="M12 10v4.4M12 17.4v.1" />
+    </svg>
+  ),
+  centangBulat: (
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="9.5" />
+      <path d="M7.8 12.4l3 3 5.4-6" />
+    </svg>
+  ),
   unduh: (
     <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M12 4v11M7 11l5 5 5-5M5 20h14" />
@@ -121,6 +134,11 @@ export default function HasilKonsultasi({ identitas, hasil, jawaban, nomorKonsul
   const angka = useRef(null)
   const [batang, setBatang] = useState(false)
   const [statusPdf, setStatusPdf] = useState('siap') // siap, membuat, selesai, galat, galatMuat
+  const [pernahUnduh, setPernahUnduh] = useState(false)
+  const [modal, setModal] = useState(null) // { jenis: 'pergi' | 'kembali' | 'ulangi', tujuan }
+  const bolehKeluar = useRef(false)
+  const navigate = useNavigate()
+  const adaHasil = hasil.dapatDitentukan
 
   const kurangGerak = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
@@ -172,10 +190,81 @@ export default function HasilKonsultasi({ identitas, hasil, jawaban, nomorKonsul
     return () => window.clearTimeout(penunda)
   }, [hasil])
 
+  /* ----- Penjaga halaman hasil: pengguna diminta memastikan dulu sebelum pergi ----- */
+
+  // 1. Klik tautan ke halaman lain (menu, logo, footer, "Pelajari instrumen").
+  useEffect(() => {
+    if (!adaHasil) return
+    const saatKlik = (e) => {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return
+      const tautan = e.target instanceof Element ? e.target.closest('a[href]') : null
+      if (!tautan || tautan.target === '_blank' || tautan.hasAttribute('download')) return
+      const url = new URL(tautan.href, window.location.href)
+      if (url.origin !== window.location.origin || url.pathname === window.location.pathname) return
+      e.preventDefault()
+      e.stopPropagation()
+      setModal({ jenis: 'pergi', tujuan: `${url.pathname}${url.search}${url.hash}` })
+    }
+    document.addEventListener('click', saatKlik, true)
+    return () => document.removeEventListener('click', saatKlik, true)
+  }, [adaHasil])
+
+  // 2. Tombol kembali di browser atau ponsel. Satu entri riwayat penjaga disisipkan supaya tombol
+  //    kembali pertama hanya memunculkan pop up, bukan langsung membawa pengguna pergi.
+  useEffect(() => {
+    if (!adaHasil) return
+    const pasangPenjaga = () => {
+      const keadaan = window.history.state ?? {}
+      window.history.pushState({ ...keadaan, idx: (keadaan.idx ?? 0) + 1, takarJaga: true }, '')
+    }
+    if (!window.history.state?.takarJaga) pasangPenjaga()
+    const saatKembali = () => {
+      if (bolehKeluar.current || window.history.state?.takarJaga) return
+      setModal({ jenis: 'kembali' })
+    }
+    window.addEventListener('popstate', saatKembali)
+    window.__takarPasangPenjaga = pasangPenjaga
+    return () => {
+      window.removeEventListener('popstate', saatKembali)
+      delete window.__takarPasangPenjaga
+    }
+  }, [adaHasil])
+
+  // 3. Menutup tab atau memuat ulang halaman, hanya bila laporan PDF belum diunduh.
+  useEffect(() => {
+    if (!adaHasil || pernahUnduh) return
+    const saatTutup = (e) => {
+      if (bolehKeluar.current) return
+      e.preventDefault()
+      e.returnValue = ''
+    }
+    window.addEventListener('beforeunload', saatTutup)
+    return () => window.removeEventListener('beforeunload', saatTutup)
+  }, [adaHasil, pernahUnduh])
+
+  const tetapDiSini = () => {
+    const jenis = modal?.jenis
+    setModal(null)
+    if (jenis === 'kembali') window.__takarPasangPenjaga?.()
+  }
+  const lanjutPergi = () => {
+    const m = modal
+    setModal(null)
+    if (!m) return
+    if (m.jenis === 'ulangi') {
+      saatUlangi()
+      return
+    }
+    bolehKeluar.current = true
+    if (m.jenis === 'kembali') window.history.back()
+    else navigate(m.tujuan)
+  }
+
   /* Laporan PDF dibuat di browser pengguna, tanpa mengirim data ke server. */
   const unduhLaporan = async () => {
     if (statusPdf === 'membuat') return
     if (statusPdf === 'galatMuat') {
+      bolehKeluar.current = true
       window.location.reload()
       return
     }
@@ -191,6 +280,7 @@ export default function HasilKonsultasi({ identitas, hasil, jawaban, nomorKonsul
     try {
       await modul.buatLaporanPdf({ identitas, jawaban, hasil, nomorKonsultasi })
       setStatusPdf('selesai')
+      setPernahUnduh(true)
     } catch (galat) {
       console.error('Gagal membuat laporan PDF:', galat)
       setStatusPdf('galat')
@@ -481,7 +571,7 @@ export default function HasilKonsultasi({ identitas, hasil, jawaban, nomorKonsul
         </p>
 
         <div className="hasil__aksi hasil__aksi--bawah" data-masuk>
-          <button type="button" className="tombol tombol--garis" onClick={saatUlangi}>
+          <button type="button" className="tombol tombol--garis" onClick={() => setModal({ jenis: 'ulangi' })}>
             {Ikon.ulang} Ulangi konsultasi
           </button>
           <Link to="/edukasi" className="tombol tombol--emas">
@@ -489,6 +579,57 @@ export default function HasilKonsultasi({ identitas, hasil, jawaban, nomorKonsul
           </Link>
         </div>
       </div>
+
+      {modal && (
+        <ModalKonfirmasi
+          judul={modal.jenis === 'ulangi' ? 'Ulangi konsultasi dari awal?' : 'Tinggalkan halaman hasil?'}
+          ikon={pernahUnduh ? Ikon.centangBulat : Ikon.peringatan}
+          nada={pernahUnduh ? 'teal' : 'emas'}
+          saatBatal={tetapDiSini}
+          tombol={[
+            { label: modal.jenis === 'ulangi' ? 'Ya, ulangi dari awal' : 'Ya, tinggalkan halaman', aksi: lanjutPergi, gaya: 'bahaya' },
+            { label: modal.jenis === 'ulangi' ? 'Batal' : 'Tetap di halaman ini', aksi: tetapDiSini, gaya: 'emas', autoFokus: true },
+          ]}
+        >
+          <p>
+            {modal.jenis === 'ulangi'
+              ? 'Seluruh jawaban dan hasil di halaman ini akan dihapus, lalu Anda mulai lagi dari pernyataan pertama.'
+              : 'Hasil konsultasi ini hanya tampil di halaman ini. Setelah Anda pergi, hasilnya tidak bisa dibuka kembali dengan mudah.'}
+          </p>
+          <div className={`hasil__pengingat${pernahUnduh ? ' hasil__pengingat--sudah' : ''}`}>
+            <span className="hasil__pengingat-ikon" aria-hidden="true">
+              {pernahUnduh ? Ikon.centang : Ikon.dokumen}
+            </span>
+            {pernahUnduh ? (
+              <div>
+                <strong>Laporan PDF sudah Anda unduh</strong>
+                <p>Anda aman untuk melanjutkan.</p>
+              </div>
+            ) : (
+              <div>
+                <strong>Sudahkah Anda mengunduh laporan PDF?</strong>
+                <p>Pastikan laporannya sudah tersimpan di perangkat Anda sebelum pergi. Laporan itu bisa diarsipkan atau dibawa saat berdiskusi dengan pakar.</p>
+                <button type="button" className="hasil__pengingat-unduh" onClick={unduhLaporan} disabled={statusPdf === 'membuat'}>
+                  {statusPdf === 'membuat' ? (
+                    <>
+                      <span className="hasil__putar" aria-hidden="true" /> Menyusun laporan
+                    </>
+                  ) : (
+                    <>
+                      {Ikon.unduh} Unduh PDF sekarang
+                    </>
+                  )}
+                </button>
+                {(statusPdf === 'galat' || statusPdf === 'galatMuat') && (
+                  <span className="hasil__pengingat-galat" role="alert">
+                    Laporan belum bisa dibuat. Tutup pop up ini lalu coba lagi dari tombol unduh di halaman.
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+        </ModalKonfirmasi>
+      )}
     </div>
   )
 }
