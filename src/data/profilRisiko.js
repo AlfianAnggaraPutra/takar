@@ -126,7 +126,7 @@ export const KETERANGAN_INSTRUMEN = {
     uraian: 'Sebagian besar isinya saham dan dikelola manajer investasi. Potensi hasilnya tinggi, begitu pula risiko naik turunnya.',
   },
   Saham: {
-    risiko: 4,
+    risiko: 5,
     uraian: 'Kepemilikan atas perusahaan yang tercatat di bursa. Peluang untung dari selisih harga dan dividen, dengan nilai yang bisa berubah tajam.',
   },
 }

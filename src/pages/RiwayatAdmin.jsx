@@ -144,7 +144,9 @@ export default function RiwayatAdmin() {
   const [profil, setProfil] = useState('')
   const [versi, setVersi] = useState(0)
 
-  const [data, setData] = useState({ baris: [], total: 0 })
+  // "halaman" di dalam data mencatat halaman milik baris yang sedang tampil. Saat berpindah halaman,
+  // baris lama sempat bertahan sampai data baru tiba, dan nomor urutnya harus tetap cocok dengan baris itu.
+  const [data, setData] = useState({ baris: [], total: 0, halaman: 1 })
   const [status, setStatus] = useState('memuat') // memuat | siap | galat
   const [galat, setGalat] = useState(null)
   const [pernahMuat, setPernahMuat] = useState(false)
@@ -191,7 +193,7 @@ export default function RiwayatAdmin() {
           setHalaman(terakhir)
           return
         }
-        setData(hasil)
+        setData({ ...hasil, halaman })
         setGalat(null)
         setStatus('siap')
         setPernahMuat(true)
@@ -357,8 +359,8 @@ export default function RiwayatAdmin() {
   }
   if (!sesi) return <Navigate to="/admin" replace />
 
-  const awal = data.total === 0 ? 0 : (halaman - 1) * UKURAN_HALAMAN + 1
-  const akhir = Math.min(halaman * UKURAN_HALAMAN, data.total)
+  const awal = data.total === 0 ? 0 : (data.halaman - 1) * UKURAN_HALAMAN + 1
+  const akhir = Math.min(data.halaman * UKURAN_HALAMAN, data.total)
   const pertamaMemuat = status === 'memuat' && data.baris.length === 0
   const kartuStatistik = [
     { kunci: 'total', label: 'Total konsultasi', nilai: statistik.total, warna: 'netral', ikon: Ikon.total },
@@ -521,7 +523,7 @@ export default function RiwayatAdmin() {
                     return (
                       <tr key={b.id_konsultasi} style={{ '--i': i }} data-uji-baris>
                         <td className="riw__k-no" data-label="No">
-                          {(halaman - 1) * UKURAN_HALAMAN + i + 1}
+                          {(data.halaman - 1) * UKURAN_HALAMAN + i + 1}
                         </td>
                         <td data-label="Waktu">
                           <span className="riw__tgl">{waktu.tanggal}</span>

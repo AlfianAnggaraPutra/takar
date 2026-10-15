@@ -443,8 +443,9 @@ export function rakitLaporan(JsPDF, { identitas, jawaban, hasil, nomorKonsultasi
     kolom: [
       { judul: 'No', lebar: 11, rata: 'tengah' },
       { judul: 'Instrumen', lebar: 46 },
-      { judul: 'Tingkat risiko', lebar: 30 },
-      { judul: 'Penjelasan singkat', lebar: 83 },
+      // 38 mm cukup untuk "Sangat rendah (1 dari 5)" dalam satu baris (terukur 32,3 mm ditambah bantalan sel).
+      { judul: 'Tingkat risiko', lebar: 38 },
+      { judul: 'Penjelasan singkat', lebar: 75 },
     ],
     baris: instrumen.map((nama, i) => {
       const info = KETERANGAN_INSTRUMEN[nama]

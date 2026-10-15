@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import LogoTimbangan from '../components/LogoTimbangan'
+import IkonEdukasi from '../components/IkonEdukasi'
+import { DAFTAR_INSTRUMEN, LABEL_RISIKO, warnaRisiko } from '../data/edukasi'
 import { gulirKe } from '../hooks/useScrollHalus'
 import './Beranda.css'
 
@@ -82,83 +84,30 @@ const LANGKAH = [
 const PROFIL = [
   {
     kode: 'H1',
+    slug: 'konservatif',
     nama: 'Konservatif',
     warna: 'teal',
     ikon: 'perisai',
     sub: 'Utamakan modal tetap aman',
     isi: 'Lebih nyaman dengan hasil yang stabil dan terukur meski kecil. Penurunan nilai investasi cepat membuat tidak tenang.',
-    cocok: ['Deposito Bank', 'Reksa Dana Pasar Uang', 'Emas'],
   },
   {
     kode: 'H2',
+    slug: 'moderat',
     nama: 'Moderat',
     warna: 'emas',
     ikon: 'timbang',
     sub: 'Seimbang antara aman dan tumbuh',
     isi: 'Siap menerima naik turunnya nilai dalam batas tertentu demi hasil yang lebih baik, biasanya untuk jangka menengah.',
-    cocok: ['Reksa Dana Pendapatan Tetap', 'Reksa Dana Campuran', 'Emas'],
   },
   {
     kode: 'H3',
+    slug: 'agresif',
     nama: 'Agresif',
     warna: 'terakota',
     ikon: 'naik',
     sub: 'Kejar pertumbuhan setinggi mungkin',
     isi: 'Bersedia menanggung potensi rugi yang besar. Umumnya berpengetahuan memadai, berhorizon panjang, dan punya kemampuan finansial yang cukup.',
-    cocok: ['Reksa Dana Saham', 'Saham'],
-  },
-]
-
-const FILTER = [
-  { id: 'semua', label: 'Semua' },
-  { id: 'konservatif', label: 'Konservatif' },
-  { id: 'moderat', label: 'Moderat' },
-  { id: 'agresif', label: 'Agresif' },
-]
-const LABEL_RISIKO = ['', 'Sangat rendah', 'Rendah', 'Sedang', 'Tinggi', 'Sangat tinggi']
-
-const DAFTAR_INSTRUMEN = [
-  {
-    nama: 'Deposito Bank',
-    uraian: 'Simpanan berjangka dengan bunga lebih tinggi daripada tabungan biasa. Dana baru bisa dicairkan saat jatuh tempo.',
-    profil: ['konservatif'],
-    risiko: 1,
-  },
-  {
-    nama: 'Reksa Dana Pasar Uang',
-    uraian: 'Dana ditempatkan di instrumen jangka pendek seperti deposito dan obligasi bertenor di bawah satu tahun. Mudah dicairkan.',
-    profil: ['konservatif'],
-    risiko: 1,
-  },
-  {
-    nama: 'Emas',
-    uraian: 'Aset fisik yang sejak lama dipakai untuk menjaga nilai terhadap inflasi. Cenderung stabil dalam jangka panjang.',
-    profil: ['konservatif', 'moderat'],
-    risiko: 2,
-  },
-  {
-    nama: 'Reksa Dana Pendapatan Tetap',
-    uraian: 'Minimal 80 persen portofolionya di obligasi dan surat utang. Potensi hasilnya lebih tinggi dari deposito dengan risiko yang masih terjaga.',
-    profil: ['moderat'],
-    risiko: 2,
-  },
-  {
-    nama: 'Reksa Dana Campuran',
-    uraian: 'Alokasinya dinamis ke saham, obligasi, dan pasar uang. Menjaga keseimbangan antara pertumbuhan dan keamanan.',
-    profil: ['moderat'],
-    risiko: 3,
-  },
-  {
-    nama: 'Reksa Dana Saham',
-    uraian: 'Minimal 80 persen portofolionya di saham. Potensi hasilnya tertinggi di antara jenis reksa dana, dengan risiko yang lebih besar.',
-    profil: ['agresif'],
-    risiko: 4,
-  },
-  {
-    nama: 'Saham',
-    uraian: 'Bukti kepemilikan atas perusahaan yang tercatat di bursa. Ada peluang untung dari selisih harga dan dividen, tetapi nilainya bisa berfluktuasi tajam.',
-    profil: ['agresif'],
-    risiko: 5,
   },
 ]
 
@@ -254,30 +203,54 @@ const BERITA = [
   },
 ]
 
+// Jawaban yang cukup dengan beberapa kalimat berdiri sendiri. Yang penjelasannya panjang diringkas di sini,
+// lalu diberi tautan "Selengkapnya" ke bagian terkait di halaman Edukasi atau Tentang (ke = tujuan dengan #hash).
 const FAQ = [
   {
     t: 'Apakah hasil TAKAR sama dengan nasihat keuangan?',
     j: 'Tidak. TAKAR adalah alat bantu skrining awal untuk membantu Anda mengenali profil risiko. Hasilnya bukan ajakan membeli instrumen tertentu. Untuk keputusan yang besar, sebaiknya tetap berkonsultasi dengan perencana keuangan berlisensi.',
   },
   {
+    t: 'Apakah konsultasinya berbayar atau perlu membuat akun?',
+    j: 'Tidak keduanya. Anda cukup mengisi nama, usia, dan pekerjaan, lalu menjawab 40 pernyataan dalam empat langkah, masing-masing sepuluh pernyataan. Setelah itu hasilnya langsung tampil dan laporan PDF-nya bisa diunduh.',
+  },
+  {
     t: 'Bagaimana hasilnya dihitung?',
-    j: 'Setiap jawaban Anda diubah menjadi bobot keyakinan, lalu dipadukan dengan peluang tiap profil yang disusun pakar. Metode Naive Bayes menghitung profil mana yang paling mungkin, sedangkan Certainty Factor membuat tingkat keyakinan Anda ikut diperhitungkan.',
+    j: 'Setiap jawaban Anda diubah menjadi bobot keyakinan, lalu dipadukan dengan peluang tiap profil yang dinilai pakar. Naive Bayes menghitung profil mana yang paling mungkin, sedangkan Certainty Factor membuat seberapa yakin Anda ikut diperhitungkan.',
+    ke: { pathname: '/tentang', hash: '#cara', label: 'Selengkapnya di Tentang' },
   },
   {
     t: 'Mengapa jawabannya berupa tingkat kesesuaian, bukan sekadar ya atau tidak?',
     j: 'Karena rasa yakin tiap orang berbeda. Jawaban Sangat Sesuai dan Sedikit Sesuai sama-sama berarti ya, tetapi bobotnya tidak sama saat dihitung.',
   },
   {
-    t: 'Apakah data saya disimpan?',
-    j: 'Hasil konsultasi disimpan agar pengembang dapat mengevaluasi sistem, dan hanya admin yang bisa melihat riwayatnya. Jika ingin lebih privat, Anda boleh memakai nama panggilan.',
+    t: 'Bagaimana jika semua jawaban saya Tidak?',
+    j: 'Sistem tidak dapat menentukan profil karena belum ada kondisi yang sesuai dengan Anda. Silakan isi ulang dengan jawaban yang benar-benar mencerminkan keadaan Anda.',
+  },
+  {
+    t: 'Apa bedanya profil Konservatif, Moderat, dan Agresif?',
+    j: 'Konservatif mengutamakan keamanan dan lebih nyaman dengan nilai yang stabil. Moderat bersedia menerima naik turun yang wajar demi pertumbuhan yang lebih baik. Agresif siap menanggung gejolak besar untuk mengejar hasil yang tertinggi.',
+    ke: { pathname: '/edukasi', hash: '#profil', label: 'Selengkapnya di Edukasi' },
+  },
+  {
+    t: 'Instrumen apa yang akan disarankan, dan apakah saya harus membelinya?',
+    j: 'Tiap profil punya daftar instrumen yang cocok. Konservatif mendapat deposito, reksa dana pasar uang, dan emas. Moderat mendapat reksa dana pendapatan tetap, reksa dana campuran, dan emas. Agresif mendapat reksa dana saham dan saham. Daftar itu bahan untuk dipelajari, bukan ajakan membeli.',
+    ke: { pathname: '/edukasi', hash: '#instrumen', label: 'Selengkapnya di Edukasi' },
+  },
+  {
+    t: 'Seberapa bisa saya percaya hasilnya?',
+    j: 'Anggap hasilnya sebagai skrining awal yang jujur dengan batasnya. Hasil hanya sebaik jawaban Anda, dan profil bisa berubah seiring usia, pekerjaan, serta keadaan keuangan. Ulangi konsultasi ketika hidup Anda berubah.',
+    ke: { pathname: '/tentang', hash: '#batasan', label: 'Selengkapnya di Tentang' },
   },
   {
     t: 'Siapa pakar di balik penilaian ini?',
-    j: 'Seluruh bobot dan basis pengetahuan disusun lewat wawancara langsung dengan seorang Certified Financial Planner (CFP) yang berpengalaman dalam profil risiko investor.',
+    j: 'Seorang Certified Financial Planner (CFP) yang diwawancarai. Beliau menilai probabilitas prior, probabilitas likelihood, dan pemetaan profil ke instrumen. Namanya tidak dicantumkan atas permintaan beliau.',
+    ke: { pathname: '/tentang', hash: '#pakar', label: 'Selengkapnya di Tentang' },
   },
   {
-    t: 'Bagaimana jika semua jawaban saya Tidak?',
-    j: 'Sistem tidak dapat menentukan profil karena belum ada kondisi yang sesuai dengan Anda. Silakan isi ulang dengan jawaban yang benar-benar mencerminkan keadaan Anda.',
+    t: 'Apakah data saya disimpan?',
+    j: 'Ya. Yang disimpan adalah nama, usia, pekerjaan, jawaban, hasil profil, dan waktu konsultasi, sesuai persetujuan yang Anda centang di formulir. Hanya admin yang bisa melihat riwayatnya.',
+    ke: { pathname: '/tentang', hash: '#data', label: 'Selengkapnya di Tentang' },
   },
 ]
 
@@ -360,7 +333,6 @@ export default function Beranda() {
   const akar = useRef(null)
   const jalur = useRef(null)
   const seret = useRef({ sedang: false, awalX: 0, awalKiri: 0, bergeser: 0 })
-  const [filter, setFilter] = useState('semua')
   const [faqBuka, setFaqBuka] = useState(0)
   const [indeksBerita, setIndeksBerita] = useState(0)
 
@@ -418,7 +390,7 @@ export default function Beranda() {
       ScrollTrigger.batch('[data-muncul]', {
         start: 'top 88%',
         once: true,
-        onEnter: (kelompok) => gsap.to(kelompok, { autoAlpha: 1, y: 0, duration: 1, ease: 'power3.out', stagger: 0.12, overwrite: true }),
+        onEnter: (kelompok) => gsap.to(kelompok, { autoAlpha: 1, y: 0, duration: 1, ease: 'power3.out', stagger: 0.12, overwrite: true, clearProps: 'transform' }),
       })
 
       // Garis langkah terisi mengikuti gulir, tiap langkah menyala saat tercapai.
@@ -439,6 +411,10 @@ export default function Beranda() {
       // Grafik ilustrasi digambar saat section Pasar terlihat.
       gsap.fromTo('.grafik-garis', { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 2.4, ease: 'power2.inOut', scrollTrigger: { trigger: '.pasar', start: 'top 65%', once: true } })
       gsap.to('.grafik-area', { opacity: 1, duration: 1.6, delay: 0.8, scrollTrigger: { trigger: '.pasar', start: 'top 65%', once: true } })
+
+      // Garis tangga risiko tergambar dari kiri ke kanan, simpulnya menyala satu per satu.
+      gsap.fromTo('.tangga__garis', { '--p': 0 }, { '--p': 1, duration: 1.8, ease: 'power2.inOut', scrollTrigger: { trigger: '.tangga__daftar', start: 'top 82%', once: true } })
+      gsap.from('.tangga__simpul', { scale: 0, duration: 0.6, stagger: 0.2, ease: 'back.out(2.2)', clearProps: 'transform', scrollTrigger: { trigger: '.tangga__daftar', start: 'top 82%', once: true } })
     }, akar)
 
     // Setelah font termuat, tinggi halaman bisa berubah, jadi posisi pemicu dihitung ulang.
@@ -700,70 +676,64 @@ export default function Beranda() {
                 <h3>{p.nama}</h3>
                 <p className="kartu-profil__sub">{p.sub}</p>
                 <p className="kartu-profil__isi">{p.isi}</p>
-                <div className="kartu-profil__cocok">
-                  <p>Instrumen yang umumnya cocok</p>
-                  <div className="chip-daftar">
-                    {p.cocok.map((c) => (
-                      <span className="chip" key={c}>
-                        {c}
-                      </span>
-                    ))}
-                  </div>
-                </div>
+                <Link to={{ pathname: '/edukasi', hash: `#profil-${p.slug}` }} className="kartu-profil__lanjut" aria-label={`Baca selengkapnya tentang profil ${p.nama}`}>
+                  Baca selengkapnya <Panah />
+                </Link>
               </article>
             ))}
           </div>
+          <p className="profil__catatan" data-muncul>
+            Ingin tahu apa bedanya saat pasar turun, berapa lama waktu yang nyaman, dan apa yang perlu diwaspadai?{' '}
+            <Link to={{ pathname: '/edukasi', hash: '#profil' }}>Lihat perbandingan lengkapnya</Link>
+          </p>
         </div>
       </section>
 
-      {/* ============ INSTRUMEN ============ */}
-      <section className="instrumen seksi" id="instrumen">
+      {/* ============ INSTRUMEN (ringkas, penjelasan lengkap ada di halaman Edukasi) ============ */}
+      <section className="instrumen instrumen--ringkas seksi" id="instrumen">
         <div className="pembungkus">
           <div className="kepala-seksi" data-muncul>
             <p className="label-seksi">Instrumen investasi</p>
-            <h2 className="judul-seksi">Tujuh instrumen yang dijelaskan di TAKAR</h2>
-            <p className="lead-seksi">Pilih salah satu profil untuk melihat instrumen mana yang biasanya cocok. Tingkat risiko di sini bersifat relatif.</p>
+            <h2 className="judul-seksi">Dari deposito yang tenang sampai saham yang berani</h2>
+            <p className="lead-seksi">Ini peta singkat tujuh instrumen yang dibahas TAKAR, diurutkan dari risiko terendah. Pilih salah satu untuk membaca cara kerjanya dan hal yang perlu dicek sebelum membeli.</p>
           </div>
 
-          <div className="filter-daftar" role="group" aria-label="Saring instrumen menurut profil" data-muncul>
-            {FILTER.map((f) => (
-              <button
-                key={f.id}
-                type="button"
-                className={`filter-btn ${filter === f.id ? 'filter-btn--aktif' : ''}`}
-                aria-pressed={filter === f.id}
-                onClick={() => setFilter(f.id)}
-              >
-                {f.label}
-              </button>
-            ))}
-          </div>
-
-          <div className="instrumen__grid">
-            {DAFTAR_INSTRUMEN.map((it) => {
-              const cocok = filter === 'semua' || it.profil.includes(filter)
-              return (
-                <article className={`kartu-instrumen ${cocok ? '' : 'kartu-instrumen--redup'}`} key={it.nama}>
-                  <div className="kartu-instrumen__atas">
-                    <h3>{it.nama}</h3>
-                    <div className="meter" aria-label={`Tingkat risiko: ${LABEL_RISIKO[it.risiko]}`}>
-                      {[1, 2, 3, 4, 5].map((n) => (
-                        <i key={n} className={n <= it.risiko ? 'meter__titik meter__titik--isi' : 'meter__titik'} />
-                      ))}
-                    </div>
-                  </div>
-                  <p className="kartu-instrumen__risiko">Risiko {LABEL_RISIKO[it.risiko].toLowerCase()}</p>
-                  <p className="kartu-instrumen__uraian">{it.uraian}</p>
-                  <div className="chip-daftar">
-                    {it.profil.map((p) => (
-                      <span className={`chip chip--${p}`} key={p}>
-                        {p.charAt(0).toUpperCase() + p.slice(1)}
+          <div className="tangga">
+            <div className="tangga__ujung" aria-hidden="true">
+              <span className="tangga__ujung-kiri">Lebih tenang</span>
+              <span className="tangga__ujung-kanan">Lebih berani</span>
+            </div>
+            <div className="tangga__rangka">
+              <div className="tangga__garis" aria-hidden="true">
+                <span className="tangga__garis-isi" />
+              </div>
+              <ol className="tangga__daftar">
+                {DAFTAR_INSTRUMEN.map((it) => (
+                  <li className="tangga__butir" data-warna={warnaRisiko(it.risiko)} data-muncul key={it.slug}>
+                    <Link to={{ pathname: '/edukasi', hash: `#instrumen-${it.slug}` }} className="tangga__tautan">
+                      <span className="tangga__simpul" aria-hidden="true" />
+                      <span className="tangga__ikon">
+                        <IkonEdukasi nama={it.ikon} ukuran={22} />
                       </span>
-                    ))}
-                  </div>
-                </article>
-              )
-            })}
+                      <span className="tangga__teks">
+                        <span className="tangga__nama">{it.nama}</span>
+                        <span className="tangga__risiko">Risiko {LABEL_RISIKO[it.risiko].toLowerCase()}</span>
+                      </span>
+                      <span className="tangga__panah" aria-hidden="true">
+                        <Tautan />
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </div>
+
+          <div className="instrumen__aksi" data-muncul>
+            <Link to={{ pathname: '/edukasi', hash: '#instrumen' }} className="tombol tombol--garis">
+              Kenali tiap instrumen <Panah />
+            </Link>
+            <p>Tingkat risiko di sini bersifat relatif antar instrumen, bukan angka pasti.</p>
           </div>
         </div>
       </section>
@@ -899,8 +869,15 @@ export default function Beranda() {
                     </svg>
                   </button>
                 </h3>
-                <div className="faq__isi">
-                  <p>{f.j}</p>
+                <div className="faq__isi" inert={faqBuka !== i}>
+                  <div className="faq__isi-dalam">
+                    <p>{f.j}</p>
+                    {f.ke && (
+                      <Link to={{ pathname: f.ke.pathname, hash: f.ke.hash }} className="faq__lanjut">
+                        {f.ke.label} <Panah />
+                      </Link>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}

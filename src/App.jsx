@@ -6,6 +6,8 @@ import Header from './components/Header'
 import Footer from './components/Footer'
 import Beranda from './pages/Beranda'
 import Konsultasi from './pages/Konsultasi'
+import Edukasi from './pages/Edukasi'
+import Tentang from './pages/Tentang'
 import MasukAdmin from './pages/MasukAdmin'
 import RiwayatAdmin from './pages/RiwayatAdmin'
 import HalamanSegera from './pages/HalamanSegera'
@@ -32,15 +34,7 @@ function Rangka() {
         <Routes>
           <Route path="/" element={<Beranda />} />
           <Route path="/konsultasi" element={<Konsultasi />} />
-          <Route
-            path="/edukasi"
-            element={
-              <HalamanSegera
-                judul="Edukasi Investasi"
-                uraian="Penjelasan lengkap tentang profil risiko dan instrumen investasi akan hadir di halaman ini."
-              />
-            }
-          />
+          <Route path="/edukasi" element={<Edukasi />} />
           <Route
             path="/pasar"
             element={
@@ -59,15 +53,7 @@ function Rangka() {
               />
             }
           />
-          <Route
-            path="/tentang"
-            element={
-              <HalamanSegera
-                judul="Tentang TAKAR"
-                uraian="Latar belakang penelitian, metode, dan pakar rujukan akan dijelaskan di halaman ini."
-              />
-            }
-          />
+          <Route path="/tentang" element={<Tentang />} />
           <Route path="/admin" element={<MasukAdmin />} />
           <Route path="/admin/riwayat" element={<RiwayatAdmin />} />
           <Route
