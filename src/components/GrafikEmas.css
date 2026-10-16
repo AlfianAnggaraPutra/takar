@@ -1,0 +1,579 @@
+/* Grafik emas per kuartal. Warna mengikuti palet TAKAR di index.css. */
+.emas {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: clamp(16px, 2.6vw, 30px);
+  border: 1px solid rgba(246, 243, 236, 0.14);
+  border-radius: 24px;
+  background: linear-gradient(180deg, rgba(22, 58, 90, 0.5), rgba(10, 31, 51, 0.78));
+  box-shadow: 0 30px 70px rgba(4, 12, 24, 0.45), inset 0 1px 0 rgba(246, 243, 236, 0.07);
+  isolation: isolate;
+}
+.emas::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  border-radius: 24px 24px 0 0;
+  background: linear-gradient(90deg, transparent, rgba(236, 181, 78, 0.7), transparent);
+  pointer-events: none;
+}
+
+/* ---------- Pembaca angka ---------- */
+.emas-baca {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px 28px;
+}
+.emas-baca__utama {
+  display: grid;
+  gap: 2px;
+  animation: emas-ganti 0.28s ease both;
+}
+@keyframes emas-ganti {
+  from {
+    opacity: 0.35;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.emas-baca__label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--kunyit-300);
+}
+.emas-baca__nilai {
+  font-family: var(--font-judul);
+  font-weight: 500;
+  font-size: clamp(1.9rem, 4.4vw, 2.8rem);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--krem);
+}
+.emas-baca__satuan {
+  font-size: 0.84rem;
+  color: var(--teks-redup);
+}
+.emas-baca__ubah {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.emas-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 13px 7px 10px;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.emas-chip small {
+  font-size: 0.8rem;
+  font-weight: 500;
+  opacity: 0.88;
+}
+.emas-chip--naik {
+  color: #8fdbe7;
+  background: rgba(77, 179, 198, 0.15);
+  box-shadow: inset 0 0 0 1px rgba(77, 179, 198, 0.3);
+}
+.emas-chip--turun {
+  color: #f6b4a2;
+  background: rgba(232, 131, 107, 0.16);
+  box-shadow: inset 0 0 0 1px rgba(232, 131, 107, 0.34);
+}
+.emas-chip--awal {
+  padding-left: 13px;
+  color: var(--teks-redup);
+  background: rgba(246, 243, 236, 0.07);
+  box-shadow: inset 0 0 0 1px var(--garis);
+}
+
+/* ---------- Alat ---------- */
+.emas__alat {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 16px;
+}
+.emas__rentang {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 4px;
+  border: 1px solid var(--garis);
+  border-radius: 999px;
+  background: rgba(7, 23, 42, 0.5);
+}
+.emas-pil {
+  white-space: nowrap;
+  padding: 7px 15px;
+  border-radius: 999px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--teks-redup);
+  transition: background 0.3s, color 0.3s, box-shadow 0.3s;
+}
+.emas-pil:hover:not(:disabled) {
+  color: var(--krem);
+  background: rgba(246, 243, 236, 0.08);
+}
+.emas-pil--aktif {
+  color: #1b2733;
+  background: linear-gradient(135deg, #f0cd82, #e3a32b);
+  box-shadow: 0 6px 16px rgba(227, 163, 43, 0.28);
+}
+.emas-pil--aktif:hover:not(:disabled) {
+  color: #1b2733;
+  background: linear-gradient(135deg, #f0cd82, #e3a32b);
+}
+.emas__perkakas {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.emas__pemisah {
+  width: 1px;
+  height: 22px;
+  margin: 0 4px;
+  background: var(--garis);
+}
+.emas-ikon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 40px;
+  height: 40px;
+  padding: 0 11px;
+  border: 1px solid var(--garis);
+  border-radius: 12px;
+  background: rgba(246, 243, 236, 0.05);
+  color: var(--krem);
+  font-size: 0.86rem;
+  font-weight: 600;
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.3s, background 0.3s, color 0.3s, box-shadow 0.3s;
+}
+.emas-ikon--teks {
+  padding: 0 14px 0 12px;
+}
+.emas-ikon:hover:not(:disabled) {
+  transform: translateY(-2px);
+  border-color: rgba(236, 181, 78, 0.7);
+  color: var(--kunyit-300);
+  background: rgba(236, 181, 78, 0.09);
+  box-shadow: 0 8px 20px rgba(4, 12, 24, 0.4);
+}
+.emas-ikon:active:not(:disabled) {
+  transform: translateY(0);
+}
+.emas-ikon--aktif {
+  border-color: rgba(236, 181, 78, 0.7);
+  color: var(--kunyit-300);
+  background: rgba(236, 181, 78, 0.12);
+}
+.emas-ikon:disabled,
+.emas-pil:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+/* ---------- Gambar ---------- */
+.emas__gambar {
+  position: relative;
+  height: clamp(280px, 38vw, 430px);
+  border-radius: 16px;
+  background: rgba(7, 23, 42, 0.42);
+  box-shadow: inset 0 0 0 1px rgba(246, 243, 236, 0.06);
+  user-select: none;
+  -webkit-user-select: none;
+}
+.emas__sumbu-judul {
+  position: absolute;
+  top: 8px;
+  left: 12px;
+  z-index: 2;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--teks-redup);
+  pointer-events: none;
+}
+.emas__svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.emas__pita {
+  fill: rgba(246, 243, 236, 0.035);
+}
+.emas__kisi line {
+  stroke: rgba(246, 243, 236, 0.09);
+}
+.emas__kisi text,
+.emas__q {
+  fill: var(--teks-redup);
+  font-family: var(--font-isi);
+  font-size: 12px;
+}
+.emas__q {
+  font-size: 11.5px;
+}
+.emas__q--aktif {
+  fill: var(--kunyit-300);
+  font-weight: 700;
+}
+.emas__tahun {
+  fill: var(--krem);
+  font-family: var(--font-isi);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.emas__dasar {
+  stroke: rgba(246, 243, 236, 0.24);
+}
+.emas__batas {
+  stroke: rgba(246, 243, 236, 0.22);
+}
+.emas__silang {
+  stroke: rgba(240, 205, 130, 0.5);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 4;
+}
+.emas__garis {
+  filter: drop-shadow(0 4px 10px rgba(236, 181, 78, 0.35));
+}
+
+/* Titik tiap kuartal: terisi emas bila naik, cincin terakota bila turun. Bentuknya beda, jadi tidak bergantung pada warna saja. */
+.emas__bulat {
+  fill: #f0cd82;
+  stroke: #0a1f33;
+  stroke-width: 2;
+  transition: r 0.25s ease;
+}
+.emas__titik--turun .emas__bulat {
+  fill: #0a1f33;
+  stroke: #e8836b;
+  stroke-width: 2.6;
+}
+.emas__titik--aktif .emas__bulat {
+  stroke: #fff7e2;
+  stroke-width: 2.4;
+}
+.emas__titik--aktif.emas__titik--turun .emas__bulat {
+  stroke: #e8836b;
+}
+.emas__halo {
+  fill: rgba(236, 181, 78, 0.2);
+  animation: emas-halo 1.8s ease-in-out infinite;
+}
+.emas__titik--turun .emas__halo {
+  fill: rgba(232, 131, 107, 0.22);
+}
+@keyframes emas-halo {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.86);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.emas__halo,
+.emas__bulat {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+/* Masuk saat pertama terlihat */
+.emas:not(.emas--mulai) .emas__garis,
+.emas:not(.emas--mulai) .emas__area,
+.emas:not(.emas--mulai) .emas__titik,
+.emas:not(.emas--mulai) .emas__silang {
+  opacity: 0;
+}
+.emas--mulai .emas__garis--awal {
+  stroke-dasharray: 1;
+  animation: emas-gambar 1.9s cubic-bezier(0.4, 0.1, 0.2, 1) both;
+}
+@keyframes emas-gambar {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.emas--mulai:not(.emas--selesai) .emas__area {
+  animation: emas-muncul 1.4s ease 0.9s both;
+}
+.emas--mulai:not(.emas--selesai) .emas__bulat {
+  animation: emas-letup 0.5s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+  animation-delay: calc(0.5s + var(--i) * 0.085s);
+}
+@keyframes emas-muncul {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes emas-letup {
+  from {
+    opacity: 0;
+    transform: scale(0);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Lapisan sentuh dan papan ketik */
+.emas__sentuh {
+  position: absolute;
+  z-index: 3;
+  border-radius: 10px;
+  cursor: crosshair;
+  touch-action: pan-y;
+  outline: none;
+}
+.emas__sentuh--geser {
+  cursor: grab;
+}
+.emas__sentuh--geser:active {
+  cursor: grabbing;
+}
+.emas__sentuh:focus-visible {
+  outline: 2px solid var(--kunyit-400);
+  outline-offset: 0;
+}
+
+/* ---------- Tabel ---------- */
+.emas__tabel-bungkus {
+  position: relative;
+  border-radius: 16px;
+  background: rgba(7, 23, 42, 0.42);
+  box-shadow: inset 0 0 0 1px rgba(246, 243, 236, 0.06);
+}
+.emas__tabel {
+  max-height: clamp(300px, 46vh, 440px);
+  overflow: auto;
+  border-radius: 16px;
+  overscroll-behavior: contain;
+}
+.emas__tabel:focus-visible {
+  outline: 2px solid var(--kunyit-400);
+  outline-offset: -2px;
+}
+.emas__tabel table {
+  width: 100%;
+  min-width: 520px;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+.emas__tabel th,
+.emas__tabel td {
+  padding: 11px 16px;
+  text-align: left;
+  white-space: nowrap;
+}
+.emas__tabel thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #0f2a43;
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--teks-redup);
+  border-bottom: 1px solid rgba(246, 243, 236, 0.16);
+}
+.emas__tabel tbody th {
+  font-weight: 600;
+  color: var(--krem);
+}
+.emas__tabel tbody tr {
+  cursor: pointer;
+  transition: background 0.25s;
+}
+.emas__tabel tbody tr:nth-child(even) {
+  background: rgba(246, 243, 236, 0.03);
+}
+.emas__tabel tbody tr:hover {
+  background: rgba(236, 181, 78, 0.08);
+}
+.emas__tabel tbody tr.emas__baris--aktif {
+  background: rgba(236, 181, 78, 0.14);
+  box-shadow: inset 3px 0 0 var(--kunyit-400);
+}
+.emas__tabel .emas__angka {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.emas__naik {
+  color: #8fdbe7;
+}
+.emas__turun {
+  color: #f6b4a2;
+}
+
+/* ---------- Kaki ---------- */
+.emas__kaki {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 22px;
+  font-size: 0.84rem;
+  color: var(--teks-redup);
+}
+.emas__legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+}
+.emas__ket {
+  position: relative;
+  padding-left: 20px;
+}
+.emas__ket::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 11px;
+  height: 11px;
+  margin-top: -5.5px;
+  border-radius: 50%;
+}
+.emas__ket--naik::before {
+  background: #f0cd82;
+}
+.emas__ket--turun::before {
+  border: 2.4px solid #e8836b;
+  background: transparent;
+}
+
+/* ---------- Layar penuh ---------- */
+.emas--penuh {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  gap: 12px;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  padding: clamp(14px, 2vw, 26px);
+  border: 0;
+  border-radius: 0;
+  background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(47, 86, 121, 0.45), transparent 70%), var(--laut-900);
+  box-shadow: none;
+  overflow: auto;
+}
+.emas--penuh::before {
+  display: none;
+}
+.emas--penuh .emas__gambar,
+.emas--penuh .emas__tabel-bungkus {
+  flex: 1 1 auto;
+  height: auto;
+  min-height: 240px;
+}
+.emas--penuh .emas__tabel {
+  max-height: none;
+  height: 100%;
+}
+
+/* ---------- Layar sempit ---------- */
+@media (max-width: 720px) {
+  .emas__alat {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .emas__rentang {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    width: 100%;
+  }
+  .emas-pil {
+    padding: 8px 2px;
+    text-align: center;
+    font-size: 0.82rem;
+  }
+  .emas__perkakas {
+    justify-content: space-between;
+  }
+}
+@media (max-width: 520px) {
+  .emas {
+    gap: 14px;
+    border-radius: 20px;
+  }
+  .emas-baca__ubah {
+    width: 100%;
+  }
+  .emas-chip {
+    font-size: 0.84rem;
+  }
+  .emas__perkakas {
+    gap: 4px;
+  }
+  .emas__pemisah {
+    display: none;
+  }
+  .emas-ikon {
+    min-width: 38px;
+    height: 38px;
+    padding: 0 9px;
+  }
+  .emas-ikon--teks {
+    padding: 0 12px 0 10px;
+  }
+  .emas__kisi text {
+    font-size: 11px;
+  }
+}
+@media (max-width: 350px) {
+  .emas-pil {
+    font-size: 0.78rem;
+  }
+  /* Label tombol disembunyikan secara visual, tetapi tetap terbaca oleh pembaca layar. */
+  .emas-ikon--teks span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  .emas-ikon--teks {
+    padding: 0 9px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .emas__halo {
+    animation: none;
+  }
+}

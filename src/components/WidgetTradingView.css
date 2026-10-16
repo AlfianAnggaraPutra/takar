@@ -1,0 +1,248 @@
+/* Pembungkus widget TradingView. Tingginya ditentukan oleh halaman yang memakainya lewat --tv-tinggi. */
+.tv {
+  position: relative;
+  width: 100%;
+  height: var(--tv-tinggi, 100%);
+  min-height: var(--tv-tinggi-min, 0);
+  overflow: hidden;
+  background: var(--tv-latar, #0a1f33);
+}
+.tv__wadah {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.tv__wadah iframe {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  border: 0;
+}
+.tv--pita {
+  height: var(--tv-tinggi, 78px);
+  background: transparent;
+}
+
+/* ---------- Kerangka tunggu ---------- */
+.tv__rangka {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 14px;
+  background: var(--tv-latar, #0a1f33);
+  pointer-events: none;
+  transition: opacity 0.6s ease, visibility 0.6s;
+}
+.tv--pita .tv__rangka {
+  background: transparent;
+  grid-auto-flow: column;
+}
+.tv--siap .tv__rangka,
+.tv--gagal .tv__rangka {
+  opacity: 0;
+  visibility: hidden;
+}
+.tv__lilin {
+  width: min(420px, 78%);
+  height: auto;
+  aspect-ratio: 320 / 120;
+  opacity: 0.55;
+}
+.tv__lilin line {
+  stroke: rgba(246, 243, 236, 0.28);
+  stroke-width: 1.5;
+}
+.tv__naik {
+  fill: rgba(77, 179, 198, 0.55);
+}
+.tv__turun {
+  fill: rgba(232, 131, 107, 0.55);
+}
+.tv__lilin-satu {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: tv-napas 1.9s ease-in-out infinite;
+  animation-delay: calc(var(--i) * 0.09s);
+}
+@keyframes tv-napas {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scaleY(0.82);
+  }
+  50% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+.tv__teks {
+  position: relative;
+  padding-left: 22px;
+  font-size: 0.86rem;
+  letter-spacing: 0.02em;
+  color: var(--teks-redup);
+}
+.tv__teks::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 12px;
+  height: 12px;
+  margin-top: -6px;
+  border: 2px solid rgba(236, 181, 78, 0.28);
+  border-top-color: var(--kunyit-400);
+  border-radius: 50%;
+  animation: tv-putar 0.9s linear infinite;
+}
+@keyframes tv-putar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------- Gagal dimuat ---------- */
+.tv__gagal {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 24px;
+  overflow-y: auto;
+  text-align: center;
+  background: radial-gradient(ellipse 70% 60% at 50% 40%, rgba(232, 131, 107, 0.12), transparent 70%), var(--tv-latar, #0a1f33);
+  animation: tv-masuk 0.5s ease both;
+}
+/* Isi dipusatkan bila ada ruang, dan mulai dari atas (bisa digulir) bila layar terlalu pendek. */
+.tv__gagal > :first-child {
+  margin-top: auto;
+}
+.tv__gagal > :last-child {
+  margin-bottom: auto;
+}
+.tv--pita .tv__gagal {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-content: center;
+  justify-content: center;
+  gap: 6px 14px;
+  padding: 6px 12px;
+  overflow: hidden;
+  background: transparent;
+}
+.tv--pita .tv__gagal > * {
+  margin: 0;
+}
+.tv--pita .tv__gagal-judul {
+  font-size: 0.98rem;
+}
+.tv--pita .tv__gagal-aksi {
+  margin-top: 0;
+}
+/* Di pita cukup satu tombol. Tautan ke TradingView sudah ada di atas pita. */
+.tv--pita .tv__tombol--garis {
+  display: none;
+}
+.tv--pita .tv__tombol {
+  padding: 7px 14px;
+}
+.tv--pita .tv__gagal-isi,
+.tv--pita .tv__gagal-ikon {
+  display: none;
+}
+@keyframes tv-masuk {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.tv__gagal-ikon {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  color: var(--terakota-300);
+  background: rgba(232, 131, 107, 0.14);
+}
+.tv__gagal-judul {
+  font-family: var(--font-judul);
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: var(--teks);
+}
+.tv__gagal-isi {
+  max-width: 46ch;
+  font-size: 0.92rem;
+  color: var(--teks-redup);
+}
+.tv__gagal-aksi {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 6px;
+}
+.tv__tombol {
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s, border-color 0.3s, color 0.3s;
+}
+.tv__tombol--emas {
+  background: linear-gradient(135deg, #f0cd82, #e3a32b 60%, #c98a17);
+  color: #1b2733;
+  box-shadow: 0 8px 22px rgba(227, 163, 43, 0.22);
+}
+.tv__tombol--emas:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(227, 163, 43, 0.38);
+}
+.tv__tombol--garis {
+  border-color: rgba(246, 243, 236, 0.34);
+  color: var(--krem);
+}
+.tv__tombol--garis:hover {
+  transform: translateY(-2px);
+  border-color: var(--kunyit-400);
+  color: var(--kunyit-300);
+}
+
+@media (max-width: 420px) {
+  .tv__gagal {
+    gap: 8px;
+    padding: 16px 12px;
+  }
+  .tv__gagal-ikon {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+  }
+  .tv__gagal-judul {
+    font-size: 1.1rem;
+  }
+  .tv__gagal-isi {
+    font-size: 0.88rem;
+  }
+  .tv__tombol {
+    padding: 9px 16px;
+    font-size: 0.86rem;
+  }
+}

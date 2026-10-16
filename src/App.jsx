@@ -8,6 +8,7 @@ import Beranda from './pages/Beranda'
 import Konsultasi from './pages/Konsultasi'
 import Edukasi from './pages/Edukasi'
 import Tentang from './pages/Tentang'
+import Pasar from './pages/Pasar'
 import MasukAdmin from './pages/MasukAdmin'
 import RiwayatAdmin from './pages/RiwayatAdmin'
 import HalamanSegera from './pages/HalamanSegera'
@@ -35,15 +36,7 @@ function Rangka() {
           <Route path="/" element={<Beranda />} />
           <Route path="/konsultasi" element={<Konsultasi />} />
           <Route path="/edukasi" element={<Edukasi />} />
-          <Route
-            path="/pasar"
-            element={
-              <HalamanSegera
-                judul="Pasar"
-                uraian="Grafik harga emas, IHSG, dan saham pilihan sedang dalam penyusunan."
-              />
-            }
-          />
+          <Route path="/pasar" element={<Pasar />} />
           <Route
             path="/berita"
             element={

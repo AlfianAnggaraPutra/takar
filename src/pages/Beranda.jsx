@@ -779,7 +779,7 @@ export default function Beranda() {
               <path className="grafik-area" d="M0,250 C60,230 90,260 150,220 S250,150 310,175 S420,90 480,110 S560,50 600,40 L600,320 L0,320 Z" />
               <path className="grafik-garis" pathLength="1" d="M0,250 C60,230 90,260 150,220 S250,150 310,175 S420,90 480,110 S560,50 600,40" />
             </svg>
-            <p className="kartu-grafik__catatan">Data sesungguhnya akan tersedia di halaman Pasar.</p>
+            <p className="kartu-grafik__catatan">Ini hanya ilustrasi. Grafik sungguhan ada di halaman Pasar.</p>
           </div>
         </div>
       </section>
