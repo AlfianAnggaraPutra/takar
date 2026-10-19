@@ -1,0 +1,277 @@
+/* Foto hero Beranda: bingkai tetap, foto dipotong otomatis, tetap rapi untuk foto berukuran apa pun. */
+.foto-hero {
+  position: relative;
+  /* Lebar dibatasi oleh tinggi layar supaya bingkai tidak melebihi layar laptop yang pendek. */
+  width: min(100%, 460px, max(300px, calc((100svh - var(--tinggi-header) - 190px) * 0.8)));
+  margin: 0 auto;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Gerak pelan naik turun saat diam. Dimulai setelah animasi masuk selesai. */
+.foto-hero__ayun {
+  animation: foto-hero-ayun 7.5s ease-in-out 2.6s infinite;
+  will-change: transform;
+}
+@keyframes foto-hero-ayun {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -14px, 0);
+  }
+}
+
+.foto-hero__tekan {
+  position: relative;
+  transform-origin: 50% 60%;
+}
+
+/* Garis emas tipis yang bergeser dari bingkai, memberi kesan berlapis. Memakai inset, bukan transform, supaya gerak masuknya bebas. */
+.foto-hero__garis {
+  position: absolute;
+  inset: 18px -18px -18px 18px;
+  border: 1.5px solid rgba(236, 181, 78, 0.55);
+  border-radius: 30px;
+  pointer-events: none;
+  transition: inset 0.7s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.5s;
+}
+@media (hover: hover) {
+  .foto-hero:hover .foto-hero__garis {
+    inset: 12px -12px -12px 12px;
+    border-color: rgba(240, 205, 130, 0.85);
+  }
+}
+
+.foto-hero__bingkai {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  isolation: isolate;
+  border-radius: 28px;
+  background: linear-gradient(160deg, var(--laut-600), var(--laut-950));
+  box-shadow: 0 40px 90px -30px rgba(3, 12, 24, 0.8), 0 0 0 1px rgba(246, 243, 236, 0.14);
+}
+.foto-hero__isi {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 50%;
+}
+.foto-hero__isi > img,
+.foto-hero__isi > svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: var(--posisi-foto, 50% 30%);
+  transition: transform 1.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@media (hover: hover) {
+  .foto-hero:hover .foto-hero__isi > img,
+  .foto-hero:hover .foto-hero__isi > svg {
+    transform: scale(1.05);
+  }
+}
+
+/* Selama foto dimuat: kilau lembut berjalan di atas latar gelap, bukan kotak kosong. */
+.foto-hero__memuat {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 30%, rgba(246, 243, 236, 0.08) 50%, transparent 70%);
+  background-size: 220% 100%;
+  animation: foto-hero-memuat 1.6s ease-in-out infinite;
+}
+@keyframes foto-hero-memuat {
+  from {
+    background-position: 120% 0;
+  }
+  to {
+    background-position: -120% 0;
+  }
+}
+
+/* Gradasi tipis agar tepi bawah foto menyatu dengan latar halaman, dan lapisan kilau yang lewat sesekali. */
+.foto-hero__selaput {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(7, 23, 42, 0) 52%, rgba(7, 23, 42, 0.5) 100%), linear-gradient(135deg, rgba(236, 181, 78, 0.1), transparent 42%);
+  box-shadow: inset 0 0 0 1px rgba(246, 243, 236, 0.1);
+}
+.foto-hero__selaput::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.16) 50%, transparent 60%);
+  transform: translateX(-130%);
+  animation: foto-hero-kilau 9s ease-in-out 4s infinite;
+}
+@keyframes foto-hero-kilau {
+  0% {
+    transform: translateX(-130%);
+  }
+  22%,
+  100% {
+    transform: translateX(130%);
+  }
+}
+
+/* Riak emas dari titik klik. */
+.foto-hero__riak {
+  position: absolute;
+  z-index: 1;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border: 2px solid rgba(240, 205, 130, 0.9);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(236, 181, 78, 0.35), transparent 65%);
+  pointer-events: none;
+  transform: scale(0);
+  animation: foto-hero-riak 1s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+}
+@keyframes foto-hero-riak {
+  to {
+    transform: scale(20);
+    opacity: 0;
+  }
+}
+
+/* Lencana kaca di tepi bingkai, sengaja menjorok keluar supaya tidak menutupi bagian tengah foto. */
+.foto-hero__lencana {
+  position: absolute;
+  z-index: 2;
+}
+.foto-hero__lencana--a {
+  left: -22px;
+  bottom: 38px;
+}
+.foto-hero__lencana--b {
+  right: -18px;
+  top: 46px;
+}
+.foto-hero__lencana-isi {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 18px 11px 11px;
+  border: 1px solid rgba(246, 243, 236, 0.18);
+  border-radius: 18px;
+  background: rgba(7, 23, 42, 0.78);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 18px 40px -14px rgba(3, 12, 24, 0.7);
+  animation: foto-hero-apung 6s ease-in-out infinite;
+}
+.foto-hero__lencana--b .foto-hero__lencana-isi {
+  animation-duration: 7.2s;
+  animation-delay: -2.4s;
+}
+@keyframes foto-hero-apung {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -7px, 0);
+  }
+}
+.foto-hero__lencana-ikon {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: rgba(236, 181, 78, 0.16);
+  color: var(--kunyit-300);
+}
+.foto-hero__lencana strong {
+  display: block;
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--krem);
+}
+.foto-hero__lencana small {
+  display: block;
+  font-size: 0.72rem;
+  line-height: 1.3;
+  color: var(--teks-redup);
+}
+
+/* Ilustrasi cadangan */
+.foto-hero__ilustrasi .fh-gelembung {
+  animation: foto-hero-apung 5.5s ease-in-out infinite;
+}
+.foto-hero__ilustrasi .fh-gelembung--b {
+  animation-duration: 6.6s;
+  animation-delay: -2s;
+}
+
+/* Tablet dan ponsel: bingkai melebar dan lebih pendek, tampil di bawah teks. */
+@media (max-width: 1024px) {
+  .foto-hero {
+    width: min(100%, 560px);
+  }
+  .foto-hero__bingkai {
+    aspect-ratio: 4 / 3;
+  }
+  .foto-hero__lencana--a {
+    bottom: 28px;
+  }
+  .foto-hero__lencana--b {
+    top: 30px;
+  }
+}
+@media (max-width: 560px) {
+  .foto-hero__bingkai {
+    aspect-ratio: 5 / 4;
+    border-radius: 22px;
+  }
+  .foto-hero__garis {
+    inset: 10px -10px -10px 10px;
+    border-radius: 24px;
+  }
+  .foto-hero__lencana--a {
+    left: -10px;
+    bottom: 22px;
+  }
+  .foto-hero__lencana--b {
+    right: -10px;
+    top: 18px;
+  }
+  .foto-hero__lencana-isi {
+    gap: 9px;
+    padding: 8px 13px 8px 8px;
+    border-radius: 15px;
+  }
+  .foto-hero__lencana-ikon {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+  }
+  .foto-hero__lencana strong {
+    font-size: 0.78rem;
+  }
+  .foto-hero__lencana small {
+    font-size: 0.66rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .foto-hero__ayun,
+  .foto-hero__lencana-isi,
+  .foto-hero__selaput::after,
+  .foto-hero__memuat,
+  .foto-hero__ilustrasi .fh-gelembung {
+    animation: none;
+  }
+  .foto-hero__riak {
+    display: none;
+  }
+}

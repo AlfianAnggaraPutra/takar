@@ -1,0 +1,47 @@
+.ilustrasi-berita {
+  display: block;
+  width: 100%;
+  height: 100%;
+  color: var(--w, #ecb54e);
+}
+.ilustrasi-berita .ib-garis-tipis line {
+  stroke: #f6f3ec;
+  stroke-opacity: 0.08;
+  stroke-width: 1;
+}
+
+/* Batang dan bentuk tumbuh dari bawah satu per satu saat kartu muncul. */
+.ilustrasi-berita .ib-tumbuh {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: ib-tumbuh 1.1s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation-delay: calc(var(--i, 0) * 80ms + 120ms);
+}
+@keyframes ib-tumbuh {
+  from {
+    opacity: 0;
+    transform: scaleY(0.2);
+  }
+  to {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+.ilustrasi-berita .ib-kilau {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: ib-kilau 3.2s ease-in-out infinite;
+}
+@keyframes ib-kilau {
+  50% {
+    opacity: 0.35;
+    transform: scale(0.85) rotate(12deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ilustrasi-berita .ib-tumbuh,
+  .ilustrasi-berita .ib-kilau {
+    animation: none;
+  }
+}

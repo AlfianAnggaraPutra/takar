@@ -17,6 +17,7 @@ export async function simpanRiwayatKonsultasi({ idKonsultasi, identitas, jawaban
     nama: identitas.nama,
     usia: identitas.usia,
     pekerjaan: identitas.pekerjaan,
+    no_hp: identitas.noHp,
     jawaban_indikator: jawaban,
     hasil_profil: hasil.profilTertinggi.nama,
     persentase_keyakinan: Number(hasil.persentase.toFixed(4)),

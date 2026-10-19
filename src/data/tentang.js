@@ -176,8 +176,8 @@ export const TOPIK_INDIKATOR = (() => {
 /* ---------- Keterbatasan ---------- */
 export const KETERBATASAN = [
   {
-    judul: 'Ini skrining awal, bukan nasihat',
-    isi: 'Hasilnya membantu Anda mengenali diri sendiri. Keputusan yang besar tetap sebaiknya dibicarakan dengan perencana keuangan berlisensi.',
+    judul: 'Titik mulai yang jelas, bukan akhir perjalanan',
+    isi: 'Hasilnya disusun dari pengetahuan seorang pakar, jadi cukup kuat untuk membantu Anda mengenali diri sendiri. Hasil ini tidak menggantikan konsultasi langsung, tetapi membuat diskusi dengan perencana keuangan berizin jauh lebih terarah.',
     ikon: 'info',
     warna: 'emas',
   },
@@ -217,11 +217,12 @@ export const KETERBATASAN = [
 export const DATA_DISIMPAN = [
   'Nama, sesuai yang Anda ketik',
   'Usia dan pekerjaan',
+  'Nomor HP atau WhatsApp',
   'Jawaban atas 40 pernyataan',
   'Profil hasil dan persentase keyakinannya',
   'Waktu konsultasi',
 ]
-export const DATA_TIDAK_DIMINTA = ['Alamat email', 'Nomor telepon', 'Alamat tempat tinggal', 'Nomor rekening, saldo, atau data keuangan pribadi']
+export const DATA_TIDAK_DIMINTA = ['Alamat email', 'Alamat tempat tinggal', 'Nomor rekening, saldo, atau data keuangan pribadi']
 
 export const JAMINAN_DATA = [
   {

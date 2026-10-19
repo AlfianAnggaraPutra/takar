@@ -567,7 +567,7 @@ export default function HasilKonsultasi({ identitas, hasil, jawaban, nomorKonsul
         </details>
 
         <p className="hasil__peringatan" data-masuk>
-          Hasil ini bersifat edukatif dan dihitung dari jawaban Anda saja. Hasil ini bukan nasihat keuangan pribadi, jadi tetap pertimbangkan tujuan, kondisi keuangan, dan konsultasikan dengan perencana keuangan berizin sebelum berinvestasi.
+          Hasil ini adalah skrining awal yang dihitung dari jawaban Anda dan basis pengetahuan seorang Certified Financial Planner, jadi layak Anda jadikan pegangan awal untuk mengenali diri sendiri. Hasil ini tidak menggantikan konsultasi langsung. Untuk keputusan yang besar, bawa hasil ini ke perencana keuangan berizin dan diskusikan bersama tujuan serta kondisi keuangan Anda.
         </p>
 
         <div className="hasil__aksi hasil__aksi--bawah" data-masuk>

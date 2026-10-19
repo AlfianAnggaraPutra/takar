@@ -4,7 +4,8 @@ import gsap from 'gsap'
 import ModalKonfirmasi from '../components/ModalKonfirmasi'
 import { keluarAdmin, useSesiAdmin } from '../lib/autentikasi'
 import { hitungProfilRisiko, periksaJawaban } from '../lib/mesinInferensi'
-import { DAFTAR_PROFIL_FILTER, UKURAN_HALAMAN, ambilRiwayat, ambilStatistik, formatWaktu } from '../lib/riwayatAdmin'
+import { DAFTAR_PROFIL_FILTER, UKURAN_HALAMAN, ambilRiwayat, ambilSemuaRiwayat, ambilStatistik, formatWaktu } from '../lib/riwayatAdmin'
+import { formatNoHp } from '../lib/noHp'
 import './RiwayatAdmin.css'
 
 // Pembuat PDF dimuat terpisah dan hanya sekali. Bila gagal dimuat, browser menyimpan kegagalannya,
@@ -13,6 +14,18 @@ let modulLaporan = null
 const muatModulLaporan = () => {
   if (!modulLaporan) modulLaporan = import('../lib/buatLaporanPdf')
   return modulLaporan
+}
+
+// Pembuat Excel (exceljs berukuran besar) juga dimuat terpisah dan hanya saat tombol ekspor ditekan.
+let modulExcel = null
+const muatModulExcel = () => {
+  if (!modulExcel) {
+    modulExcel = import('../lib/eksporExcel').catch((e) => {
+      modulExcel = null
+      throw e
+    })
+  }
+  return modulExcel
 }
 
 const JEDA_CARI_MS = 350
@@ -36,6 +49,12 @@ const Ikon = {
   unduh: (
     <svg {...dasar} width={16} height={16} strokeWidth={2.1}>
       <path d="M12 4v11M7 11l5 5 5-5M5 20h14" />
+    </svg>
+  ),
+  excel: (
+    <svg {...dasar} width={16} height={16} strokeWidth={2}>
+      <rect x="4" y="3.5" width="16" height="17" rx="2.5" />
+      <path d="M4 9h16M4 14.5h16M10 9v11.5" />
     </svg>
   ),
   keluar: (
@@ -153,6 +172,7 @@ export default function RiwayatAdmin() {
   const [statistik, setStatistik] = useState({ total: null, Konservatif: null, Moderat: null, Agresif: null })
 
   const [sedangUnduh, setSedangUnduh] = useState(() => new Set())
+  const [sedangEkspor, setSedangEkspor] = useState(false)
   const [toast, setToast] = useState(null) // { jenis, pesan, muatUlang }
   const [modalKeluar, setModalKeluar] = useState(false)
   const [sedangKeluar, setSedangKeluar] = useState(false)
@@ -167,6 +187,7 @@ export default function RiwayatAdmin() {
   const totalHalaman = Math.max(1, Math.ceil(data.total / UKURAN_HALAMAN))
   const adaSaringan = Boolean(cariTunda.trim() || profil)
   const sudahMasuk = Boolean(sesi)
+  const eksporBerjalan = useRef(false)
 
   /* ----- Pencarian: ditunda sebentar agar tidak menembak server di setiap ketukan ----- */
   useEffect(() => {
@@ -320,7 +341,7 @@ export default function RiwayatAdmin() {
         return
       }
       await modul.buatLaporanPdf({
-        identitas: { nama: b.nama, usia: b.usia, pekerjaan: b.pekerjaan || '-' },
+        identitas: { nama: b.nama, usia: b.usia, pekerjaan: b.pekerjaan || '-', noHp: b.no_hp || '' },
         jawaban,
         hasil,
         nomorKonsultasi: id,
@@ -336,6 +357,47 @@ export default function RiwayatAdmin() {
         baru.delete(id)
         return baru
       })
+    }
+  }
+
+  /* ----- Unduh seluruh riwayat sebagai Excel (cadangan dan laporan) ----- */
+  const unduhExcel = async () => {
+    if (eksporBerjalan.current) return
+    eksporBerjalan.current = true
+    setSedangEkspor(true)
+    try {
+      let modul
+      try {
+        modul = await muatModulExcel()
+      } catch (e) {
+        console.error('Gagal memuat pembuat Excel:', e)
+        tampilToast('galat', 'Pembuat Excel gagal dimuat. Muat ulang halaman lalu coba lagi.', true)
+        return
+      }
+      let riwayat
+      try {
+        riwayat = await ambilSemuaRiwayat()
+      } catch (e) {
+        if (e?.perluMasukLagi) {
+          await keluarAdmin()
+          return
+        }
+        tampilToast('galat', e?.message || 'Data belum bisa diambil. Coba lagi beberapa saat lagi.')
+        return
+      }
+      if (riwayat.length === 0) {
+        tampilToast('galat', 'Belum ada riwayat konsultasi yang bisa diekspor.')
+        return
+      }
+      const { buffer, nama, jumlah } = await modul.buatBerkasExcel(riwayat)
+      modul.unduhBerkas(buffer, nama)
+      tampilToast('sukses', `Excel berisi ${jumlah.toLocaleString('id-ID')} konsultasi sudah diunduh.`)
+    } catch (e) {
+      console.error('Gagal membuat Excel riwayat:', e)
+      tampilToast('galat', 'Excel belum bisa dibuat. Coba lagi beberapa saat lagi.')
+    } finally {
+      eksporBerjalan.current = false
+      setSedangEkspor(false)
     }
   }
 
@@ -377,7 +439,7 @@ export default function RiwayatAdmin() {
           <div className="riw__judul-bungkus">
             <p className="label-seksi">Panel admin</p>
             <h1 className="riw__judul">Riwayat Konsultasi</h1>
-            <p className="riw__uraian">Daftar semua konsultasi pengguna, urut dari yang terbaru. Rincian jawaban tiap pengguna ada di PDF.</p>
+            <p className="riw__uraian">Daftar semua konsultasi pengguna, urut dari yang terbaru. Rincian jawaban tiap pengguna ada di PDF, dan seluruh data bisa diunduh sebagai Excel.</p>
           </div>
           <div className="riw__akun">
             <span className="riw__email" title={sesi.user?.email}>
@@ -446,10 +508,17 @@ export default function RiwayatAdmin() {
               ))}
             </div>
 
-            <button type="button" className="riw__segarkan" onClick={muatUlangData} disabled={status === 'memuat'} aria-label="Muat ulang data">
-              <span className={status === 'memuat' ? 'riw__segarkan-ikon riw__segarkan-ikon--putar' : 'riw__segarkan-ikon'}>{Ikon.segarkan}</span>
-              <span className="riw__segarkan-teks">Muat ulang</span>
-            </button>
+            <div className="riw__aksi-alat">
+              <button type="button" className="riw__segarkan" onClick={muatUlangData} disabled={status === 'memuat'} aria-label="Muat ulang data">
+                <span className={status === 'memuat' ? 'riw__segarkan-ikon riw__segarkan-ikon--putar' : 'riw__segarkan-ikon'}>{Ikon.segarkan}</span>
+                <span className="riw__segarkan-teks">Muat ulang</span>
+              </button>
+
+              <button type="button" className="riw__excel" onClick={unduhExcel} disabled={sedangEkspor} aria-busy={sedangEkspor}>
+                {sedangEkspor ? <span className="riw__putar" aria-hidden="true" /> : Ikon.excel}
+                <span>{sedangEkspor ? 'Menyiapkan...' : 'Unduh Excel'}</span>
+              </button>
+            </div>
           </div>
 
           {/* Galat */}
@@ -509,6 +578,7 @@ export default function RiwayatAdmin() {
                     <th scope="col">Nama</th>
                     <th scope="col">Usia</th>
                     <th scope="col">Pekerjaan</th>
+                    <th scope="col">No. HP / WA</th>
                     <th scope="col">Profil risiko</th>
                     <th scope="col">Keyakinan</th>
                     <th scope="col" className="riw__k-aksi">Laporan</th>
@@ -535,10 +605,11 @@ export default function RiwayatAdmin() {
                         </td>
                         <td data-label="Usia">{b.usia ?? '-'}{b.usia != null ? ' tahun' : ''}</td>
                         <td data-label="Pekerjaan" className="riw__pekerjaan">{b.pekerjaan || '-'}</td>
-                        <td data-label="Profil">
+                        <td data-label="No. HP / WA" className="riw__hp">{b.no_hp ? formatNoHp(b.no_hp) : '-'}</td>
+                        <td data-label="Profil" className="riw__sel-profil">
                           <span className={`riw__lencana riw__lencana--${warna}`}>{b.hasil_profil || '-'}</span>
                         </td>
-                        <td data-label="Keyakinan">
+                        <td data-label="Keyakinan" className="riw__sel-yakin">
                           {persen === null ? (
                             '-'
                           ) : (

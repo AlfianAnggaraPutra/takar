@@ -70,9 +70,39 @@
   font-size: 0.9rem;
   color: var(--teks-redup);
 }
+.ftr__tautan-aksi {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 22px;
+  margin-top: 20px;
+}
+.ftr__coba {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border: 1px solid rgba(236, 181, 78, 0.55);
+  border-radius: 999px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--kunyit-300);
+  transition: background 0.35s, color 0.35s, border-color 0.35s, transform 0.35s;
+}
+.ftr__coba svg {
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.ftr__coba:hover {
+  background: var(--kunyit-400);
+  border-color: var(--kunyit-400);
+  color: #1b2733;
+  transform: translateY(-1px);
+}
+.ftr__coba:hover svg {
+  transform: translateX(3px);
+}
 .ftr__admin {
   display: inline-block;
-  margin-top: 20px;
   padding-bottom: 2px;
   border-bottom: 1px solid rgba(236, 181, 78, 0.5);
   font-size: 0.88rem;
@@ -88,12 +118,70 @@
 .ftr__bawah {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   justify-content: space-between;
-  gap: 8px 32px;
-  padding: 26px 0 36px;
+  gap: 22px 40px;
+  padding: 28px 0 38px;
   border-top: 1px solid var(--garis);
   font-size: 0.82rem;
   color: var(--teks-halus);
+}
+.ftr__hakcipta {
+  display: grid;
+  gap: 6px;
+  max-width: 62ch;
+}
+
+/* Logo lembaga rujukan: satu warna terang senada footer, menjadi lebih jelas saat disorot. */
+.ftr__lembaga-daftar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 18px 32px;
+}
+.ftr__lembaga {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.ftr__lembaga img {
+  display: block;
+  width: auto;
+  height: 36px;
+  max-width: 150px;
+  object-fit: contain;
+  /* Semua warna asli diubah menjadi putih, lalu diredupkan setara warna teks footer. */
+  filter: brightness(0) invert(1);
+  opacity: 0.5;
+  transition: opacity 0.4s;
+}
+.ftr__lembaga-teks {
+  font-family: var(--font-judul);
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--teks-halus);
+  transition: color 0.4s;
+}
+.ftr__lembaga:hover,
+.ftr__lembaga:focus-visible {
+  transform: translateY(-3px);
+}
+.ftr__lembaga:hover img,
+.ftr__lembaga:focus-visible img {
+  opacity: 0.95;
+}
+.ftr__lembaga:hover .ftr__lembaga-teks,
+.ftr__lembaga:focus-visible .ftr__lembaga-teks {
+  color: var(--krem);
+}
+.ftr__lembaga:focus-visible {
+  outline: 2px solid var(--kunyit-400);
+  outline-offset: 4px;
+  border-radius: 8px;
 }
 
 @media (max-width: 960px) {
@@ -108,5 +196,12 @@
   .ftr__atas {
     grid-template-columns: 1fr;
     padding-top: 56px;
+  }
+  .ftr__lembaga img {
+    height: 30px;
+    max-width: 120px;
+  }
+  .ftr__lembaga-daftar {
+    gap: 12px 26px;
   }
 }

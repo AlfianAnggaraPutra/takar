@@ -3,11 +3,12 @@ import { supabase } from '../supabaseClient'
 export const UKURAN_HALAMAN = 10
 export const DAFTAR_PROFIL_FILTER = ['Konservatif', 'Moderat', 'Agresif']
 
-const KOLOM = 'id_konsultasi,waktu_konsultasi,nama,usia,pekerjaan,hasil_profil,persentase_keyakinan,jawaban_indikator'
+const KOLOM = 'id_konsultasi,waktu_konsultasi,nama,usia,pekerjaan,no_hp,hasil_profil,persentase_keyakinan,jawaban_indikator'
 
 // Mengubah galat Supabase menjadi pesan yang bisa dipahami pengelola.
 function pesanGalat(error) {
   if (!error) return 'Terjadi kesalahan yang tidak diketahui.'
+  if (error.code === '42703' && /no_hp/i.test(error.message ?? '')) return 'Kolom no_hp belum ada di tabel. Jalankan SQL migrasi_no_hp di Supabase terlebih dahulu.'
   if (error.code === '42703') return 'Kolom waktu_konsultasi belum ada di tabel. Jalankan SQL migrasi admin di Supabase terlebih dahulu.'
   if (error.code === '42501' || error.status === 401 || error.status === 403 || /jwt|permission denied|row-level/i.test(error.message ?? '')) {
     return 'Akses ditolak. Sesi Anda mungkin sudah berakhir, silakan masuk kembali.'
@@ -46,6 +47,32 @@ export async function ambilRiwayat({ halaman, cari = '', profil = '' }) {
     .range(dari, sampai)
   if (error) throw new GalatRiwayat(error)
   return { baris: data ?? [], total: count ?? 0 }
+}
+
+// Mengambil SELURUH riwayat (tanpa pencarian dan saringan) untuk diekspor ke Excel. Server membatasi 1000 baris
+// per permintaan, jadi data diambil bertahap. Urutan dikunci dengan id_konsultasi sebagai penentu bila ada dua
+// konsultasi yang waktunya persis sama, supaya tidak ada baris yang terlewat atau terambil dua kali antar tahap.
+const KOLOM_EKSPOR = 'id_konsultasi,waktu_konsultasi,nama,usia,pekerjaan,no_hp,hasil_profil,persentase_keyakinan'
+const UKURAN_TAHAP = 1000
+const BATAS_TAHAP = 500
+
+export async function ambilSemuaRiwayat() {
+  if (!supabase) throw new GalatRiwayat({ message: 'Failed to fetch', status: 0 })
+  const semua = []
+  for (let tahap = 0; tahap < BATAS_TAHAP; tahap++) {
+    const dari = tahap * UKURAN_TAHAP
+    const { data, error } = await supabase
+      .from('riwayat_konsultasi')
+      .select(KOLOM_EKSPOR)
+      .order('waktu_konsultasi', { ascending: false })
+      .order('id_konsultasi', { ascending: true })
+      .range(dari, dari + UKURAN_TAHAP - 1)
+    if (error) throw new GalatRiwayat(error)
+    const isi = data ?? []
+    semua.push(...isi)
+    if (isi.length < UKURAN_TAHAP) break
+  }
+  return semua
 }
 
 // Ringkasan jumlah untuk kartu di atas tabel. Bila salah satu gagal, nilainya null.

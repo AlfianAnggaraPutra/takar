@@ -110,6 +110,13 @@
   height: 34%;
   opacity: 0.5;
 }
+/* Laptop dan desktop: garis di sisi kiri dipudarkan sampai hilang supaya tidak melintasi tombol dan teks kecil di bawah judul. */
+@media (min-width: 1025px) {
+  .hero__grafik {
+    -webkit-mask-image: linear-gradient(90deg, transparent 36%, #000 62%);
+    mask-image: linear-gradient(90deg, transparent 36%, #000 62%);
+  }
+}
 .hero__grafik-garis {
   fill: none;
   stroke: url(#gradGrafikHero);
@@ -163,7 +170,8 @@
 .hero__judul {
   font-family: var(--font-judul);
   font-weight: 500;
-  font-size: clamp(2.5rem, 6vw, 4.7rem);
+  /* Ukuran mengikuti lebar kolom teks supaya baris "Kenali seberapa besar" selalu muat satu baris, tanpa kata "besar" tergantung sendirian. */
+  font-size: clamp(2.5rem, 5vw, 3.85rem);
   line-height: 1.08;
   letter-spacing: -0.02em;
 }
@@ -174,6 +182,7 @@
 }
 .hero__baris-isi {
   display: block;
+  text-wrap: balance;
 }
 .hero__judul em {
   font-style: normal;
@@ -199,112 +208,9 @@
 
 .hero__visual {
   position: relative;
-  display: grid;
-  place-items: center;
-  min-height: 420px;
-}
-.hero__watermark {
-  position: absolute;
-  top: -6%;
-  right: -8%;
-  width: min(560px, 110%);
-  height: auto;
-  opacity: 0.07;
-  filter: saturate(0.6);
-  animation: melayang 9s ease-in-out infinite;
-  pointer-events: none;
-}
-@keyframes melayang {
-  50% {
-    transform: translateY(-16px) rotate(1.5deg);
-  }
-}
-.kartu-hasil {
-  position: relative;
-  width: min(440px, 100%);
-  padding: 28px;
-  border: 1px solid rgba(246, 243, 236, 0.16);
-  border-radius: 24px;
-  background: linear-gradient(160deg, rgba(246, 243, 236, 0.1), rgba(246, 243, 236, 0.03));
-  box-shadow: 0 30px 80px rgba(3, 12, 24, 0.5);
-  -webkit-backdrop-filter: blur(14px);
-  backdrop-filter: blur(14px);
-}
-.kartu-hasil__kepala {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  font-size: 0.82rem;
-  color: var(--teks-redup);
-}
-.kartu-hasil__lencana {
-  padding: 4px 14px;
-  border-radius: 999px;
-  background: rgba(236, 181, 78, 0.16);
-  color: var(--kunyit-300);
-  font-weight: 700;
-}
-.kartu-hasil__besar {
-  margin: 18px 0 22px;
-  font-family: var(--font-judul);
-  font-size: 3.1rem;
-  line-height: 1;
-}
-.kartu-hasil__besar small {
-  display: block;
-  margin-top: 6px;
-  font-family: var(--font-isi);
-  font-size: 0.82rem;
-  color: var(--teks-halus);
-}
-.hasil-bar-daftar {
-  display: grid;
-  gap: 14px;
-}
-.hasil-bar {
-  display: grid;
-  grid-template-columns: 92px 1fr 56px;
-  align-items: center;
-  gap: 12px;
-  font-size: 0.86rem;
-  color: var(--teks-redup);
-}
-.hasil-bar__lintasan {
-  height: 8px;
-  overflow: hidden;
-  border-radius: 99px;
-  background: rgba(246, 243, 236, 0.1);
-}
-.hasil-bar__isi {
-  display: block;
-  width: max(var(--lebar), 4px);
-  height: 100%;
-  border-radius: inherit;
-  background: var(--warna);
-  transform-origin: left;
-}
-.hasil-bar__angka {
-  text-align: right;
-  font-weight: 600;
-  color: var(--krem);
-}
-.kartu-hasil__instrumen {
-  margin-top: 24px;
-  padding-top: 20px;
-  border-top: 1px solid var(--garis);
-}
-.kartu-hasil__instrumen p {
-  margin-bottom: 10px;
-  font-size: 0.78rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--teks-halus);
-}
-.kartu-hasil__catatan {
-  margin-top: 18px;
-  font-size: 0.76rem;
-  color: var(--teks-halus);
+  justify-content: center;
 }
 
 .hero__gulir {
@@ -940,6 +846,11 @@
 .berita {
   padding-bottom: clamp(70px, 9vw, 120px);
 }
+/* Dipakai bila scroll halus tidak aktif (gerak dikurangi): judul bagian tidak tertutup header. */
+.berita,
+.faq {
+  scroll-margin-top: var(--tinggi-header);
+}
 .berita__kepala {
   display: flex;
   align-items: flex-end;
@@ -1014,54 +925,88 @@
 }
 .kartu-berita__visual {
   position: relative;
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  height: 150px;
-  padding: 18px 20px;
+  height: 196px;
   overflow: hidden;
   background: linear-gradient(135deg, var(--w-lembut), rgba(246, 243, 236, 0.02));
   border-bottom: 1px solid var(--garis);
 }
-.kartu-berita__visual::before {
-  content: '';
+.kartu-berita__foto {
   position: absolute;
-  top: -60%;
-  right: -10%;
-  width: 70%;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: radial-gradient(circle, var(--w-bayang), transparent 70%);
-  transition: transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 35%;
+  transition: transform 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
-.kartu-berita:hover .kartu-berita__visual::before {
-  transform: scale(1.35) translate(-8%, 10%);
+.kartu-berita:hover .kartu-berita__foto {
+  transform: scale(1.07);
 }
-.kartu-berita__ikon {
-  position: relative;
-  display: grid;
-  place-items: center;
-  width: 58px;
-  height: 58px;
-  border: 1px solid var(--w);
-  border-radius: 18px;
-  background: rgba(7, 23, 42, 0.45);
-  color: var(--w);
-  transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+.kartu-berita__visual > .ilustrasi-berita {
+  position: absolute;
+  inset: 0;
+  transition: transform 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
-.kartu-berita:hover .kartu-berita__ikon {
-  transform: rotate(-6deg) scale(1.08);
+.kartu-berita:hover .kartu-berita__visual > .ilustrasi-berita {
+  transform: scale(1.05);
+}
+/* Selama foto dimuat: kilau lembut berjalan di atas latar berwarna kategori, bukan kotak kosong. */
+.kartu-berita__memuat {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 30%, rgba(246, 243, 236, 0.1) 50%, transparent 70%);
+  background-size: 220% 100%;
+  animation: kartu-berita-memuat 1.6s ease-in-out infinite;
+}
+@keyframes kartu-berita-memuat {
+  from {
+    background-position: 120% 0;
+  }
+  to {
+    background-position: -120% 0;
+  }
+}
+/* Gradasi tipis di bawah foto supaya keterangan foto terbaca di atas foto yang terang. */
+.kartu-berita__selaput {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(7, 23, 42, 0.25) 0%, rgba(7, 23, 42, 0) 38%, rgba(7, 23, 42, 0) 62%, rgba(7, 23, 42, 0.62) 100%);
 }
 .kartu-berita__kategori {
-  position: relative;
-  padding: 5px 13px;
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 13px 6px 10px;
+  border: 1px solid rgba(246, 243, 236, 0.16);
   border-radius: 999px;
-  background: rgba(7, 23, 42, 0.55);
-  font-size: 0.74rem;
+  background: rgba(7, 23, 42, 0.74);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--w);
+}
+.kartu-berita__kategori svg {
+  flex-shrink: 0;
+}
+.kartu-berita__kredit {
+  position: absolute;
+  right: 12px;
+  bottom: 9px;
+  max-width: calc(100% - 24px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.68rem;
+  letter-spacing: 0.02em;
+  color: rgba(246, 243, 236, 0.82);
+  text-shadow: 0 1px 6px rgba(3, 12, 24, 0.7);
 }
 .kartu-berita__isi {
   display: flex;
@@ -1260,13 +1205,152 @@
   color: rgba(10, 31, 51, 0.85);
 }
 
+/* Tombol ajakan: dibuat menonjol di atas latar emas supaya pengunjung langsung menyadari ke mana harus menekan.
+   Gerak pelan (denyut cincin, kilau, panah) hanya berjalan selama bagian ini terlihat di layar (kelas cta--terlihat).
+   Saat tiba lewat menu Konsultasi atau pertama kali terlihat, sorotan yang lebih kuat diputar sebentar (kelas cta--sorot). */
+.cta__aksi {
+  position: relative;
+  display: inline-flex;
+  margin-top: 6px;
+  border-radius: 999px;
+  isolation: isolate;
+}
+/* Dua cincin cahaya yang menyebar dari tepi tombol. Satu gelap dan satu terang, supaya terbaca di atas emas. */
+.cta__aksi::before,
+.cta__aksi::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+}
+.cta .tombol--sorot {
+  padding: 17px 36px;
+  font-size: 1.05rem;
+  /* Warna dasar tetap navy, kilau hanya menambah pita lebih terang yang melintas. */
+  background-color: var(--laut-900);
+  background-image: linear-gradient(105deg, transparent 0%, transparent 38%, rgba(246, 243, 236, 0.2) 50%, transparent 62%, transparent 100%);
+  background-size: 260% 100%;
+  background-position: 100% 0;
+  background-repeat: no-repeat;
+}
+.cta .tombol--sorot:active {
+  transform: translateY(0) scale(0.97);
+  transition-duration: 0.12s;
+}
+.cta .tombol--sorot:focus-visible {
+  outline: 3px solid var(--laut-900);
+  outline-offset: 5px;
+}
+
+/* Gerak pelan selama bagian ajakan terlihat */
+.cta--terlihat .cta__aksi::before {
+  --cincin: rgba(10, 31, 51, 0.42);
+  animation: cta-cincin 3.2s ease-out infinite;
+}
+.cta--terlihat .cta__aksi::after {
+  --cincin: rgba(255, 248, 230, 0.85);
+  animation: cta-cincin 3.2s ease-out 1.6s infinite;
+}
+.cta--terlihat .tombol--sorot {
+  animation: cta-kilau 4.4s ease-in-out 1.2s infinite;
+}
+.cta--terlihat .tombol--sorot svg {
+  animation: cta-panah 1.8s ease-in-out infinite;
+}
+
+/* Sorotan yang lebih kuat, tampil sekitar 4,5 detik */
+.cta--sorot .cta__aksi {
+  animation: cta-membesar 0.95s cubic-bezier(0.2, 0.9, 0.25, 1.35) 0.1s backwards;
+}
+.cta--sorot .cta__aksi::before {
+  --cincin: rgba(10, 31, 51, 0.5);
+  animation: cta-cincin-kuat 1.15s ease-out 0.35s 3;
+}
+.cta--sorot .cta__aksi::after {
+  --cincin: rgba(255, 248, 230, 0.95);
+  animation: cta-cincin-kuat 1.15s ease-out 0.9s 3;
+}
+.cta--sorot .tombol--sorot {
+  animation: cta-kilau-cepat 1.25s ease-in-out 0.5s 2;
+}
+
+/* Saat disentuh kursor atau fokus, cincin berhenti agar tombol terasa tenang dan mudah ditekan */
+.cta__aksi:hover::before,
+.cta__aksi:hover::after {
+  animation: none !important;
+  opacity: 0;
+}
+.cta .tombol--sorot:hover svg,
+.cta .tombol--sorot:focus-visible svg {
+  animation: none;
+  transform: translateX(6px);
+}
+
+@keyframes cta-cincin {
+  0% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 var(--cincin);
+  }
+  70%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 0 22px rgba(255, 255, 255, 0);
+  }
+}
+@keyframes cta-cincin-kuat {
+  0% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 var(--cincin);
+  }
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 0 34px rgba(255, 255, 255, 0);
+  }
+}
+@keyframes cta-kilau {
+  0% {
+    background-position: 100% 0;
+  }
+  36%,
+  100% {
+    background-position: 0% 0;
+  }
+}
+@keyframes cta-kilau-cepat {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: 0% 0;
+  }
+}
+@keyframes cta-panah {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(5px);
+  }
+}
+@keyframes cta-membesar {
+  0% {
+    transform: scale(0.88);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
 /* ============ RESPONSIF ============ */
 @media (max-width: 1024px) {
   .hero__isi {
     grid-template-columns: 1fr;
   }
   .hero__visual {
-    min-height: 0;
     margin-top: 16px;
   }
   .cara__grid,
@@ -1345,6 +1429,12 @@
     transform: translate(2px, -2px);
   }
 }
+/* Ponsel: ukuran judul menyesuaikan lebar layar supaya baris pertama tetap muat di layar 320 sampai 560 piksel. */
+@media (max-width: 560px) {
+  .hero__judul {
+    font-size: clamp(1.6rem, calc((100vw - 52px) / 10.2), 2.5rem);
+  }
+}
 @media (max-width: 720px) {
   .angka__daftar {
     grid-template-columns: repeat(2, 1fr);
@@ -1358,14 +1448,36 @@
     align-items: flex-start;
     flex-direction: column;
   }
-  .hasil-bar {
-    grid-template-columns: 82px 1fr 52px;
-  }
   .kartu-angka,
   .kartu-profil {
     padding: 28px 24px;
   }
   .hero__gulir {
     display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Tanpa gerak, tombol ajakan tetap menonjol lewat lingkaran halus yang diam */
+  .cta__aksi,
+  .cta__aksi::before,
+  .cta__aksi::after,
+  .cta .tombol--sorot,
+  .cta .tombol--sorot svg {
+    animation: none !important;
+  }
+  .cta__aksi::before {
+    opacity: 1;
+    box-shadow: 0 0 0 7px rgba(255, 248, 230, 0.55);
+  }
+  .cta .tombol--sorot:active {
+    transform: none;
+  }
+  .kartu-berita__memuat {
+    animation: none;
+  }
+  .kartu-berita__foto,
+  .kartu-berita__visual > .ilustrasi-berita {
+    transition: none;
   }
 }

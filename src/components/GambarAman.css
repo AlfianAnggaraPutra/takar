@@ -1,0 +1,19 @@
+/* Gambar muncul perlahan begitu selesai dimuat, bukan tiba-tiba. */
+.gambar-aman {
+  display: block;
+  animation: gambar-aman-masuk 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@keyframes gambar-aman-masuk {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gambar-aman {
+    animation: none;
+  }
+}

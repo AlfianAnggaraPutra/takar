@@ -431,8 +431,13 @@ export default function Pasar() {
   /* ----- Tautan dengan #hash, misalnya /pasar#emas ----- */
   useEffect(() => {
     if (!hash) return
-    const id = decodeURIComponent(hash.slice(1))
-    const t = setTimeout(() => gulirKe(`#${id}`, -120), 450)
+    // #hash yang rusak (misalnya %E0%A4%A atau karakter ilegal) tidak boleh membuat halaman galat
+    let id = hash.slice(1)
+    try { id = decodeURIComponent(id) } catch { /* pakai apa adanya */ }
+    const t = setTimeout(() => {
+      const el = document.getElementById(id)
+      if (el) gulirKe(el, -120)
+    }, 450)
     return () => clearTimeout(t)
   }, [hash])
 
@@ -667,9 +672,9 @@ export default function Pasar() {
               <IkonPasar nama="info" ukuran={20} />
             </span>
             <div>
-              <p className="ruang-penafian__judul">Untuk belajar, bukan ajakan membeli atau menjual</p>
+              <p className="ruang-penafian__judul">Bekal untuk belajar dan memantau pasar</p>
               <p>
-                Grafik dan angka di halaman ini membantu Anda belajar dan memantau. Data saham Indonesia tertunda sekitar 15 menit, dan harga dari penyedia lain bisa sedikit berbeda dari aplikasi sekuritas Anda. Grafik interaktif berasal dari TradingView dan mengikuti kebijakan mereka, termasuk cookie yang mereka pasang. Rata-rata emas per kuartal bergantung pada cara tiap lembaga menghitungnya, sehingga bisa berbeda tipis dari sumber lain.
+                Grafik dan angka di halaman ini membantu Anda memahami pergerakan pasar sebelum mengambil keputusan sendiri. Data saham Indonesia tertunda sekitar 15 menit, dan harga dari penyedia lain bisa sedikit berbeda dari aplikasi sekuritas Anda. Grafik interaktif berasal dari TradingView dan mengikuti kebijakan mereka, termasuk cookie yang mereka pasang. Rata-rata emas per kuartal bergantung pada cara tiap lembaga menghitungnya, sehingga bisa berbeda tipis dari sumber lain.
               </p>
             </div>
           </div>

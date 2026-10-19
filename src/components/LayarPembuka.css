@@ -45,6 +45,9 @@
   width: auto;
   overflow: visible;
   opacity: 0; /* dimunculkan lewat autoAlpha oleh GSAP di awal timeline */
+  transform-origin: 50% 50%;
+  will-change: transform; /* ikon digerakkan lewat transform, jadi dibuat lapisan sendiri agar geraknya halus */
+  backface-visibility: hidden;
 }
 
 /* Ukuran BESAR: dipakai selama ikon masih sendirian, jadi boleh cukup
@@ -106,25 +109,4 @@
      sama terangnya dengan headline. */
   color: rgba(246, 243, 236, 0.75);
   opacity: 0;
-}
-
-.lp-lewati {
-  position: absolute;
-  left: 50%;
-  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
-  transform: translateX(-50%);
-  font: 500 13px 'Plus Jakarta Sans', system-ui, sans-serif;
-  color: #9db6c9;
-  background: transparent;
-  border: 1px solid rgba(157, 182, 201, 0.35);
-  border-radius: 999px;
-  padding: 9px 18px;
-  cursor: pointer;
-}
-.lp-lewati:hover {
-  border-color: #9db6c9;
-}
-.lp-lewati:focus-visible {
-  outline: 2px solid var(--kunyit-500, #e3a32b);
-  outline-offset: 3px;
 }

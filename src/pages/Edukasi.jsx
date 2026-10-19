@@ -213,7 +213,9 @@ export default function Edukasi() {
   /* ----- Tautan dengan #hash, misalnya /edukasi#instrumen-saham dari Beranda ----- */
   useEffect(() => {
     if (!hash) return
-    const id = decodeURIComponent(hash.slice(1))
+    // #hash yang rusak (misalnya %E0%A4%A atau karakter ilegal) tidak boleh membuat halaman galat
+    let id = hash.slice(1)
+    try { id = decodeURIComponent(id) } catch { /* pakai apa adanya */ }
     let sasaran = id
     if (id.startsWith('instrumen-')) {
       const slug = id.slice('instrumen-'.length)
@@ -223,7 +225,10 @@ export default function Edukasi() {
         sasaran = 'instrumen'
       }
     }
-    const t = setTimeout(() => gulirKe(`#${sasaran}`, -120), 450)
+    const t = setTimeout(() => {
+      const el = document.getElementById(sasaran)
+      if (el) gulirKe(el, -120)
+    }, 450)
     return () => clearTimeout(t)
   }, [hash])
 
@@ -661,7 +666,7 @@ export default function Edukasi() {
             Mulai Konsultasi
             <IkonEdukasi nama="panah" ukuran={18} tebal={2} />
           </Link>
-          <p className="edu-ajakan__catatan">Materi di halaman ini bersifat edukasi, bukan nasihat keuangan dan bukan ajakan membeli instrumen tertentu.</p>
+          <p className="edu-ajakan__catatan">Materi di halaman ini disusun dari basis pengetahuan seorang pakar sebagai bahan belajar. Untuk keputusan yang besar, diskusikan juga dengan perencana keuangan berizin.</p>
         </div>
       </section>
     </div>

@@ -231,8 +231,13 @@ export default function Tentang() {
   /* ----- Tautan dengan #hash, misalnya /tentang#cara ----- */
   useEffect(() => {
     if (!hash) return
-    const id = decodeURIComponent(hash.slice(1))
-    const t = setTimeout(() => gulirKe(`#${id}`, -120), 450)
+    // #hash yang rusak (misalnya %E0%A4%A atau karakter ilegal) tidak boleh membuat halaman galat
+    let id = hash.slice(1)
+    try { id = decodeURIComponent(id) } catch { /* pakai apa adanya */ }
+    const t = setTimeout(() => {
+      const el = document.getElementById(id)
+      if (el) gulirKe(el, -120)
+    }, 450)
     return () => clearTimeout(t)
   }, [hash])
 
@@ -563,7 +568,7 @@ export default function Tentang() {
             <div className="tentang-kepala" data-muncul>
               <p className="label-seksi">Batasan</p>
               <h2 className="judul-seksi">Yang perlu Anda ketahui sebelum memercayai hasilnya</h2>
-              <p className="lead-seksi">Setiap alat punya batas. Lebih baik Anda tahu sejak awal daripada kecewa belakangan.</p>
+              <p className="lead-seksi">Setiap alat punya batas. Dengan mengenalinya sejak awal, Anda bisa memanfaatkan hasilnya sebaik mungkin.</p>
             </div>
             <ul className="tentang-batas" data-muncul>
               {KETERBATASAN.map((k) => (
@@ -629,7 +634,7 @@ export default function Tentang() {
               ))}
             </ul>
             <p className="tentang-catatan" data-muncul>
-              Nama Anda hanya dipakai untuk mengenali riwayat konsultasi, dan pengguna lain tidak bisa melihatnya.
+              Nama dan nomor HP Anda hanya dipakai untuk mengenali riwayat konsultasi, dan pengguna lain tidak bisa melihatnya.
             </p>
           </div>
         </section>

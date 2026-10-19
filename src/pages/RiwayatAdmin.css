@@ -302,13 +302,55 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  margin-left: auto;
   padding: 9px 16px;
   border-radius: 999px;
   font-size: 0.84rem;
   font-weight: 600;
   color: var(--teks-redup);
   transition: color 0.3s, background 0.3s;
+}
+/* Tombol muat ulang dan Excel selalu berdampingan, dan turun bersama bila bilah alat membungkus. */
+.riw__aksi-alat {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+.riw__excel {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 150px;
+  padding: 9px 18px;
+  border: 1px solid rgba(236, 181, 78, 0.5);
+  border-radius: 999px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--kunyit-300);
+  transition: color 0.3s, background 0.3s, border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+}
+.riw__excel svg {
+  transition: transform 0.3s;
+}
+.riw__excel:hover:not(:disabled) {
+  transform: translateY(-2px);
+  background: var(--kunyit-400);
+  border-color: var(--kunyit-400);
+  color: #1b2733;
+  box-shadow: 0 10px 24px rgba(227, 163, 43, 0.28);
+}
+.riw__excel:hover:not(:disabled) svg {
+  transform: translateY(-1px) scale(1.08);
+}
+.riw__excel:disabled {
+  cursor: progress;
+  opacity: 0.8;
+}
+.riw__excel:focus-visible {
+  outline: 2px solid var(--kunyit-400);
+  outline-offset: 3px;
 }
 .riw__segarkan:hover:not(:disabled) {
   color: var(--kunyit-300);
@@ -340,19 +382,22 @@
   font-size: 0.92rem;
 }
 .riw__tabel th {
-  padding: 14px 16px;
+  padding: 14px 12px;
   text-align: left;
   font-size: 0.72rem;
   font-weight: 600;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.12em;
+  line-height: 1.35;
   text-transform: uppercase;
   color: var(--teks-halus);
-  white-space: nowrap;
+  /* Judul kolom boleh turun baris supaya kolom tidak melebar hanya demi judulnya. */
+  white-space: normal;
+  vertical-align: bottom;
   background: rgba(5, 15, 28, 0.35);
   border-bottom: 1px solid var(--garis);
 }
 .riw__tabel td {
-  padding: 16px;
+  padding: 16px 12px;
   vertical-align: middle;
   color: var(--krem);
   border-bottom: 1px solid rgba(246, 243, 236, 0.07);
@@ -407,7 +452,7 @@
   color: var(--teks-redup);
 }
 .riw__sel-nama {
-  min-width: 190px;
+  min-width: 170px;
 }
 .riw__sel-nama > * {
   vertical-align: middle;
@@ -427,13 +472,18 @@
 }
 .riw__nama {
   display: inline-block;
-  max-width: 220px;
+  max-width: 190px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   font-weight: 600;
 }
 .riw__pekerjaan {
+  color: var(--teks-redup);
+}
+.riw__hp {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
   color: var(--teks-redup);
 }
 
@@ -805,7 +855,8 @@
 }
 
 /* Di layar sempit, tiap baris berubah menjadi kartu */
-@media (max-width: 900px) {
+/* Dengan sembilan kolom, tabel butuh lebar sekitar 1080 piksel. Di bawah itu tiap baris berubah menjadi kartu. */
+@media (max-width: 1140px) {
   .riw__tabel-gulir {
     overflow: visible;
   }
@@ -827,18 +878,21 @@
     padding: 18px;
     align-items: start;
   }
-  .riw__cari {
-    max-width: none;
-    flex-basis: 100%;
-  }
   .riw__tabel tbody tr {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    /* minmax(0, 1fr): kolom boleh menyempit sehingga isi tidak mendorong kartu melebihi layar */
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: 14px 16px;
     padding: 18px;
     border: 1px solid var(--garis);
     border-radius: 18px;
     background: rgba(246, 243, 236, 0.04);
+  }
+  .riw__tabel td {
+    min-width: 0;
+  }
+  .riw__pekerjaan {
+    overflow-wrap: anywhere;
   }
   .riw__tabel td,
   .riw__tabel th:first-child,
@@ -889,6 +943,9 @@
     font-size: inherit;
     font-weight: 500;
   }
+  .riw__tabel td.riw__sel-yakin {
+    grid-column: 1 / -1;
+  }
   .riw__tabel td.riw__k-aksi {
     grid-column: 1 / -1;
     text-align: left !important;
@@ -902,10 +959,41 @@
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 900px) {
+  .riw__cari {
+    max-width: none;
+    flex-basis: 100%;
+  }
+}
+
+/* Satu kartu per baris sampai 760px: dua kartu berdampingan membuat kolom isi kartu terlalu sempit
+   untuk nomor HP berformat dan lencana profil. */
+@media (max-width: 760px) {
   .riw__tabel tbody {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+/* Ponsel kecil: nomor HP, profil, dan keyakinan memakai lebar penuh kartu, jadi tidak ada isi yang terpotong */
+@media (max-width: 480px) {
+  .riw__tabel tbody {
+    padding: 12px;
+    gap: 12px;
+  }
+  .riw__tabel tbody tr {
+    padding: 16px;
+  }
+  .riw__tabel td.riw__hp,
+  .riw__tabel td.riw__sel-profil {
+    grid-column: 1 / -1;
+  }
+  .riw__tabel td.riw__k-no {
+    top: 16px;
+    right: 16px;
+  }
+}
+
+@media (max-width: 640px) {
   .riw {
     padding-top: calc(var(--tinggi-header) + 28px);
     padding-bottom: 64px;
@@ -931,11 +1019,18 @@
   .riw__chip {
     text-align: center;
   }
-  .riw__segarkan {
+  .riw__aksi-alat {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     flex-basis: 100%;
-    justify-content: center;
     margin-left: 0;
+  }
+  .riw__segarkan {
+    justify-content: center;
     border: 1px solid var(--garis);
+  }
+  .riw__excel {
+    min-width: 0;
   }
   .riw__stat-label {
     font-size: 0.7rem;

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom'
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import gsap from 'gsap'
 import LayarPembuka from './components/LayarPembuka'
 import Header from './components/Header'
@@ -37,15 +37,8 @@ function Rangka() {
           <Route path="/konsultasi" element={<Konsultasi />} />
           <Route path="/edukasi" element={<Edukasi />} />
           <Route path="/pasar" element={<Pasar />} />
-          <Route
-            path="/berita"
-            element={
-              <HalamanSegera
-                judul="Berita Pasar Modal"
-                uraian="Kumpulan berita lengkap tentang pasar modal, emas, saham, dan reksa dana akan tampil di sini."
-              />
-            }
-          />
+          {/* Berita dan FAQ ada di Beranda. Alamat /berita lama diarahkan ke bagian Berita di Beranda. */}
+          <Route path="/berita" element={<Navigate to={{ pathname: '/', hash: '#berita' }} replace />} />
           <Route path="/tentang" element={<Tentang />} />
           <Route path="/admin" element={<MasukAdmin />} />
           <Route path="/admin/riwayat" element={<RiwayatAdmin />} />

@@ -1,9 +1,11 @@
-import { useCallback, useLayoutEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import LogoTimbangan from '../components/LogoTimbangan'
 import IkonEdukasi from '../components/IkonEdukasi'
+import FotoHero from '../components/FotoHero'
+import GambarAman from '../components/GambarAman'
+import IlustrasiBerita from '../components/IlustrasiBerita'
 import { DAFTAR_INSTRUMEN, LABEL_RISIKO, warnaRisiko } from '../data/edukasi'
 import { gulirKe } from '../hooks/useScrollHalus'
 import './Beranda.css'
@@ -20,14 +22,6 @@ const STATISTIK = [
   { nilai: 7, label: 'instrumen investasi yang dijelaskan' },
   { teks: 'CFP', label: 'perencana keuangan bersertifikat sebagai pakar rujukan' },
 ]
-
-// Angka contoh diambil dari simulasi perhitungan manual pada penelitian.
-const HASIL_CONTOH = [
-  { nama: 'Konservatif', persen: '0,14%', lebar: '0.14%', warna: 'var(--teal-300)' },
-  { nama: 'Moderat', persen: '99,83%', lebar: '99.83%', warna: 'var(--kunyit-400)' },
-  { nama: 'Agresif', persen: '0,04%', lebar: '0.04%', warna: 'var(--terakota-300)' },
-]
-const INSTRUMEN_CONTOH = ['Reksa Dana Pendapatan Tetap', 'Reksa Dana Campuran', 'Emas']
 
 const ANGKA_PENTING = [
   {
@@ -112,9 +106,17 @@ const PROFIL = [
 ]
 
 // Delapan berita nyata, tiap kartu membuka artikel aslinya di situs sumber. Dipilih per 4 Oktober 2026.
+//
+// foto: daftar alamat gambar, dari yang paling diutamakan. Sumber pertama yang berhasil dimuat dipakai.
+//   - Alamat https://... adalah gambar utama artikel di situs medianya (foto milik media, ditampilkan dengan kredit).
+//   - Alamat yang diawali / adalah berkas Anda sendiri di folder public (lihat panduan di bawah).
+//   Bila semuanya gagal, kartu menampilkan ilustrasi sesuai kategorinya, jadi tidak pernah kosong.
+// Untuk mengganti foto sebuah kartu dengan foto Anda sendiri: simpan berkasnya di public/berita/, lalu taruh
+// alamatnya (misalnya '/berita/foto-saya.jpg') paling depan di daftar foto kartu itu.
 const BERITA = [
   {
     id: 'sid-bisnis',
+    foto: ['https://images.bisnis.com/posts/2026/08/10/1994993/jibi_20042026-bi-arf-22-ihsg-3_20260420061349381_1_1779085291.jpg'],
     kategori: 'SID dan Investor',
     ikon: 'orang',
     warna: 'teal',
@@ -126,6 +128,7 @@ const BERITA = [
   },
   {
     id: 'snlik-ojk',
+    foto: ['https://ojk.go.id/PublishingImages/WhatsApp%20Image%202026-08-11%20at%2019.37.49.jpeg'],
     kategori: 'Literasi Keuangan',
     ikon: 'gedung',
     warna: 'biru',
@@ -137,6 +140,7 @@ const BERITA = [
   },
   {
     id: 'emas-antam',
+    foto: ['/berita/emas-antam.jpg'],
     kategori: 'Emas',
     ikon: 'emas',
     warna: 'emas',
@@ -148,6 +152,7 @@ const BERITA = [
   },
   {
     id: 'etf-emas',
+    foto: ['https://www.kabarbursa.com/assets/img/berita/b9343f222582dbd82d16dec3309c4e7388dab79f3ec9353a.webp'],
     kategori: 'Emas',
     ikon: 'emas',
     warna: 'emas',
@@ -159,6 +164,7 @@ const BERITA = [
   },
   {
     id: 'ihsg-cnbc',
+    foto: ['https://awsimages.detik.net.id/visual/2026/06/08/layar-menampilkan-pergerakan-indeks-harga-saham-gabungan-ihsg-di-gedung-bursa-efek-indonesia-bei-jakarta-senin-862026-cnbc-ind-1780893013438_169.jpeg?w=650&q=90'],
     kategori: 'Saham',
     ikon: 'saham',
     warna: 'terakota',
@@ -170,6 +176,7 @@ const BERITA = [
   },
   {
     id: 'ihsg-mingguan',
+    foto: ['https://awsimages.detik.net.id/api/wm/2024/04/22/jelang-putusan-mk-ihsg-menguat-3_169.jpeg?wid=54&w=1200&v=1&t=jpeg'],
     kategori: 'Saham',
     ikon: 'saham',
     warna: 'terakota',
@@ -181,6 +188,7 @@ const BERITA = [
   },
   {
     id: 'reksa-juni',
+    foto: ['/berita/reksa-juni.jpg'],
     kategori: 'Reksa Dana',
     ikon: 'reksa',
     warna: 'biru',
@@ -192,6 +200,7 @@ const BERITA = [
   },
   {
     id: 'reksa-likuiditas',
+    foto: ['https://images.bisnis.com/posts/2026/07/31/1992631/hil-reksa-dana-2.jpg'],
     kategori: 'Reksa Dana',
     ikon: 'reksa',
     warna: 'biru',
@@ -207,12 +216,12 @@ const BERITA = [
 // lalu diberi tautan "Selengkapnya" ke bagian terkait di halaman Edukasi atau Tentang (ke = tujuan dengan #hash).
 const FAQ = [
   {
-    t: 'Apakah hasil TAKAR sama dengan nasihat keuangan?',
-    j: 'Tidak. TAKAR adalah alat bantu skrining awal untuk membantu Anda mengenali profil risiko. Hasilnya bukan ajakan membeli instrumen tertentu. Untuk keputusan yang besar, sebaiknya tetap berkonsultasi dengan perencana keuangan berlisensi.',
+    t: 'Apakah TAKAR bisa menggantikan perencana keuangan?',
+    j: 'Tidak menggantikan, tetapi sangat membantu sebagai langkah pertama. Penilaiannya bersumber dari seorang Certified Financial Planner, jadi hasilnya punya dasar yang jelas, bukan tebakan. Dalam beberapa menit Anda tahu profil risiko dan jenis instrumen yang biasanya cocok, sehingga diskusi dengan perencana keuangan nanti jauh lebih terarah. Untuk keputusan yang besar, tetap libatkan perencana secara langsung.',
   },
   {
     t: 'Apakah konsultasinya berbayar atau perlu membuat akun?',
-    j: 'Tidak keduanya. Anda cukup mengisi nama, usia, dan pekerjaan, lalu menjawab 40 pernyataan dalam empat langkah, masing-masing sepuluh pernyataan. Setelah itu hasilnya langsung tampil dan laporan PDF-nya bisa diunduh.',
+    j: 'Tidak keduanya. Anda cukup mengisi nama, usia, pekerjaan, dan nomor WhatsApp, lalu menjawab 40 pernyataan dalam empat langkah, masing-masing sepuluh pernyataan. Setelah itu hasilnya langsung tampil dan laporan PDF-nya bisa diunduh.',
   },
   {
     t: 'Bagaimana hasilnya dihitung?',
@@ -233,13 +242,13 @@ const FAQ = [
     ke: { pathname: '/edukasi', hash: '#profil', label: 'Selengkapnya di Edukasi' },
   },
   {
-    t: 'Instrumen apa yang akan disarankan, dan apakah saya harus membelinya?',
-    j: 'Tiap profil punya daftar instrumen yang cocok. Konservatif mendapat deposito, reksa dana pasar uang, dan emas. Moderat mendapat reksa dana pendapatan tetap, reksa dana campuran, dan emas. Agresif mendapat reksa dana saham dan saham. Daftar itu bahan untuk dipelajari, bukan ajakan membeli.',
+    t: 'Instrumen apa yang akan disarankan TAKAR?',
+    j: 'Tiap profil punya daftar instrumen yang cocok. Konservatif mendapat deposito, reksa dana pasar uang, dan emas. Moderat mendapat reksa dana pendapatan tetap, reksa dana campuran, dan emas. Agresif mendapat reksa dana saham dan saham. Daftar ini titik awal yang berguna: di halaman Edukasi, tiap instrumen dijelaskan cara kerjanya beserta hal yang perlu dicek sebelum membeli, sehingga keputusan akhirnya tetap di tangan Anda.',
     ke: { pathname: '/edukasi', hash: '#instrumen', label: 'Selengkapnya di Edukasi' },
   },
   {
     t: 'Seberapa bisa saya percaya hasilnya?',
-    j: 'Anggap hasilnya sebagai skrining awal yang jujur dengan batasnya. Hasil hanya sebaik jawaban Anda, dan profil bisa berubah seiring usia, pekerjaan, serta keadaan keuangan. Ulangi konsultasi ketika hidup Anda berubah.',
+    j: 'Hasilnya punya dasar yang kuat. Penilaiannya bersumber dari seorang Certified Financial Planner dan dihitung dengan metode yang bisa ditelusuri, yaitu Naive Bayes dan Certainty Factor. Satu hal yang perlu diingat: hasil hanya sebaik jawaban Anda, dan profil bisa berubah seiring usia, pekerjaan, serta keadaan keuangan. Jawablah dengan jujur, lalu ulangi konsultasi ketika hidup Anda berubah.',
     ke: { pathname: '/tentang', hash: '#batasan', label: 'Selengkapnya di Tentang' },
   },
   {
@@ -249,7 +258,7 @@ const FAQ = [
   },
   {
     t: 'Apakah data saya disimpan?',
-    j: 'Ya. Yang disimpan adalah nama, usia, pekerjaan, jawaban, hasil profil, dan waktu konsultasi, sesuai persetujuan yang Anda centang di formulir. Hanya admin yang bisa melihat riwayatnya.',
+    j: 'Ya. Yang disimpan adalah nama, usia, pekerjaan, nomor WhatsApp, jawaban, hasil profil, dan waktu konsultasi, sesuai persetujuan yang Anda centang di formulir. Hanya admin yang bisa melihat riwayatnya.',
     ke: { pathname: '/tentang', hash: '#data', label: 'Selengkapnya di Tentang' },
   },
 ]
@@ -325,6 +334,47 @@ function Tautan() {
   )
 }
 
+// Satu kartu berita. Fotonya diambil dari sumber yang diurutkan (lihat BERITA), dan bila tak satu pun berhasil
+// dimuat, yang tampil adalah ilustrasi sesuai kategori.
+function KartuBerita({ b, mulai }) {
+  const [asal, setAsal] = useState('')
+  const saatStatus = useCallback(({ status, indeks }) => setAsal(status === 'siap' ? b.foto[indeks] : ''), [b.foto])
+  const fotoMilikMedia = /^https?:/.test(asal)
+
+  return (
+    <a className="kartu-berita" data-warna={b.warna} href={b.url} target="_blank" rel="noopener noreferrer" draggable={false}>
+      <div className="kartu-berita__visual" aria-hidden="true">
+        <GambarAman
+          sumber={b.foto}
+          alt=""
+          mulai={mulai}
+          minimum={60}
+          className="kartu-berita__foto"
+          saatStatus={saatStatus}
+          cadangan={({ status }) => (status === 'gagal' ? <IlustrasiBerita ikon={b.ikon} /> : <span className="kartu-berita__memuat" />)}
+        />
+        <span className="kartu-berita__selaput" />
+        <span className="kartu-berita__kategori">
+          <Ikon nama={b.ikon} ukuran={15} />
+          {b.kategori}
+        </span>
+        {fotoMilikMedia && <span className="kartu-berita__kredit">Foto: {b.sumber}</span>}
+      </div>
+      <div className="kartu-berita__isi">
+        <p className="kartu-berita__meta">
+          {b.sumber} <span aria-hidden="true">•</span> {b.tanggal}
+        </p>
+        <h3>{b.judul}</h3>
+        <p className="kartu-berita__ringkas">{b.ringkas}</p>
+        <span className="kartu-berita__baca">
+          Baca di sumber <Tautan />
+          <span className="sr-saja"> (membuka tab baru)</span>
+        </span>
+      </div>
+    </a>
+  )
+}
+
 /* ------------------------------------------------------------------ */
 /* Halaman                                                             */
 /* ------------------------------------------------------------------ */
@@ -335,6 +385,11 @@ export default function Beranda() {
   const seret = useRef({ sedang: false, awalX: 0, awalKiri: 0, bergeser: 0 })
   const [faqBuka, setFaqBuka] = useState(0)
   const [indeksBerita, setIndeksBerita] = useState(0)
+  const [muatBerita, setMuatBerita] = useState(false)
+  const { hash, key } = useLocation()
+  const pertamaKali = useRef(true)
+  // Pewaktu untuk animasi penarik perhatian pada tombol di bagian ajakan akhir.
+  const sorot = useRef({ selesai: null, tunda: null, periksa: null, menunggu: false })
 
   /* Semua animasi dikelompokkan dalam satu context supaya otomatis bersih saat halaman ditinggalkan. */
   useLayoutEffect(() => {
@@ -379,8 +434,6 @@ export default function Beranda() {
         .timeline({ delay: 0.35, defaults: { ease: 'power4.out' } })
         .from('.hero__label, .hero__lead, .hero__aksi, .hero__catatan', { autoAlpha: 0, y: 24, duration: 0.9, stagger: 0.1 })
         .from('.hero__baris-isi', { yPercent: 115, duration: 1.1, stagger: 0.12 }, 0)
-        .from('.kartu-hasil', { autoAlpha: 0, y: 60, scale: 0.94, duration: 1.2 }, 0.3)
-        .from('.hasil-bar__isi', { scaleX: 0, duration: 1.4, stagger: 0.15, ease: 'power3.out' }, 1.1)
 
       // Latar hero bergeser lebih lambat dari isinya, memberi kesan kedalaman.
       gsap.to('.hero__grid', { yPercent: 18, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } })
@@ -427,6 +480,141 @@ export default function Beranda() {
       ctx.revert()
     }
   }, [])
+
+  /* Foto berita mulai dimuat saat bagian Berita hampir terlihat (atau paling lambat beberapa detik setelah halaman dibuka),
+     supaya foto sudah siap ketika kartunya digulir ke layar dan halaman awal tidak terbebani delapan foto sekaligus. */
+  useEffect(() => {
+    const bagian = document.getElementById('berita')
+    const mulai = () => setMuatBerita(true)
+    const cadangan = setTimeout(mulai, 4000)
+    let pengamat
+    if (bagian && 'IntersectionObserver' in window) {
+      pengamat = new IntersectionObserver(
+        (daftar) => {
+          if (daftar.some((d) => d.isIntersecting)) mulai()
+        },
+        { rootMargin: '0px 0px 1200px 0px' },
+      )
+      pengamat.observe(bagian)
+    } else {
+      mulai()
+    }
+    return () => {
+      clearTimeout(cadangan)
+      pengamat?.disconnect()
+    }
+  }, [])
+
+  /* ---- Ajakan akhir: tombol Mulai Konsultasi dibuat menarik perhatian ----
+     Dua kelas dipasang pada bagian #mulai. cta--terlihat menyalakan gerak pelan yang berulang selama bagian itu ada di
+     layar (denyut cincin, kilau, panah). cta--sorot memutar sorotan yang lebih kuat sekitar 4,5 detik: tombol membesar
+     sebentar disusul cincin yang menyebar. Sorotan ini berjalan saat bagian ajakan pertama kali terlihat, dan
+     setiap kali pengguna tiba di sana lewat menu Konsultasi. Semua gerak ini dimatikan bila pengguna memilih
+     mengurangi gerak (CSS). */
+  const sorotkanAjakan = useCallback(() => {
+    const seksi = document.getElementById('mulai')
+    if (!seksi || seksi.classList.contains('cta--sorot')) return
+    const w = sorot.current
+    clearTimeout(w.selesai)
+    void seksi.offsetWidth // memastikan animasi mulai dari awal
+    seksi.classList.add('cta--sorot')
+    w.selesai = setTimeout(() => seksi.classList.remove('cta--sorot'), 4600)
+  }, [])
+
+  // Setelah menggulir ke ajakan lewat menu, sorotan dimulai begitu gulir berhenti dan tombol terlihat penuh.
+  const sorotkanSetelahTenang = useCallback(() => {
+    const w = sorot.current
+    clearTimeout(w.periksa)
+    w.menunggu = true
+    let yLalu = -1
+    let percobaan = 0
+    const periksa = () => {
+      const tombol = document.querySelector('#mulai .tombol')
+      if (!tombol) {
+        w.menunggu = false
+        return
+      }
+      const r = tombol.getBoundingClientRect()
+      const terlihat = r.top >= 64 && r.bottom <= window.innerHeight
+      const diam = Math.abs(window.scrollY - yLalu) < 1
+      yLalu = window.scrollY
+      if ((terlihat && diam) || ++percobaan >= 45) {
+        w.menunggu = false
+        // Di layar yang sangat pendek tombol mungkin tidak muat penuh. Selama sebagian terlihat, sorotan tetap diputar.
+        if (terlihat || (r.bottom > 64 && r.top < window.innerHeight)) sorotkanAjakan()
+        return
+      }
+      w.periksa = setTimeout(periksa, 120)
+    }
+    w.periksa = setTimeout(periksa, 250)
+  }, [sorotkanAjakan])
+
+  useEffect(() => {
+    const seksi = document.getElementById('mulai')
+    if (!seksi) return undefined
+    const w = sorot.current
+    if (typeof IntersectionObserver === 'undefined') {
+      seksi.classList.add('cta--terlihat')
+      return () => seksi.classList.remove('cta--terlihat')
+    }
+    let pernah = false
+    const pengamat = new IntersectionObserver(
+      ([e]) => {
+        seksi.classList.toggle('cta--terlihat', e.isIntersecting)
+        // Saat tiba lewat menu, sorotan menunggu gulir berhenti (sorotkanSetelahTenang), jadi tidak diputar dua kali.
+        if (e.isIntersecting && !pernah && !w.menunggu) {
+          pernah = true
+          w.tunda = setTimeout(sorotkanAjakan, 350)
+        }
+      },
+      { threshold: 0.5 },
+    )
+    pengamat.observe(seksi)
+    return () => {
+      pengamat.disconnect()
+      clearTimeout(w.tunda)
+      clearTimeout(w.selesai)
+      clearTimeout(w.periksa)
+      w.menunggu = false
+      seksi.classList.remove('cta--terlihat', 'cta--sorot')
+    }
+  }, [sorotkanAjakan])
+
+  /* ---- Tautan dengan #hash, misalnya /#berita atau /#faq dari menu header dan footer ---- */
+  useEffect(() => {
+    // Efek ini juga jalan saat Beranda baru dibuka. Beranda yang baru dibuka diberi waktu sedikit lebih lama, supaya
+    // tata letaknya sudah stabil. Bila sudah terbuka (klik menu dari Beranda itu sendiri), gulirnya langsung.
+    const tunda = pertamaKali.current ? 450 : 40
+    pertamaKali.current = false
+    if (!hash) return undefined
+    // Alamat yang dibagikan bisa saja memuat #hash rusak (misalnya potongan %). Dibaca apa adanya bila tak bisa didekode,
+    // supaya halaman tidak pernah gagal tampil karena sebuah tautan.
+    let id = hash.slice(1)
+    try {
+      id = decodeURIComponent(id)
+    } catch {
+      /* biarkan apa adanya */
+    }
+    let pewaktu
+    const coba = () => {
+      // Selama layar pembuka masih tampil, halaman dikunci. Tunggu sampai terbuka.
+      if (document.documentElement.style.overflow === 'hidden') {
+        pewaktu = setTimeout(coba, 250)
+        return
+      }
+      // getElementById (bukan querySelector) supaya hash aneh seperti #1 atau #a.b tidak menimbulkan galat selektor.
+      const el = document.getElementById(id)
+      if (el) gulirKe(el, -80)
+      if (el && id === 'mulai') sorotkanSetelahTenang()
+    }
+    pewaktu = setTimeout(coba, tunda)
+    return () => {
+      clearTimeout(pewaktu)
+      clearTimeout(sorot.current.periksa)
+      sorot.current.menunggu = false
+    }
+    // key ikut dipantau supaya mengeklik tautan yang sama dua kali tetap menggulir.
+  }, [hash, key, sorotkanSetelahTenang])
 
   /* ---- Karusel berita: geser dengan jari, mouse (tarik), tombol panah, atau titik ---- */
   const jarakKartu = () => {
@@ -532,38 +720,7 @@ export default function Beranda() {
           </div>
 
           <div className="hero__visual">
-            <LogoTimbangan className="hero__watermark" />
-            <figure className="kartu-hasil" aria-label="Contoh tampilan hasil konsultasi: profil Moderat dengan keyakinan sistem 99,83 persen">
-              <div className="kartu-hasil__kepala">
-                <span>Contoh hasil konsultasi</span>
-                <span className="kartu-hasil__lencana">Moderat</span>
-              </div>
-              <p className="kartu-hasil__besar">
-                99,83% <small>keyakinan sistem</small>
-              </p>
-              <ul className="hasil-bar-daftar">
-                {HASIL_CONTOH.map((h) => (
-                  <li className="hasil-bar" key={h.nama} style={{ '--lebar': h.lebar, '--warna': h.warna }}>
-                    <span>{h.nama}</span>
-                    <span className="hasil-bar__lintasan">
-                      <span className="hasil-bar__isi" />
-                    </span>
-                    <span className="hasil-bar__angka">{h.persen}</span>
-                  </li>
-                ))}
-              </ul>
-              <div className="kartu-hasil__instrumen">
-                <p>Instrumen yang disarankan</p>
-                <div className="chip-daftar">
-                  {INSTRUMEN_CONTOH.map((n) => (
-                    <span className="chip" key={n}>
-                      {n}
-                    </span>
-                  ))}
-                </div>
-              </div>
-              <figcaption className="kartu-hasil__catatan">Tampilan contoh dari simulasi perhitungan pada penelitian ini.</figcaption>
-            </figure>
+            <FotoHero />
           </div>
         </div>
 
@@ -791,7 +948,7 @@ export default function Beranda() {
             <p className="label-seksi">Kabar terbaru</p>
             <h2 className="judul-seksi">Berita pasar modal yang perlu Anda ikuti</h2>
             <p className="lead-seksi">
-              Delapan berita pilihan tentang SID, emas, saham, dan reksa dana. Geser untuk melihat lainnya, lalu klik kartu untuk membaca artikel lengkap di situs sumbernya.
+              Delapan berita pilihan tentang SID, emas, saham, dan reksa dana. Geser untuk melihat lainnya, lalu klik kartu untuk membukanya di situs sumber.
             </p>
           </div>
           <div className="berita__panah">
@@ -819,25 +976,7 @@ export default function Beranda() {
           onClickCapture={cegahKlikSetelahSeret}
         >
           {BERITA.map((b) => (
-            <a key={b.id} className="kartu-berita" data-warna={b.warna} href={b.url} target="_blank" rel="noopener noreferrer" draggable={false}>
-              <div className="kartu-berita__visual" aria-hidden="true">
-                <span className="kartu-berita__ikon">
-                  <Ikon nama={b.ikon} ukuran={30} />
-                </span>
-                <span className="kartu-berita__kategori">{b.kategori}</span>
-              </div>
-              <div className="kartu-berita__isi">
-                <p className="kartu-berita__meta">
-                  {b.sumber} <span aria-hidden="true">•</span> {b.tanggal}
-                </p>
-                <h3>{b.judul}</h3>
-                <p className="kartu-berita__ringkas">{b.ringkas}</p>
-                <span className="kartu-berita__baca">
-                  Baca di sumber <Tautan />
-                  <span className="sr-saja"> (membuka tab baru)</span>
-                </span>
-              </div>
-            </a>
+            <KartuBerita key={b.id} b={b} mulai={muatBerita} />
           ))}
         </div>
 
@@ -847,7 +986,7 @@ export default function Beranda() {
               <button key={b.id} type="button" aria-label={`Ke berita ${i + 1}`} className={`titik ${i === indeksBerita ? 'titik--aktif' : ''}`} onClick={() => keBerita(i)} />
             ))}
           </div>
-          <p className="berita__catatan">Berita dipilih per 4 Oktober 2026 dari media dan siaran pers resmi. Pembaruan otomatis menyusul di halaman Berita.</p>
+          <p className="berita__catatan">Berita dipilih per 4 Oktober 2026 dari media dan siaran pers resmi. Foto dan artikel adalah milik media sumbernya.</p>
         </div>
       </section>
 
@@ -890,9 +1029,11 @@ export default function Beranda() {
         <div className="pembungkus cta__isi" data-muncul>
           <h2>Siap mengenali profil risiko Anda?</h2>
           <p>Luangkan beberapa menit, jawab dengan jujur, dan lihat instrumen mana yang paling sesuai untuk Anda.</p>
-          <Link to="/konsultasi" className="tombol tombol--navy">
-            Mulai Konsultasi <Panah />
-          </Link>
+          <div className="cta__aksi">
+            <Link to="/konsultasi" className="tombol tombol--navy tombol--sorot">
+              Mulai Konsultasi <Panah />
+            </Link>
+          </div>
         </div>
       </section>
     </div>

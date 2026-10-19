@@ -1,5 +1,6 @@
 import { DAFTAR_INDIKATOR, PILIHAN_JAWABAN, REKOMENDASI_INSTRUMEN } from '../data/basisPengetahuan.js'
 import { KETERANGAN_INSTRUMEN, LABEL_RISIKO, URAIAN_PROFIL } from '../data/profilRisiko.js'
+import { formatNoHp } from './noHp.js'
 
 // Pembuat laporan PDF hasil konsultasi TAKAR. Seluruh isi dibuat di browser pengguna dengan jsPDF,
 // jadi tidak ada data yang dikirim ke server. Huruf yang dipakai Times (bawaan PDF) supaya tampil
@@ -322,8 +323,10 @@ export function rakitLaporan(JsPDF, { identitas, jawaban, hasil, nomorKonsultasi
     ['Nama lengkap', identitas.nama],
     ['Usia', `${identitas.usia} tahun`],
     ['Pekerjaan', identitas.pekerjaan],
-    ['Tanggal konsultasi', tanggalIndonesia(waktu)],
   ]
+  // Laporan lama (dibuat sebelum kolom nomor HP ada) tidak memilikinya, jadi barisnya hanya muncul bila ada.
+  if (identitas.noHp) barisData.push(['Nomor HP / WhatsApp', formatNoHp(identitas.noHp)])
+  barisData.push(['Tanggal konsultasi', tanggalIndonesia(waktu)])
   if (nomor) barisData.push(['Nomor konsultasi', nomor])
   const hData = tinggiBaris(10.5, 1.3)
   const tinggiData = barisData.length * (hData + 2.8)
@@ -517,9 +520,9 @@ export function rakitLaporan(JsPDF, { identitas, jawaban, hasil, nomorKonsultasi
   })
 
   /* ----- H. Catatan penting ----- */
-  judulSeksi('H', 'Catatan Penting', 30)
+  judulSeksi('H', 'Langkah Selanjutnya', 30)
   paragraf(
-    'Hasil ini bersifat edukatif dan dihitung dari jawaban Anda saja. Hasil ini bukan nasihat keuangan pribadi, jadi tetap pertimbangkan tujuan dan kondisi keuangan Anda, serta konsultasikan dengan perencana keuangan berizin sebelum berinvestasi.',
+    'Laporan ini adalah skrining awal yang dihitung dari jawaban Anda dan basis pengetahuan seorang Certified Financial Planner, sehingga layak Anda jadikan pegangan awal untuk mengenali profil risiko sendiri. Laporan ini tidak menggantikan konsultasi langsung. Untuk keputusan yang besar, bawa laporan ini ke perencana keuangan berizin dan diskusikan bersama tujuan serta kondisi keuangan Anda.',
     { jarakBawah: 2 },
   )
 

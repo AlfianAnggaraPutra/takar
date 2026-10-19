@@ -4,6 +4,7 @@ import { DAFTAR_INDIKATOR, PILIHAN_JAWABAN } from '../data/basisPengetahuan'
 import { DAFTAR_PEKERJAAN, JUMLAH_PER_LANGKAH, LANGKAH_KONSULTASI } from '../data/profilRisiko'
 import { hitungProfilRisiko } from '../lib/mesinInferensi'
 import { simpanRiwayatKonsultasi } from '../lib/riwayatKonsultasi'
+import { ambilAngka, periksaAwalanNoHp, periksaNoHp } from '../lib/noHp'
 import { gulirKe } from '../hooks/useScrollHalus'
 import HasilKonsultasi from './HasilKonsultasi'
 import './Konsultasi.css'
@@ -18,7 +19,7 @@ const INDIKATOR_PER_KODE = new Map(DAFTAR_INDIKATOR.map((i) => [i.kode, i]))
 // Kode indikator per langkah, sesuai urutan tampil (lihat LANGKAH_KONSULTASI).
 const KODE_PER_LANGKAH = LANGKAH_KONSULTASI.map((l) => l.kelompok.flatMap((k) => k.kode))
 
-const IDENTITAS_KOSONG = { nama: '', usia: '', pekerjaan: '', pekerjaanLain: '', setuju: false }
+const IDENTITAS_KOSONG = { nama: '', usia: '', pekerjaan: '', pekerjaanLain: '', noHp: '', setuju: false }
 
 // Nomor unik satu konsultasi. Dipakai supaya "coba simpan lagi" tidak membuat riwayat ganda.
 function buatIdKonsultasi() {
@@ -62,6 +63,9 @@ function periksaIdentitas(d) {
     else if (lain.length > 50) galat.pekerjaanLain = 'Terlalu panjang, maksimal 50 karakter.'
   }
 
+  const galatNoHp = periksaNoHp(d.noHp)
+  if (galatNoHp) galat.noHp = galatNoHp
+
   if (d.setuju !== true) galat.setuju = 'Centang persetujuan ini untuk melanjutkan.'
   return galat
 }
@@ -71,6 +75,7 @@ function bersihkanIdentitas(d) {
     nama: rapikanNama(d.nama),
     usia: Number(d.usia.trim()),
     pekerjaan: d.pekerjaan === 'Lainnya' ? rapikanNama(d.pekerjaanLain) : d.pekerjaan,
+    noHp: ambilAngka(d.noHp),
   }
 }
 
@@ -111,6 +116,7 @@ function keadaanAwal() {
       usia: typeof i.usia === 'string' ? i.usia : '',
       pekerjaan: typeof i.pekerjaan === 'string' ? i.pekerjaan : '',
       pekerjaanLain: typeof i.pekerjaanLain === 'string' ? i.pekerjaanLain : '',
+      noHp: typeof i.noHp === 'string' ? ambilAngka(i.noHp) : '',
       setuju: i.setuju === true,
     }
     const identitasSah = Object.keys(periksaIdentitas(identitas)).length === 0
@@ -293,6 +299,13 @@ export default function Konsultasi() {
     if (galat[kolom]) setGalat((lama) => ({ ...lama, [kolom]: undefined }))
   }
 
+  // Nomor HP hanya menerima angka. Awalan yang keliru langsung diberi tahu, dan peringatan hilang begitu awalannya benar.
+  const ubahNoHp = (teks) => {
+    const angka = ambilAngka(teks)
+    setIdentitas((lama) => ({ ...lama, noHp: angka }))
+    setGalat((lama) => ({ ...lama, noHp: periksaAwalanNoHp(angka) || undefined }))
+  }
+
   const periksaSatuKolom = (kolom) => {
     const semua = periksaIdentitas(identitas)
     setGalat((lama) => ({ ...lama, [kolom]: semua[kolom] }))
@@ -302,7 +315,7 @@ export default function Konsultasi() {
     e.preventDefault()
     const semua = periksaIdentitas(identitas)
     setGalat(semua)
-    const urutan = ['nama', 'usia', 'pekerjaan', 'pekerjaanLain', 'setuju']
+    const urutan = ['nama', 'usia', 'pekerjaan', 'pekerjaanLain', 'noHp', 'setuju']
     const pertama = urutan.find((k) => semua[k])
     if (pertama) {
       setHitungCoba((n) => n + 1)
@@ -624,7 +637,7 @@ export default function Konsultasi() {
         <form className="kons__formulir" onSubmit={kirimIdentitas} noValidate data-masuk>
           <div className="kons__formulir-kepala">
             <h2>Sebelum mulai, kenalan dulu</h2>
-            <p>Tiga data singkat ini membantu kami mencatat riwayat konsultasi. Hanya pengelola TAKAR yang dapat melihatnya.</p>
+            <p>Empat data singkat ini membantu kami mencatat riwayat konsultasi. Hanya pengelola TAKAR yang dapat melihatnya.</p>
           </div>
 
           <div className={`kons__kolom${galat.nama ? ' kons__kolom--galat' : ''}`}>
@@ -701,6 +714,24 @@ export default function Konsultasi() {
             </div>
           )}
 
+          <div className={`kons__kolom${galat.noHp ? ' kons__kolom--galat' : ''}`}>
+            <label htmlFor="kons-noHp">Nomor HP / WhatsApp</label>
+            <input
+              id="kons-noHp"
+              type="tel"
+              inputMode="numeric"
+              autoComplete="tel-national"
+              placeholder="Contoh: 081234567890"
+              maxLength={20}
+              value={identitas.noHp}
+              onChange={(e) => ubahNoHp(e.target.value)}
+              onBlur={() => identitas.noHp && periksaSatuKolom('noHp')}
+              aria-invalid={galat.noHp ? 'true' : 'false'}
+              aria-describedby={galat.noHp ? 'kons-noHp-galat' : undefined}
+            />
+            {galat.noHp && <p className="kons__pesan-galat" id="kons-noHp-galat" role="alert">{Ikon.peringatan} {galat.noHp}</p>}
+          </div>
+
           <div className={`kons__setuju${galat.setuju ? ' kons__kolom--galat' : ''}`}>
             <label className="kons__centang">
               <input
@@ -713,7 +744,7 @@ export default function Konsultasi() {
               />
               <span className="kons__kotak" aria-hidden="true">{Ikon.centang}</span>
               <span className="kons__centang-teks">
-                Saya setuju data diri dan jawaban saya disimpan sebagai riwayat konsultasi untuk keperluan penelitian dan evaluasi sistem.
+                Saya setuju data diri, nomor HP, dan jawaban saya disimpan sebagai riwayat konsultasi untuk keperluan penelitian dan evaluasi sistem.
               </span>
             </label>
             {galat.setuju && <p className="kons__pesan-galat" id="kons-setuju-galat" role="alert">{Ikon.peringatan} {galat.setuju}</p>}
@@ -722,7 +753,7 @@ export default function Konsultasi() {
           <button type="submit" className="tombol tombol--emas kons__mulai">
             Mulai konsultasi {Ikon.panah}
           </button>
-          <p className="kons__catatan">Hasil konsultasi bersifat edukatif dan bukan nasihat keuangan pribadi.</p>
+          <p className="kons__catatan">Hasilnya skrining awal yang disusun dari pengetahuan seorang pakar. Tidak menggantikan konsultasi langsung, tetapi menjadi bekal yang berguna untuk melangkah.</p>
         </form>
       </div>
     </div>
