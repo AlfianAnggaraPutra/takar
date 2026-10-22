@@ -176,7 +176,8 @@ function RuangGrafik() {
     barisChip.current?.querySelectorAll('[role="radio"]')[ke]?.focus()
   }
 
-  const tautanTv = `https://www.tradingview.com/symbols/${aktif.slugTv}/`
+  // Langsung ke grafik instrumen yang sedang dipilih, jadi pengguna tidak perlu mencari simbolnya sendiri.
+  const tautanTv = `https://www.tradingview.com/chart/?symbol=${encodeURIComponent(aktif.simbol)}`
 
   return (
     <div className="ruang-grafik">

@@ -10,6 +10,7 @@ import './WidgetTradingView.css'
 //   - pembersihan penuh saat widget diganti atau halaman ditinggalkan, supaya tidak ada iframe yatim
 const BATAS_IFRAME_MS = 15000 // iframe harus muncul sebelum ini, bila tidak dianggap gagal
 const JEDA_SIAP_MS = 5000 // iframe sudah ada tetapi sinyal "selesai" belum datang: kerangka tunggu tetap dilepas
+const JEDA_ELEMEN_MS = 800 // widget bukan iframe (tidak ada sinyal selesai): beri waktu sebentar lalu tampilkan
 
 // Skrip TradingView yang sudah terlanjur diminta tetap berjalan walau wadahnya sudah dibuang (misalnya
 // pengguna berpindah instrumen dengan cepat), dan skrip itu mencari induknya lewat
@@ -68,28 +69,48 @@ export default function WidgetTradingView({ skrip, konfigurasi, varian = 'grafik
     s.async = true
     s.innerHTML = json
 
-    let berhenti = false
+    let berhenti = false // efek ini sudah dibersihkan (widget diganti atau halaman ditinggalkan)
+    let selesai = false // widget sudah dinyatakan siap
     let batasIframe
     let jedaSiap
-    const akhiri = (hasil) => {
-      if (berhenti) return
-      berhenti = true
+    const siapkan = () => {
+      if (berhenti || selesai) return
+      selesai = true
       clearTimeout(batasIframe)
       clearTimeout(jedaSiap)
       pengamat.disconnect()
-      setStatus(hasil)
+      setStatus('siap')
     }
+    const gagalkan = () => {
+      if (berhenti || selesai) return
+      setStatus('gagal')
+    }
+    // Skrip TradingView tidak mengisi wadah kita, melainkan MENGGANTI wadah kosong (dalam) dengan iframe-nya
+    // sendiri, lalu membuang tag skripnya. Karena itu yang diamati adalah seluruh pembungkus (tempat), bukan
+    // dalam. Mengamati dalam saja membuat iframe yang sudah tampil tidak pernah terdeteksi dan widget
+    // salah dicap gagal. Yang dicari: iframe di mana pun di dalam pembungkus, atau (jaga-jaga bila bentuk
+    // pemasangannya berubah) elemen lain apa pun yang ditambahkan skrip selain wadah kosong dan tag skripnya.
+    // Pengamat sengaja tidak dilepas ketika batas waktu habis: bila widget datang terlambat (koneksi
+    // lambat), tampilan pulih sendiri dari "gagal" menjadi siap.
+    const cariWidget = () => tempat.querySelector('iframe') || dalam.firstElementChild || [...tempat.children].find((e) => e !== dalam && e !== s) || null
     const pengamat = new MutationObserver(() => {
-      const f = dalam.querySelector('iframe')
-      if (!f) return
+      const w = cariWidget()
+      if (!w) return
       pengamat.disconnect()
       clearTimeout(batasIframe)
-      f.addEventListener('load', () => akhiri('siap'), { once: true })
-      jedaSiap = setTimeout(() => akhiri('siap'), JEDA_SIAP_MS)
+      if (w.tagName === 'IFRAME') {
+        w.addEventListener('load', siapkan, { once: true })
+        jedaSiap = setTimeout(siapkan, JEDA_SIAP_MS)
+      } else {
+        jedaSiap = setTimeout(siapkan, JEDA_ELEMEN_MS)
+      }
     })
-    pengamat.observe(dalam, { childList: true, subtree: true })
-    batasIframe = setTimeout(() => akhiri('gagal'), BATAS_IFRAME_MS)
-    s.onerror = () => akhiri('gagal')
+    pengamat.observe(tempat, { childList: true, subtree: true })
+    batasIframe = setTimeout(gagalkan, BATAS_IFRAME_MS)
+    s.onerror = () => {
+      pengamat.disconnect()
+      gagalkan()
+    }
 
     tempat.append(dalam, s)
     return () => {

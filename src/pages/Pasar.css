@@ -493,6 +493,22 @@
   min-height: 78px;
 }
 
+/* Tautan kecil yang berdiri sendiri: area sentuhnya diperluas tanpa mengubah tampilan atau jarak. */
+.ruang-pita__kepala a,
+.ruang-meja__kaki a,
+.ruang-info__tautan,
+.ruang-catatan__tautan {
+  position: relative;
+}
+.ruang-pita__kepala a::after,
+.ruang-meja__kaki a::after,
+.ruang-info__tautan::after,
+.ruang-catatan__tautan::after {
+  content: '';
+  position: absolute;
+  inset: -9px -4px;
+}
+
 /* ============ BAGIAN UMUM ============ */
 .ruang-seksi {
   position: relative;
@@ -1237,15 +1253,33 @@ html.layar-penuh-cadangan {
 }
 
 /* ============ UKURAN LAYAR ============ */
-@media (min-width: 1100px) {
-  .ruang-grafik {
-    grid-template-columns: minmax(0, 1fr) 340px;
-  }
-}
-@media (max-width: 1099px) and (min-width: 720px) {
+/* Grafik selebar kolom, penjelasan dan petunjuk di bawahnya berdampingan dan sama tinggi, jadi tidak ada ruang kosong di samping atau di bawah grafik. */
+@media (min-width: 720px) {
   .ruang-info {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-items: start;
+    align-items: stretch;
+  }
+  .ruang-info__tips {
+    display: flex;
+    flex-direction: column;
+  }
+  .ruang-info__tips ul {
+    flex: 1 1 auto;
+    align-content: space-between;
+  }
+  /* Kartu penjelasan ikut setinggi kartu petunjuk. Catatan data dan tautannya turun ke dasar kartu, jadi sisa ruang
+     berada di antara uraian dan catatan, bukan menggantung kosong di bagian bawah. */
+  .ruang-info__kartu {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .ruang-info__kartu > h3 + p {
+    margin-bottom: 14px;
+  }
+  .ruang-info__kartu > .ruang-info__data {
+    align-self: stretch;
+    margin-top: auto;
   }
 }
 @media (max-width: 1099px) {

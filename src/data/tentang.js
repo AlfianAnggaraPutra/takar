@@ -213,35 +213,6 @@ export const KETERBATASAN = [
   },
 ]
 
-/* ---------- Data pengguna ---------- */
-export const DATA_DISIMPAN = [
-  'Nama, sesuai yang Anda ketik',
-  'Usia dan pekerjaan',
-  'Nomor HP atau WhatsApp',
-  'Jawaban atas 40 pernyataan',
-  'Profil hasil dan persentase keyakinannya',
-  'Waktu konsultasi',
-]
-export const DATA_TIDAK_DIMINTA = ['Alamat email', 'Alamat tempat tinggal', 'Nomor rekening, saldo, atau data keuangan pribadi']
-
-export const JAMINAN_DATA = [
-  {
-    judul: 'Hanya admin yang bisa melihat',
-    isi: 'Riwayat konsultasi tersimpan di basis data yang dilindungi, dan hanya akun admin yang dapat membukanya.',
-    ikon: 'mata',
-  },
-  {
-    judul: 'Dipakai untuk penelitian dan evaluasi',
-    isi: 'Sesuai persetujuan yang Anda centang di formulir. Data membantu pengembang menilai apakah hasil TAKAR masuk akal, lalu memperbaikinya bila perlu.',
-    ikon: 'sasaran',
-  },
-  {
-    judul: 'PDF dibuat di perangkat Anda',
-    isi: 'Laporan PDF disusun langsung di peramban Anda. Unduhan itu tidak melewati pihak ketiga.',
-    ikon: 'unduh',
-  },
-]
-
 /* ---------- Alur satu konsultasi (kartu di bagian atas halaman) ---------- */
 export const ALUR = [
   { judul: 'Anda menjawab', isi: '40 pernyataan, masing-masing dari Tidak sampai Sangat Sesuai.', ikon: 'formulir' },
@@ -257,5 +228,4 @@ export const BAGIAN = [
   { id: 'indikator', label: 'Indikator' },
   { id: 'pakar', label: 'Pakar' },
   { id: 'batasan', label: 'Batasan' },
-  { id: 'data', label: 'Data Anda' },
 ]

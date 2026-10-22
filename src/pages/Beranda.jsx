@@ -259,7 +259,6 @@ const FAQ = [
   {
     t: 'Apakah data saya disimpan?',
     j: 'Ya. Yang disimpan adalah nama, usia, pekerjaan, nomor WhatsApp, jawaban, hasil profil, dan waktu konsultasi, sesuai persetujuan yang Anda centang di formulir. Hanya admin yang bisa melihat riwayatnya.',
-    ke: { pathname: '/tentang', hash: '#data', label: 'Selengkapnya di Tentang' },
   },
 ]
 

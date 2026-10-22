@@ -413,7 +413,6 @@
 .tentang-pegangan__ikon,
 .tentang-bahan__ikon,
 .tentang-jalan__ikon,
-.tentang-jaminan__ikon,
 .tentang-batas__ikon {
   display: grid;
   flex: none;
@@ -458,25 +457,25 @@
   color: var(--teks-redup);
 }
 .tentang-jalan {
-  --p: 1;
   position: relative;
 }
+/* Garis penghubung: kurva SVG yang dihitung ulang oleh JalurPerjalanan (Tentang.jsx), melewati titik tengah tiap nomor. */
 .tentang-jalan__garis {
   position: absolute;
-  top: 21px;
-  left: 12.5%;
-  right: 12.5%;
-  height: 2px;
-  background: rgba(246, 243, 236, 0.12);
-  pointer-events: none;
-}
-.tentang-jalan__garis-isi {
-  display: block;
+  inset: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, #4db3c6, #ecb54e 55%, #e8836b);
-  transform: scaleX(var(--p));
-  transform-origin: left center;
+  overflow: visible;
+  pointer-events: none;
+}
+.tentang-jalan__garis-trek,
+.tentang-jalan__garis-isi {
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+.tentang-jalan__garis-trek {
+  stroke: rgba(246, 243, 236, 0.12);
 }
 .tentang-jalan__daftar {
   display: grid;
@@ -516,6 +515,11 @@
   font-family: var(--font-judul);
   font-size: 1.15rem;
   color: var(--kunyit-300);
+  transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+/* Saat kartu terangkat, nomornya naik sedikit lebih tinggi lagi, dan garis penghubung melengkung mengikutinya. */
+.tentang-jalan__kartu:hover .tentang-jalan__nomor {
+  transform: translateY(-6px);
 }
 .tentang-jalan__ikon {
   margin-bottom: 16px;
@@ -1092,11 +1096,45 @@
   margin-top: 4px;
   color: var(--teks-redup);
 }
+/*
+  Daftar pernyataan per topik. Jumlahnya berbeda tiap topik (3 sampai 6), jadi barisnya dibagi menurut jumlah
+  agar baris terakhir tidak menyisakan lubang: 12 kolom bayangan, 1 kolom di layar kecil, 2 di layar sedang.
+*/
 .tentang-topik__isi {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 270px), 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 10px;
   list-style: none;
+}
+@media (min-width: 560px) {
+  .tentang-topik__isi {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .tentang-topik__isi li:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+}
+@media (min-width: 900px) {
+  .tentang-topik__isi {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+  .tentang-topik__isi li,
+  .tentang-topik__isi li:last-child:nth-child(odd) {
+    grid-column: span 4;
+  }
+  .tentang-topik__isi[data-jml='5'] li:nth-child(n + 4),
+  .tentang-topik__isi[data-jml='5'] li:last-child:nth-child(odd) {
+    grid-column: span 6;
+  }
+  /* Empat pernyataan: dua kali dua dulu, baru empat sebaris di layar yang lebar */
+  .tentang-topik__isi[data-jml='4'] li {
+    grid-column: span 6;
+  }
+}
+@media (min-width: 1180px) {
+  .tentang-topik__isi[data-jml='4'] li {
+    grid-column: span 3;
+  }
 }
 .tentang-topik__isi li {
   display: flex;
@@ -1252,105 +1290,6 @@
   color: var(--teks-redup);
 }
 
-/* ============ DATA ANDA ============ */
-.tentang-data {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 22px;
-}
-.tentang-data__kolom {
-  padding: 30px 28px 26px;
-  border: 1px solid var(--garis);
-  border-radius: 24px;
-  background: linear-gradient(170deg, rgba(246, 243, 236, 0.08), rgba(246, 243, 236, 0.02));
-  transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.4s;
-}
-.tentang-data__kolom:hover {
-  transform: translateY(-6px);
-}
-.tentang-data__kolom--ya:hover {
-  border-color: var(--teal-500);
-}
-.tentang-data__kolom--tidak:hover {
-  border-color: var(--terakota-500);
-}
-.tentang-data__kolom h3 {
-  margin-bottom: 18px;
-  font-family: var(--font-judul);
-  font-size: 1.4rem;
-  font-weight: 500;
-}
-.tentang-data__kolom ul {
-  display: grid;
-  gap: 12px;
-  list-style: none;
-}
-.tentang-data__kolom li {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  font-size: 0.97rem;
-  line-height: 1.55;
-  color: var(--krem);
-}
-.tentang-data__tanda {
-  display: grid;
-  flex: none;
-  place-items: center;
-  width: 24px;
-  height: 24px;
-  margin-top: 1px;
-  border-radius: 50%;
-}
-.tentang-data__kolom--ya .tentang-data__tanda {
-  background: rgba(77, 179, 198, 0.18);
-  color: var(--teal-300);
-}
-.tentang-data__kolom--tidak .tentang-data__tanda {
-  background: rgba(232, 131, 107, 0.18);
-  color: var(--terakota-300);
-}
-.tentang-jaminan {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 22px;
-  margin-top: 22px;
-  list-style: none;
-}
-.tentang-jaminan__butir {
-  padding: 24px 24px 26px;
-  border: 1px solid var(--garis);
-  border-radius: 22px;
-  background: rgba(246, 243, 236, 0.04);
-  transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.4s, background 0.4s;
-}
-.tentang-jaminan__butir:hover {
-  transform: translateY(-6px);
-  border-color: rgba(236, 181, 78, 0.5);
-  background: rgba(236, 181, 78, 0.06);
-}
-.tentang-jaminan__ikon {
-  width: 44px;
-  height: 44px;
-  margin-bottom: 16px;
-}
-.tentang-jaminan__butir:hover .tentang-jaminan__ikon {
-  background: rgba(236, 181, 78, 0.22);
-  border-color: var(--kunyit-400);
-  transform: rotate(-6deg) scale(1.06);
-}
-.tentang-jaminan h3 {
-  margin-bottom: 8px;
-  font-family: var(--font-judul);
-  font-size: 1.15rem;
-  font-weight: 500;
-  line-height: 1.3;
-}
-.tentang-jaminan p {
-  font-size: 0.93rem;
-  color: var(--teks-redup);
-}
-
 /* ============ AJAKAN ============ */
 .tentang-ajakan {
   position: relative;
@@ -1444,9 +1383,12 @@
   }
   .tentang-bahan,
   .tentang-orang,
-  .tentang-batas,
-  .tentang-jaminan {
+  .tentang-batas {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  /* Tiga bahan dalam dua kolom: yang ketiga mengisi satu baris penuh, bukan sendirian di setengah baris */
+  .tentang-bahan__butir:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
   }
   .tentang-topik__daftar {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1456,20 +1398,7 @@
   }
 }
 @media (max-width: 900px) {
-  /* Perjalanan menjadi daftar tegak dengan garis di sisi kiri */
-  .tentang-jalan__garis {
-    top: 40px;
-    bottom: 40px;
-    left: 21px;
-    right: auto;
-    width: 2px;
-    height: auto;
-  }
-  .tentang-jalan__garis-isi {
-    background: linear-gradient(180deg, #4db3c6, #ecb54e 55%, #e8836b);
-    transform: scaleY(var(--p));
-    transform-origin: center top;
-  }
+  /* Perjalanan menjadi daftar tegak, garisnya ikut menjadi tegak di sisi kiri (dihitung oleh JalurPerjalanan) */
   .tentang-jalan__daftar {
     grid-template-columns: 1fr;
     gap: 18px;
@@ -1605,9 +1534,7 @@
   }
   .tentang-bahan,
   .tentang-orang,
-  .tentang-batas,
-  .tentang-jaminan,
-  .tentang-data {
+  .tentang-batas {
     grid-template-columns: 1fr;
   }
   .tentang-hero__aksi .tombol {

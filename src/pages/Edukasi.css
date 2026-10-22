@@ -239,6 +239,10 @@
   cursor: pointer;
   outline: none;
 }
+/* Area sentuh tak terlihat, 64 satuan lebarnya (jarak antar titik 72), jadi tidak saling tumpang tindih */
+.edu-titik__sentuh {
+  fill: transparent;
+}
 .edu-titik__lingkar,
 .edu-titik__inti {
   transform-box: fill-box;

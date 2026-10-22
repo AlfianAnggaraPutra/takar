@@ -121,7 +121,7 @@ svg {
 }
 .seksi {
   position: relative;
-  padding: clamp(88px, 11vw, 150px) 0;
+  padding: clamp(72px, 9vw, 120px) 0;
 }
 .label-seksi {
   margin-bottom: 16px;

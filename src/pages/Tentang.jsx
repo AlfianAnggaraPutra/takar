@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -13,9 +13,6 @@ import {
   BOBOT_AWAL,
   CONTOH_JAWABAN,
   CONTOH_LAPLACE,
-  DATA_DISIMPAN,
-  DATA_TIDAK_DIMINTA,
-  JAMINAN_DATA,
   KETERBATASAN,
   KODE_SIMULATOR,
   ORANG,
@@ -163,6 +160,120 @@ function Simulator({ tampil }) {
 
 /* ---------- Halaman ---------- */
 
+/*
+  Empat kartu perjalanan dengan garis penghubung yang lentur. Garis digambar sebagai kurva yang melewati titik
+  tengah setiap nomor. Saat sebuah kartu terangkat karena disorot, nomornya ikut naik dan garis melengkung
+  mengikutinya, lalu kembali lurus ketika kartu turun. Posisi nomor dibaca langsung pada tiap bingkai gambar
+  selama peralihan, jadi gerak garis selalu sama persis dengan gerak kartu.
+*/
+function JalurPerjalanan() {
+  const wadah = useRef(null)
+  const trek = useRef(null)
+  const isi = useRef(null)
+  const warna = useRef(null)
+  const idGradasi = `jalan-gradasi-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`
+
+  useLayoutEffect(() => {
+    const el = wadah.current
+    if (!el) return undefined
+    const kartu = [...el.querySelectorAll('.tentang-jalan__kartu')]
+    const nomor = kartu.map((k) => k.querySelector('.tentang-jalan__nomor'))
+    let dTerakhir = ''
+    let rafId = 0
+    let berhentiPada = 0
+
+    const gambar = () => {
+      if (!el.isConnected) return
+      // Titik tengah tiap nomor terhadap wadah. Gerak masuk baris (li) dikurangkan supaya garis tidak ikut meluncur,
+      // sedangkan tinggi angkat kartu sengaja dibiarkan karena itulah yang harus diikuti garis.
+      const kotak = el.getBoundingClientRect()
+      const titik = nomor.map((n, i) => {
+        const r = n.getBoundingClientRect()
+        const geserBaris = new DOMMatrixReadOnly(getComputedStyle(kartu[i].parentElement).transform).m42
+        return [r.left + r.width / 2 - kotak.left, r.top + r.height / 2 - kotak.top - geserBaris]
+      })
+      const tegak = Math.abs(titik[titik.length - 1][0] - titik[0][0]) < 40
+      let d = `M${titik[0][0].toFixed(2)} ${titik[0][1].toFixed(2)}`
+      for (let i = 1; i < titik.length; i += 1) {
+        const [x0, y0] = titik[i - 1]
+        const [x1, y1] = titik[i]
+        const c1 = tegak ? [x0, y0 + (y1 - y0) / 2] : [x0 + (x1 - x0) / 2, y0]
+        const c2 = tegak ? [x1, y1 - (y1 - y0) / 2] : [x1 - (x1 - x0) / 2, y1]
+        d += ` C${c1[0].toFixed(2)} ${c1[1].toFixed(2)} ${c2[0].toFixed(2)} ${c2[1].toFixed(2)} ${x1.toFixed(2)} ${y1.toFixed(2)}`
+      }
+      if (d === dTerakhir) return
+      dTerakhir = d
+      trek.current?.setAttribute('d', d)
+      isi.current?.setAttribute('d', d)
+      const g = warna.current
+      if (g) {
+        g.setAttribute('x1', titik[0][0].toFixed(2))
+        g.setAttribute('y1', titik[0][1].toFixed(2))
+        g.setAttribute('x2', titik[titik.length - 1][0].toFixed(2))
+        g.setAttribute('y2', titik[titik.length - 1][1].toFixed(2))
+      }
+    }
+
+    // Selama ada peralihan (kartu naik atau turun), garis dihitung ulang pada setiap bingkai gambar.
+    const ikuti = () => {
+      gambar()
+      if (performance.now() < berhentiPada) rafId = requestAnimationFrame(ikuti)
+      else rafId = 0
+    }
+    const mulai = () => {
+      berhentiPada = performance.now() + 900
+      if (!rafId) rafId = requestAnimationFrame(ikuti)
+    }
+
+    gambar()
+    const pengamat = new ResizeObserver(gambar)
+    pengamat.observe(el)
+    kartu.forEach((k) => pengamat.observe(k))
+    const peristiwa = ['pointerover', 'pointerout', 'focusin', 'focusout', 'transitionrun', 'transitionend', 'transitioncancel']
+    peristiwa.forEach((e) => el.addEventListener(e, mulai))
+    document.fonts?.ready.then(gambar)
+    window.addEventListener('load', gambar)
+    return () => {
+      pengamat.disconnect()
+      peristiwa.forEach((e) => el.removeEventListener(e, mulai))
+      window.removeEventListener('load', gambar)
+      if (rafId) cancelAnimationFrame(rafId)
+    }
+  }, [])
+
+  return (
+    <div className="tentang-jalan" ref={wadah}>
+      <svg className="tentang-jalan__garis" aria-hidden="true" focusable="false">
+        <defs>
+          <linearGradient id={idGradasi} ref={warna} gradientUnits="userSpaceOnUse">
+            <stop offset="0" stopColor="#4db3c6" />
+            <stop offset="0.55" stopColor="#ecb54e" />
+            <stop offset="1" stopColor="#e8836b" />
+          </linearGradient>
+        </defs>
+        <path className="tentang-jalan__garis-trek" ref={trek} />
+        <path className="tentang-jalan__garis-isi" ref={isi} pathLength="1" stroke={`url(#${idGradasi})`} />
+      </svg>
+      <ol className="tentang-jalan__daftar">
+        {PERJALANAN.map((p, i) => (
+          <li className="tentang-jalan__langkah" key={p.judul} data-muncul>
+            <div className="tentang-jalan__kartu">
+              <span className="tentang-jalan__nomor" aria-hidden="true">
+                {i + 1}
+              </span>
+              <span className="tentang-jalan__ikon">
+                <IkonEdukasi nama={p.ikon} ukuran={22} />
+              </span>
+              <h4>{p.judul}</h4>
+              <p>{p.isi}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  )
+}
+
 export default function Tentang() {
   const { hash } = useLocation()
   const akar = useRef(null)
@@ -212,7 +323,7 @@ export default function Tentang() {
       })
 
       // Garis perjalanan tergambar saat bagian latar belakang terlihat.
-      gsap.fromTo('.tentang-jalan__garis', { '--p': 0 }, { '--p': 1, duration: 1.8, ease: 'power2.inOut', scrollTrigger: { trigger: '.tentang-jalan', start: 'top 82%', once: true } })
+      gsap.fromTo('.tentang-jalan__garis-isi', { strokeDashoffset: 1, strokeDasharray: 1 }, { strokeDashoffset: 0, duration: 1.8, ease: 'power2.inOut', scrollTrigger: { trigger: '.tentang-jalan', start: 'top 82%', once: true } })
       gsap.from('.tentang-jalan__nomor', { scale: 0, duration: 0.6, stagger: 0.25, ease: 'back.out(2.2)', clearProps: 'transform', scrollTrigger: { trigger: '.tentang-jalan', start: 'top 82%', once: true } })
 
       // Batang hasil simulator tumbuh dari nol saat simulator terlihat.
@@ -375,27 +486,7 @@ export default function Tentang() {
               <h3>Dari pertanyaan sampai website</h3>
               <p>Empat tahap yang dilalui sebelum TAKAR bisa Anda pakai.</p>
             </div>
-            <div className="tentang-jalan">
-              <div className="tentang-jalan__garis" aria-hidden="true">
-                <span className="tentang-jalan__garis-isi" />
-              </div>
-              <ol className="tentang-jalan__daftar">
-                {PERJALANAN.map((p, i) => (
-                  <li className="tentang-jalan__langkah" key={p.judul} data-muncul>
-                    <div className="tentang-jalan__kartu">
-                      <span className="tentang-jalan__nomor" aria-hidden="true">
-                        {i + 1}
-                      </span>
-                      <span className="tentang-jalan__ikon">
-                        <IkonEdukasi nama={p.ikon} ukuran={22} />
-                      </span>
-                      <h4>{p.judul}</h4>
-                      <p>{p.isi}</p>
-                    </div>
-                  </li>
-                ))}
-              </ol>
-            </div>
+            <JalurPerjalanan />
           </div>
         </section>
 
@@ -523,7 +614,7 @@ export default function Tentang() {
                     <p>{topik.uraian}</p>
                   </div>
                 </div>
-                <ul className="tentang-topik__isi">
+                <ul className="tentang-topik__isi" data-jml={topik.indikator.length}>
                   {topik.indikator.map((i) => (
                     <li key={i.kode}>
                       <span className="tentang-topik__kode">{i.kode}</span>
@@ -581,61 +672,6 @@ export default function Tentang() {
                 </li>
               ))}
             </ul>
-          </div>
-        </section>
-
-        {/* ============ DATA ANDA ============ */}
-        <section className="tentang-seksi tentang-seksi--terang" id="data">
-          <div className="pembungkus">
-            <div className="tentang-kepala" data-muncul>
-              <p className="label-seksi">Data Anda</p>
-              <h2 className="judul-seksi">Apa yang tersimpan, dan siapa yang bisa melihatnya</h2>
-              <p className="lead-seksi">Formulir TAKAR sengaja dibuat pendek. Kami hanya menyimpan yang dibutuhkan untuk menilai hasilnya.</p>
-            </div>
-
-            <div className="tentang-data" data-muncul>
-              <div className="tentang-data__kolom tentang-data__kolom--ya">
-                <h3>Yang disimpan</h3>
-                <ul>
-                  {DATA_DISIMPAN.map((d) => (
-                    <li key={d}>
-                      <span className="tentang-data__tanda">
-                        <IkonEdukasi nama="centang" ukuran={14} tebal={2.6} />
-                      </span>
-                      {d}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="tentang-data__kolom tentang-data__kolom--tidak">
-                <h3>Yang tidak diminta</h3>
-                <ul>
-                  {DATA_TIDAK_DIMINTA.map((d) => (
-                    <li key={d}>
-                      <span className="tentang-data__tanda">
-                        <IkonEdukasi nama="silang" ukuran={14} tebal={2.6} />
-                      </span>
-                      {d}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-
-            <ul className="tentang-jaminan" data-muncul>
-              {JAMINAN_DATA.map((j) => (
-                <li className="tentang-jaminan__butir" key={j.judul}>
-                  <span className="tentang-jaminan__ikon">
-                    <IkonEdukasi nama={j.ikon} ukuran={21} />
-                  </span>
-                  <h3>{j.judul}</h3>
-                  <p>{j.isi}</p>
-                </li>
-              ))}
-            </ul>
-            <p className="tentang-catatan" data-muncul>
-              Nama dan nomor HP Anda hanya dipakai untuk mengenali riwayat konsultasi, dan pengguna lain tidak bisa melihatnya.
-            </p>
           </div>
         </section>
       </div>

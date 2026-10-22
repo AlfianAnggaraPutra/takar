@@ -1070,6 +1070,13 @@
   background: var(--kunyit-400);
   transform: scale(1.5);
 }
+/* Layar sentuh: area titik karusel 30px (titiknya tetap 8px) agar mudah ditekan dengan jari. */
+@media (pointer: coarse) {
+  .titik {
+    width: 30px;
+    height: 30px;
+  }
+}
 .berita__catatan {
   margin-top: 22px;
   text-align: center;

@@ -12,9 +12,9 @@ export const SKRIP_TV = {
 export const LATAR_WIDGET = '#0a1f33'
 
 // Daftar instrumen yang bisa dipilih di ruang grafik.
-//  simbol : penulisan simbol di TradingView (BURSA:KODE). Bila satu simbol ternyata tidak tampil
-//           di widget, cukup ganti nilainya di sini.
-//  slugTv : penulisan yang sama untuk alamat halaman simbol di tradingview.com (BURSA-KODE).
+//  simbol : penulisan simbol di TradingView (BURSA:KODE). Dipakai untuk widget grafik sekaligus untuk
+//           tautan "Buka di TradingView", yang langsung membuka grafik instrumen ini. Bila satu simbol
+//           ternyata tidak tampil di widget, cukup ganti nilainya di sini.
 //  tunda  : true bila data gratisnya tertunda (bursa Indonesia).
 //  edukasi: bagian di halaman Edukasi yang menjelaskan instrumennya (atau null).
 export const INSTRUMEN_PASAR = [
@@ -24,7 +24,6 @@ export const INSTRUMEN_PASAR = [
     panjang: 'Indeks Harga Saham Gabungan',
     kategori: 'Indeks',
     simbol: 'IDX:COMPOSITE',
-    slugTv: 'IDX-COMPOSITE',
     tunda: true,
     uraian:
       'Satu angka yang merangkum naik turunnya seluruh saham di Bursa Efek Indonesia. Saat IHSG hijau, sebagian besar saham sedang menguat. IHSG sendiri tidak bisa dibeli, tetapi arahnya sering dipakai sebagai pembanding kinerja reksa dana saham.',
@@ -36,7 +35,6 @@ export const INSTRUMEN_PASAR = [
     panjang: 'Bank Central Asia',
     kategori: 'Saham',
     simbol: 'IDX:BBCA',
-    slugTv: 'IDX-BBCA',
     tunda: true,
     uraian: 'Bank swasta besar di Indonesia. Sahamnya termasuk berkapitalisasi besar dan sering dipantau sebagai gambaran sektor perbankan.',
     edukasi: { ke: '/edukasi#instrumen-saham', label: 'Saham di Edukasi' },
@@ -47,7 +45,6 @@ export const INSTRUMEN_PASAR = [
     panjang: 'Bank Rakyat Indonesia',
     kategori: 'Saham',
     simbol: 'IDX:BBRI',
-    slugTv: 'IDX-BBRI',
     tunda: true,
     uraian: 'Bank BUMN yang dikenal lewat jaringan unit hingga ke daerah dan pembiayaan usaha mikro. Sahamnya termasuk berkapitalisasi besar.',
     edukasi: { ke: '/edukasi#instrumen-saham', label: 'Saham di Edukasi' },
@@ -58,7 +55,6 @@ export const INSTRUMEN_PASAR = [
     panjang: 'Bank Mandiri',
     kategori: 'Saham',
     simbol: 'IDX:BMRI',
-    slugTv: 'IDX-BMRI',
     tunda: true,
     uraian: 'Salah satu bank BUMN terbesar, melayani nasabah korporasi sekaligus ritel. Berguna sebagai pembanding bila Anda ingin melihat sesama bank besar.',
     edukasi: { ke: '/edukasi#instrumen-saham', label: 'Saham di Edukasi' },
@@ -69,7 +65,6 @@ export const INSTRUMEN_PASAR = [
     panjang: 'Telkom Indonesia',
     kategori: 'Saham',
     simbol: 'IDX:TLKM',
-    slugTv: 'IDX-TLKM',
     tunda: true,
     uraian: 'Perusahaan telekomunikasi BUMN dengan layanan seluler, internet, dan data. Contoh baik untuk melihat saham di luar perbankan.',
     edukasi: { ke: '/edukasi#instrumen-saham', label: 'Saham di Edukasi' },
@@ -80,7 +75,6 @@ export const INSTRUMEN_PASAR = [
     panjang: 'Astra International',
     kategori: 'Saham',
     simbol: 'IDX:ASII',
-    slugTv: 'IDX-ASII',
     tunda: true,
     uraian: 'Grup usaha besar yang bergerak di otomotif, alat berat dan pertambangan, jasa keuangan, serta agribisnis. Gerakannya sering ikut dipengaruhi harga komoditas.',
     edukasi: { ke: '/edukasi#instrumen-saham', label: 'Saham di Edukasi' },
@@ -91,7 +85,6 @@ export const INSTRUMEN_PASAR = [
     panjang: 'Emas dunia (XAU/USD)',
     kategori: 'Emas',
     simbol: 'OANDA:XAUUSD',
-    slugTv: 'OANDA-XAUUSD',
     tunda: false,
     uraian:
       'Harga emas dunia dalam dolar AS per troy ounce, sekitar 31,1 gram. Inilah patokan pasar global. Harga emas batangan di Indonesia mengikutinya, lalu dikonversi ke rupiah per gram dan ditambah selisih jual beli.',
@@ -103,7 +96,6 @@ export const INSTRUMEN_PASAR = [
     panjang: 'Dolar AS terhadap rupiah',
     kategori: 'Kurs',
     simbol: 'FX_IDC:USDIDR',
-    slugTv: 'FX_IDC-USDIDR',
     tunda: false,
     uraian:
       'Berapa rupiah yang dibutuhkan untuk satu dolar AS. Rupiah melemah berarti angkanya naik. Kurs ikut menggerakkan harga emas dalam rupiah dan saham perusahaan yang banyak mengimpor atau mengekspor.',

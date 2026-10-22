@@ -104,7 +104,7 @@ export default function Footer() {
           </ul>
         </div>
 
-        <div className="ftr__kolom">
+        <div className="ftr__kolom ftr__kolom--tentang">
           <h2>Tentang hasilnya</h2>
           <p className="ftr__catatan">
             TAKAR memberi gambaran awal yang terukur tentang profil risiko Anda, dengan basis pengetahuan dari seorang Certified Financial
@@ -126,10 +126,7 @@ export default function Footer() {
       </div>
 
       <div className="pembungkus ftr__bawah">
-        <div className="ftr__hakcipta">
-          <p>© 2026 TAKAR. Dikembangkan sebagai bagian dari penelitian skripsi Program Studi S-1 Matematika, Universitas Airlangga.</p>
-          <p>Basis pengetahuan disusun bersama seorang Certified Financial Planner.</p>
-        </div>
+        <p className="ftr__hakcipta">© 2026 TAKAR. Dikembangkan sebagai bagian dari penelitian skripsi Program Studi S-1 Matematika, Universitas Airlangga.</p>
         <ul className="ftr__lembaga-daftar" aria-label="Lembaga rujukan">
           {LEMBAGA.map((l) => (
             <LogoLembaga key={l.berkas} lembaga={l} />

@@ -111,6 +111,7 @@ function GrafikRisiko({ aktif, saatPilih }) {
               }
             }}
           >
+            <circle className="edu-titik__sentuh" r="32" />
             <circle className="edu-titik__lingkar" r="17" />
             <circle className="edu-titik__inti" r="8.5" />
           </g>

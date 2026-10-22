@@ -44,7 +44,7 @@
 }
 
 .ftr__kolom h2 {
-  margin-bottom: 20px;
+  margin-bottom: 14px;
   font-family: var(--font-isi);
   font-size: 0.78rem;
   font-weight: 700;
@@ -54,10 +54,12 @@
 }
 .ftr__kolom ul {
   display: grid;
-  gap: 12px;
+  gap: 0;
 }
+/* Padding atas dan bawah 6px menggantikan jarak antar baris 12px: jarak tampak sama, area sentuh jadi 37px. */
 .ftr__kolom li a {
   display: inline-block;
+  padding-block: 6px;
   font-size: 0.93rem;
   color: var(--teks-redup);
   transition: color 0.3s, transform 0.3s;
@@ -102,6 +104,7 @@
   transform: translateX(3px);
 }
 .ftr__admin {
+  position: relative;
   display: inline-block;
   padding-bottom: 2px;
   border-bottom: 1px solid rgba(236, 181, 78, 0.5);
@@ -109,6 +112,11 @@
   font-weight: 600;
   color: var(--kunyit-300);
   transition: color 0.3s, border-color 0.3s;
+}
+.ftr__admin::after {
+  content: '';
+  position: absolute;
+  inset: -9px -6px;
 }
 .ftr__admin:hover {
   color: var(--krem);
@@ -126,10 +134,12 @@
   font-size: 0.82rem;
   color: var(--teks-halus);
 }
+/* Satu kalimat hak cipta. Selama muat satu baris ia satu baris, bila tidak ia terbagi dua baris yang seimbang. */
 .ftr__hakcipta {
-  display: grid;
-  gap: 6px;
-  max-width: 62ch;
+  flex: 1 1 360px;
+  max-width: 100ch;
+  line-height: 1.7;
+  text-wrap: balance;
 }
 
 /* Logo lembaga rujukan: satu warna terang senada footer, menjadi lebih jelas saat disorot. */
@@ -191,11 +201,38 @@
   .ftr__merek {
     grid-column: 1 / -1;
   }
+  .ftr__uraian {
+    max-width: 58ch;
+  }
+  /* Kolom keempat menempati satu baris penuh: catatan di kiri, tombol di kanan, supaya tidak ada sisi yang kosong */
+  .ftr__kolom--tentang {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: clamp(28px, 6vw, 64px);
+    align-items: center;
+  }
+  .ftr__kolom--tentang h2 {
+    grid-column: 1 / -1;
+  }
+  .ftr__kolom--tentang .ftr__tautan-aksi {
+    flex-direction: column;
+    align-items: flex-start;
+    margin-top: 0;
+  }
 }
 @media (max-width: 560px) {
   .ftr__atas {
     grid-template-columns: 1fr;
     padding-top: 56px;
+  }
+  .ftr__kolom--tentang {
+    display: block;
+  }
+  .ftr__kolom--tentang .ftr__tautan-aksi {
+    flex-direction: row;
+    align-items: center;
+    margin-top: 20px;
   }
   .ftr__lembaga img {
     height: 30px;

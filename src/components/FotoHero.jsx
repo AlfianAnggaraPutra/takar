@@ -18,24 +18,6 @@ const SUMBER_FOTO = ['/hero-konsultasi.jpg', '/hero-konsultasi.jpeg', '/hero-kon
 const POSISI_FOTO = '50% 30%'
 const ALT_FOTO = 'Konsultasi bersama pakar keuangan'
 
-function IkonPerisai() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M12 3l8 3v6c0 4.5-3.2 7.6-8 9-4.8-1.4-8-4.5-8-9V6l8-3z" />
-      <path d="M8.5 12.2l2.4 2.4 4.6-4.9" />
-    </svg>
-  )
-}
-
-function IkonDaftar() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <rect x="5" y="3.5" width="14" height="17" rx="2.5" />
-      <path d="M9 9h6M9 13h6M9 17h3.5" />
-    </svg>
-  )
-}
-
 // Ilustrasi cadangan: pakar menjelaskan hasil kepada klien. Dibuat sendiri untuk TAKAR, bukan tiruan karya orang lain.
 function IlustrasiKonsultasi() {
   return (
@@ -104,7 +86,7 @@ export default function FotoHero() {
   const urut = useRef(0)
   const [riak, setRiak] = useState([])
 
-  /* Animasi masuk: bingkai terbuka dari bawah, fotonya mengecil perlahan dari agak besar, lalu garis emas dan lencana menyusul. */
+  /* Animasi masuk: bingkai terbuka dari bawah, fotonya mengecil perlahan dari agak besar, lalu garis emas menyusul. */
   useLayoutEffect(() => {
     const kurangGerak = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     if (kurangGerak) {
@@ -122,7 +104,6 @@ export default function FotoHero() {
         )
         .from('.foto-hero__isi', { scale: 1.3, duration: 2.1, ease: 'power3.out' }, 0)
         .from('.foto-hero__garis', { autoAlpha: 0, x: -26, y: -26, duration: 1.2, ease: 'power3.out' }, 0.7)
-        .from('.foto-hero__lencana', { autoAlpha: 0, y: 28, scale: 0.85, duration: 0.9, stagger: 0.2, ease: 'back.out(1.7)' }, 1.2)
     }, akar)
     ctxRef.current = ctx
     return () => {
@@ -131,7 +112,7 @@ export default function FotoHero() {
     }
   }, [])
 
-  /* Saat diklik atau disentuh: riak emas dari titik sentuhan, bingkai menekan lalu memantul, foto membesar sekilas, lencana melompat. */
+  /* Saat diklik atau disentuh: riak emas dari titik sentuhan, bingkai menekan lalu memantul, foto membesar sekilas. */
   const saatTekan = useCallback((e) => {
     if (e.pointerType === 'mouse' && e.button !== 0) return
     const kotak = bingkai.current?.getBoundingClientRect()
@@ -149,7 +130,6 @@ export default function FotoHero() {
         .to('.foto-hero__tekan', { scale: 0.965, rotation: sisi * 2.6, duration: 0.16, ease: 'power2.out', overwrite: 'auto' })
         .to('.foto-hero__tekan', { scale: 1, rotation: 0, duration: 1.15, ease: 'elastic.out(1, 0.38)' })
       gsap.fromTo('.foto-hero__isi', { scale: 1 }, { scale: 1.08, duration: 0.5, ease: 'power3.out', yoyo: true, repeat: 1, overwrite: 'auto' })
-      gsap.fromTo('.foto-hero__lencana', { y: 0 }, { y: -12, duration: 0.2, ease: 'power2.out', yoyo: true, repeat: 1, stagger: 0.08, overwrite: 'auto' })
     })
   }, [])
 
@@ -172,29 +152,6 @@ export default function FotoHero() {
             {riak.map((r) => (
               <span key={r.id} className="foto-hero__riak" aria-hidden="true" style={{ left: r.x, top: r.y }} onAnimationEnd={() => hapusRiak(r.id)} />
             ))}
-          </div>
-
-          <div className="foto-hero__lencana foto-hero__lencana--a">
-            <div className="foto-hero__lencana-isi">
-              <span className="foto-hero__lencana-ikon">
-                <IkonPerisai />
-              </span>
-              <span>
-                <small>Disusun bersama</small>
-                <strong>Certified Financial Planner</strong>
-              </span>
-            </div>
-          </div>
-          <div className="foto-hero__lencana foto-hero__lencana--b">
-            <div className="foto-hero__lencana-isi">
-              <span className="foto-hero__lencana-ikon">
-                <IkonDaftar />
-              </span>
-              <span>
-                <strong>40 pernyataan</strong>
-                <small>dalam 4 langkah singkat</small>
-              </span>
-            </div>
           </div>
         </div>
       </div>

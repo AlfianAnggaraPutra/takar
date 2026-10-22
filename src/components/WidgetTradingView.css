@@ -46,6 +46,18 @@
   opacity: 0;
   visibility: hidden;
 }
+/* Harga dan grafik hanya terlihat setelah siap. Selama memuat atau bila gagal, iframe disembunyikan
+   (tetap ada di halaman supaya terus memuat) agar tidak pernah bertumpuk dengan tulisan "memuat"
+   atau pesan galat. */
+.tv__wadah {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.6s ease;
+}
+.tv--siap .tv__wadah {
+  opacity: 1;
+  pointer-events: auto;
+}
 .tv__lilin {
   width: min(420px, 78%);
   height: auto;
