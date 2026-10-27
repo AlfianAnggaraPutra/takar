@@ -110,14 +110,13 @@ const PROFIL = [
 // foto: daftar alamat gambar, dari yang paling diutamakan. Sumber pertama yang berhasil dimuat dipakai.
 //   - Alamat https://... adalah gambar utama artikel di situs medianya (foto milik media, ditampilkan dengan kredit).
 //   - Alamat yang diawali / adalah berkas Anda sendiri di folder public (lihat panduan di bawah).
-//   Bila semuanya gagal, kartu menampilkan ilustrasi sesuai kategorinya, jadi tidak pernah kosong.
+//   Bila semuanya gagal, kartu menampilkan ilustrasi sesuai jenis beritanya, jadi tidak pernah kosong.
 // Untuk mengganti foto sebuah kartu dengan foto Anda sendiri: simpan berkasnya di public/berita/, lalu taruh
 // alamatnya (misalnya '/berita/foto-saya.jpg') paling depan di daftar foto kartu itu.
 const BERITA = [
   {
     id: 'sid-bisnis',
     foto: ['https://images.bisnis.com/posts/2026/08/10/1994993/jibi_20042026-bi-arf-22-ihsg-3_20260420061349381_1_1779085291.jpg'],
-    kategori: 'SID dan Investor',
     ikon: 'orang',
     warna: 'teal',
     judul: 'Investor pasar modal bertambah 9,9 juta sepanjang 2026',
@@ -129,7 +128,6 @@ const BERITA = [
   {
     id: 'snlik-ojk',
     foto: ['https://ojk.go.id/PublishingImages/WhatsApp%20Image%202026-08-11%20at%2019.37.49.jpeg'],
-    kategori: 'Literasi Keuangan',
     ikon: 'gedung',
     warna: 'biru',
     judul: 'Hasil SNLIK 2026: literasi keuangan 69,57 persen, inklusi 93,61 persen',
@@ -141,7 +139,6 @@ const BERITA = [
   {
     id: 'emas-antam',
     foto: ['/berita/emas-antam.jpg'],
-    kategori: 'Emas',
     ikon: 'emas',
     warna: 'emas',
     judul: 'Harga emas Antam hari ini makin tergerus',
@@ -153,7 +150,6 @@ const BERITA = [
   {
     id: 'etf-emas',
     foto: ['https://www.kabarbursa.com/assets/img/berita/b9343f222582dbd82d16dec3309c4e7388dab79f3ec9353a.webp'],
-    kategori: 'Emas',
     ikon: 'emas',
     warna: 'emas',
     judul: 'Mengenal ETF emas BEI: pengertian dan cara membelinya',
@@ -165,7 +161,6 @@ const BERITA = [
   {
     id: 'ihsg-cnbc',
     foto: ['https://awsimages.detik.net.id/visual/2026/06/08/layar-menampilkan-pergerakan-indeks-harga-saham-gabungan-ihsg-di-gedung-bursa-efek-indonesia-bei-jakarta-senin-862026-cnbc-ind-1780893013438_169.jpeg?w=650&q=90'],
-    kategori: 'Saham',
     ikon: 'saham',
     warna: 'terakota',
     judul: 'IHSG ditutup menguat 0,46 persen ke level 6.036',
@@ -177,7 +172,6 @@ const BERITA = [
   {
     id: 'ihsg-mingguan',
     foto: ['https://awsimages.detik.net.id/api/wm/2024/04/22/jelang-putusan-mk-ihsg-menguat-3_169.jpeg?wid=54&w=1200&v=1&t=jpeg'],
-    kategori: 'Saham',
     ikon: 'saham',
     warna: 'terakota',
     judul: 'IHSG ditutup menguat ke 6.036, tetapi sepekan masih turun 3,28 persen',
@@ -189,7 +183,6 @@ const BERITA = [
   {
     id: 'reksa-juni',
     foto: ['/berita/reksa-juni.jpg'],
-    kategori: 'Reksa Dana',
     ikon: 'reksa',
     warna: 'biru',
     judul: 'Dana kelolaan reksadana Juni 2026 turun 4,79 persen jadi Rp 652,9 triliun',
@@ -201,7 +194,6 @@ const BERITA = [
   {
     id: 'reksa-likuiditas',
     foto: ['https://images.bisnis.com/posts/2026/07/31/1992631/hil-reksa-dana-2.jpg'],
-    kategori: 'Reksa Dana',
     ikon: 'reksa',
     warna: 'biru',
     judul: 'NAB reksa dana tertekan, bersaing dengan deposito, ORI030, hingga aset dolar AS',
@@ -334,7 +326,7 @@ function Tautan() {
 }
 
 // Satu kartu berita. Fotonya diambil dari sumber yang diurutkan (lihat BERITA), dan bila tak satu pun berhasil
-// dimuat, yang tampil adalah ilustrasi sesuai kategori.
+// dimuat, yang tampil adalah ilustrasi sesuai jenis beritanya.
 function KartuBerita({ b, mulai }) {
   const [asal, setAsal] = useState('')
   const saatStatus = useCallback(({ status, indeks }) => setAsal(status === 'siap' ? b.foto[indeks] : ''), [b.foto])
@@ -353,10 +345,6 @@ function KartuBerita({ b, mulai }) {
           cadangan={({ status }) => (status === 'gagal' ? <IlustrasiBerita ikon={b.ikon} /> : <span className="kartu-berita__memuat" />)}
         />
         <span className="kartu-berita__selaput" />
-        <span className="kartu-berita__kategori">
-          <Ikon nama={b.ikon} ukuran={15} />
-          {b.kategori}
-        </span>
         {fotoMilikMedia && <span className="kartu-berita__kredit">Foto: {b.sumber}</span>}
       </div>
       <div className="kartu-berita__isi">
@@ -431,7 +419,7 @@ export default function Beranda() {
       // Animasi pembuka, berjalan saat tirai splash masih memudar.
       gsap
         .timeline({ delay: 0.35, defaults: { ease: 'power4.out' } })
-        .from('.hero__label, .hero__lead, .hero__aksi, .hero__catatan', { autoAlpha: 0, y: 24, duration: 0.9, stagger: 0.1 })
+        .from('.hero__lead, .hero__aksi, .hero__catatan', { autoAlpha: 0, y: 24, duration: 0.9, stagger: 0.1 }, 0.1)
         .from('.hero__baris-isi', { yPercent: 115, duration: 1.1, stagger: 0.12 }, 0)
 
       // Latar hero bergeser lebih lambat dari isinya, memberi kesan kedalaman.
@@ -688,7 +676,6 @@ export default function Beranda() {
 
         <div className="pembungkus hero__isi">
           <div className="hero__teks">
-            <p className="hero__label">Sistem pakar profil risiko investor</p>
             <h1 className="hero__judul">
               <span className="hero__baris">
                 <span className="hero__baris-isi">Kenali seberapa besar</span>

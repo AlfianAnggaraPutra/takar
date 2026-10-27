@@ -186,7 +186,7 @@ export default function Edukasi() {
       gsap.set('[data-muncul]', { autoAlpha: 0, y: 34 })
       gsap
         .timeline({ delay: 0.3, defaults: { ease: 'power4.out' } })
-        .from('.edu-hero__label, .edu-hero__lead, .edu-hero__aksi, .edu-hero__angka', { autoAlpha: 0, y: 26, duration: 0.9, stagger: 0.1 })
+        .from('.edu-hero__lead, .edu-hero__aksi, .edu-hero__angka', { autoAlpha: 0, y: 26, duration: 0.9, stagger: 0.1 }, 0.1)
         .from('.edu-hero__baris-isi', { yPercent: 115, duration: 1.1, stagger: 0.12 }, 0)
         .from('.edu-hero__kartu', { autoAlpha: 0, y: 50, scale: 0.95, duration: 1.2 }, 0.25)
         .fromTo('.edu-grafik__garis', { strokeDashoffset: 1, strokeDasharray: 1 }, { strokeDashoffset: 0, duration: 2, ease: 'power2.inOut' }, 0.8)
@@ -279,7 +279,6 @@ export default function Edukasi() {
         <div className="edu-hero__cahaya edu-hero__cahaya--b" aria-hidden="true" />
         <div className="pembungkus edu-hero__isi">
           <div className="edu-hero__teks">
-            <p className="label-seksi edu-hero__label">Edukasi investasi</p>
             <h1 className="edu-hero__judul">
               <span className="edu-hero__baris">
                 <span className="edu-hero__baris-isi">Kenali risikonya dulu,</span>

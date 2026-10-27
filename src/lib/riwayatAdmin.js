@@ -21,6 +21,8 @@ export class GalatRiwayat extends Error {
   constructor(error) {
     super(pesanGalat(error))
     this.name = 'GalatRiwayat'
+    // Gangguan jaringan (bukan penolakan server): dipakai panel untuk menampilkan status koneksi terputus.
+    this.jaringan = error?.status === 0 || /failed to fetch|network|load failed/i.test(error?.message ?? '')
     this.perluMasukLagi = error?.code === '42501' || error?.status === 401 || error?.status === 403 || /jwt/i.test(error?.message ?? '')
   }
 }
@@ -52,7 +54,7 @@ export async function ambilRiwayat({ halaman, cari = '', profil = '' }) {
 // Mengambil SELURUH riwayat (tanpa pencarian dan saringan) untuk diekspor ke Excel. Server membatasi 1000 baris
 // per permintaan, jadi data diambil bertahap. Urutan dikunci dengan id_konsultasi sebagai penentu bila ada dua
 // konsultasi yang waktunya persis sama, supaya tidak ada baris yang terlewat atau terambil dua kali antar tahap.
-const KOLOM_EKSPOR = 'id_konsultasi,waktu_konsultasi,nama,usia,pekerjaan,no_hp,hasil_profil,persentase_keyakinan'
+const KOLOM_EKSPOR = 'id_konsultasi,waktu_konsultasi,nama,usia,pekerjaan,no_hp,hasil_profil,persentase_keyakinan,jawaban_indikator'
 const UKURAN_TAHAP = 1000
 const BATAS_TAHAP = 500
 

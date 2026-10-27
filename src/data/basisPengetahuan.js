@@ -10,11 +10,12 @@ export const DAFTAR_PROFIL = [
   { kode: 'H3', nama: 'Agresif' },
 ]
 
-// Probabilitas prior P(Hj), bobot awal dari pakar.
+// Probabilitas prior P(Hj), bobot awal dari pakar. Prior adalah distribusi peluang atas seluruh hipotesis
+// (tiga profil yang saling lepas), sehingga jumlahnya harus tepat 1: 0,55 + 0,35 + 0,10 = 1.
 export const PROBABILITAS_PRIOR = {
-  "H1": 0.85,
-  "H2": 0.5,
-  "H3": 0.15
+  "H1": 0.55,
+  "H2": 0.35,
+  "H3": 0.10
 }
 
 // Parameter koreksi Laplace: n = jumlah sampel pakar, k = jumlah kelas.

@@ -152,8 +152,9 @@
   transition: width 1.4s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-/* Status penyimpanan */
+/* Status penyimpanan. Muncul perlahan, termasuk saat berganti dari "menyimpan" ke "tersimpan" atau galat. */
 .hasil__simpan {
+  animation: hasil-simpan-masuk 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -197,6 +198,16 @@
   border-radius: 50%;
   animation: hasil-putar 0.8s linear infinite;
 }
+@keyframes hasil-simpan-masuk {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
 @keyframes hasil-putar {
   to {
     transform: rotate(360deg);
@@ -204,27 +215,83 @@
 }
 
 /* Catatan */
-.hasil__catatan {
+/* Tanda singkat di bawah persentase, hanya muncul bila hasil kurang kuat. Teks biasa, tanpa kotak atau titik. */
+.hasil__tanda {
+  margin-top: 16px;
+  font-size: 0.93rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+.hasil__tanda--rendah {
+  color: var(--terakota-300);
+}
+.hasil__tanda--sedang {
+  color: var(--kunyit-300);
+}
+
+/* Catatan kelayakan hasil: jumlah pernyataan terlalu sedikit atau banyak, atau profil teratas belum menonjol. */
+.hasil__validitas {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+  margin-top: 28px;
+  padding: clamp(22px, 3vw, 30px);
+  border: 1px solid var(--tepi-validitas, rgba(236, 181, 78, 0.4));
+  border-radius: 22px;
+  background: var(--latar-validitas, rgba(236, 181, 78, 0.08));
+}
+.hasil__validitas--sedang {
+  --tepi-validitas: rgba(236, 181, 78, 0.42);
+  --latar-validitas: rgba(236, 181, 78, 0.08);
+  --warna-validitas: var(--kunyit-300);
+}
+.hasil__validitas--rendah {
+  --tepi-validitas: rgba(232, 131, 107, 0.5);
+  --latar-validitas: rgba(217, 105, 79, 0.1);
+  --warna-validitas: var(--terakota-300);
+}
+.hasil__validitas-ikon {
+  display: grid;
+  place-items: center;
+  margin-top: 2px;
+  color: var(--warna-validitas);
+}
+.hasil__validitas h2 {
+  margin-bottom: 8px;
+  font-family: var(--font-judul);
+  font-weight: 500;
+  font-size: clamp(1.25rem, 2.2vw, 1.55rem);
+  line-height: 1.25;
+  color: var(--w);
+}
+.hasil__validitas-pengantar {
+  color: var(--teks-redup);
+  font-size: 0.98rem;
+  line-height: 1.65;
+}
+.hasil__validitas ul {
   display: grid;
   gap: 10px;
-  margin-top: 28px;
-}
-.hasil__catatan p {
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-  padding: 16px 20px;
-  border: 1px solid rgba(143, 178, 204, 0.3);
-  border-radius: 16px;
-  background: rgba(143, 178, 204, 0.09);
+  margin: 14px 0 0;
+  padding-left: 1.15em;
   color: var(--teks-redup);
-  font-size: 0.93rem;
-  line-height: 1.6;
+  font-size: 0.96rem;
+  line-height: 1.65;
 }
-.hasil__catatan svg {
-  flex: none;
-  margin-top: 3px;
-  color: var(--biru-muda);
+.hasil__validitas li::marker {
+  color: var(--warna-validitas);
+}
+.hasil__validitas-saran {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--garis);
+  color: var(--krem);
+  font-size: 0.96rem;
+  line-height: 1.65;
+}
+.hasil__validitas-tombol {
+  margin-top: 18px;
 }
 
 /* Ciri dan saran */
@@ -810,4 +877,31 @@
   color: #f4a493;
   font-size: 0.82rem;
   line-height: 1.5;
+}
+
+@media (max-width: 480px) {
+  /* Ikon di atas judul supaya teks catatan memakai seluruh lebar kartu, bukan lajur sempit di samping ikon. */
+  .hasil__validitas {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+    padding: 18px 16px;
+    border-radius: 18px;
+  }
+  .hasil__validitas-ikon {
+    justify-self: start;
+    margin-top: 0;
+  }
+  .hasil__validitas-ikon svg {
+    width: 24px;
+    height: 24px;
+  }
+  .hasil__validitas-tombol {
+    width: 100%;
+    justify-content: center;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hasil__validitas {
+    transition: none;
+  }
 }

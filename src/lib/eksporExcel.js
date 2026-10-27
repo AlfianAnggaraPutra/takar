@@ -5,6 +5,8 @@
 // supaya tidak ada tulisan yang terpotong. Pustaka exceljs baru diunduh saat tombol ekspor ditekan.
 
 import { ambilAngka } from './noHp.js'
+import { hitungProfilRisiko } from './mesinInferensi.js'
+import { nilaiKepastianDariJawaban } from './kepastianHasil.js'
 
 const FONT = 'Times New Roman'
 const UKURAN_FONT = 11
@@ -27,6 +29,8 @@ const KOLOM = [
   { kunci: 'noHp', judul: 'No. HP / WhatsApp', rata: 'center' },
   { kunci: 'profil', judul: 'Profil Risiko', rata: 'center' },
   { kunci: 'yakin', judul: 'Keyakinan', rata: 'center' },
+  { kunci: 'kepastian', judul: 'Tingkat Kepastian', rata: 'center' },
+  { kunci: 'catatan', judul: 'Catatan', rata: 'left' },
 ]
 
 const MIN_LEBAR = 6
@@ -102,10 +106,29 @@ function persenKePecahan(nilai) {
   return Math.max(0, Math.min(100, n)) / 100
 }
 
+// Tingkat kepastian hasil (Kuat, Perlu dicermati, atau Kurang valid) beserta catatan singkat alasannya, dinilai ulang
+// dari jawaban yang tersimpan dengan aturan yang sama seperti tabel riwayat dan laporan PDF. Keduanya "-" bila
+// jawabannya tidak ada atau tidak bisa dihitung.
+function nilaiKepastianBaris(jawaban, yakin) {
+  const kosong = { kepastian: '-', catatan: '-' }
+  if (yakin === null) return kosong
+  let isi = jawaban
+  if (typeof isi === 'string') {
+    try {
+      isi = JSON.parse(isi)
+    } catch {
+      return kosong
+    }
+  }
+  const k = nilaiKepastianDariJawaban(isi, hitungProfilRisiko)
+  return k ? { kepastian: k.label, catatan: k.ringkasan } : kosong
+}
+
 export function siapkanBaris(riwayat) {
   return riwayat.map((b, i) => {
     const usia = Number(b.usia)
     const noHp = ambilAngka(b.no_hp)
+    const yakin = persenKePecahan(b.persentase_keyakinan)
     return {
       no: i + 1,
       waktu: kePenandaWib(b.waktu_konsultasi),
@@ -114,7 +137,8 @@ export function siapkanBaris(riwayat) {
       pekerjaan: String(b.pekerjaan ?? '').trim() || '-',
       noHp: noHp || '-',
       profil: b.hasil_profil || '-',
-      yakin: persenKePecahan(b.persentase_keyakinan),
+      yakin,
+      ...nilaiKepastianBaris(b.jawaban_indikator, yakin),
     }
   })
 }

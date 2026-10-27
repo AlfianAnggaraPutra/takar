@@ -64,7 +64,7 @@
   display: flex;
   align-items: center;
   min-height: 100svh;
-  padding: calc(var(--tinggi-header) + 48px) 0 110px;
+  padding: calc(var(--tinggi-header) + 40px) 0 clamp(110px, 17vh, 170px);
   overflow: hidden;
   isolation: isolate;
 }
@@ -137,35 +137,6 @@
   grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
   align-items: center;
   gap: clamp(32px, 5vw, 80px);
-}
-.hero__label {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 28px;
-  padding: 8px 16px;
-  border: 1px solid rgba(236, 181, 78, 0.35);
-  border-radius: 999px;
-  background: rgba(227, 163, 43, 0.08);
-  font-size: 0.76rem;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--kunyit-300);
-}
-.hero__label::before {
-  content: '';
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--kunyit-400);
-  box-shadow: 0 0 0 0 rgba(236, 181, 78, 0.6);
-  animation: denyut 2.4s ease-out infinite;
-}
-@keyframes denyut {
-  to {
-    box-shadow: 0 0 0 12px rgba(236, 181, 78, 0);
-  }
 }
 .hero__judul {
   font-family: var(--font-judul);
@@ -950,7 +921,7 @@
 .kartu-berita:hover .kartu-berita__visual > .ilustrasi-berita {
   transform: scale(1.05);
 }
-/* Selama foto dimuat: kilau lembut berjalan di atas latar berwarna kategori, bukan kotak kosong. */
+/* Selama foto dimuat: kilau lembut berjalan di atas latar berwarna sesuai jenis berita, bukan kotak kosong. */
 .kartu-berita__memuat {
   position: absolute;
   inset: 0;
@@ -972,28 +943,6 @@
   inset: 0;
   pointer-events: none;
   background: linear-gradient(180deg, rgba(7, 23, 42, 0.25) 0%, rgba(7, 23, 42, 0) 38%, rgba(7, 23, 42, 0) 62%, rgba(7, 23, 42, 0.62) 100%);
-}
-.kartu-berita__kategori {
-  position: absolute;
-  top: 14px;
-  left: 14px;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 6px 13px 6px 10px;
-  border: 1px solid rgba(246, 243, 236, 0.16);
-  border-radius: 999px;
-  background: rgba(7, 23, 42, 0.74);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--w);
-}
-.kartu-berita__kategori svg {
-  flex-shrink: 0;
 }
 .kartu-berita__kredit {
   position: absolute;

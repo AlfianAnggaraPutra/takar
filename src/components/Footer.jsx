@@ -50,7 +50,9 @@ function LogoLembaga({ lembaga }) {
   )
 }
 
-export default function Footer() {
+const HAK_CIPTA = '© 2026 TAKAR. Dikembangkan sebagai bagian dari penelitian skripsi Program Studi S-1 Matematika, Universitas Airlangga.'
+
+export default function Footer({ ringkas = false }) {
   const { pathname } = useLocation()
 
   // Mengeklik Beranda saat sudah di Beranda membawa halaman kembali ke paling atas.
@@ -59,6 +61,17 @@ export default function Footer() {
       if (window.__lenis) window.__lenis.scrollTo(0)
       else window.scrollTo({ top: 0, behavior: 'smooth' })
     }
+  }
+
+  // Versi ringkas: hanya hak cipta, tanpa tautan, supaya tidak ada jalan keluar yang tak sengaja terklik.
+  if (ringkas) {
+    return (
+      <footer className="ftr ftr--ringkas">
+        <div className="pembungkus">
+          <p className="ftr__hakcipta">{HAK_CIPTA}</p>
+        </div>
+      </footer>
+    )
   }
 
   return (
@@ -126,7 +139,7 @@ export default function Footer() {
       </div>
 
       <div className="pembungkus ftr__bawah">
-        <p className="ftr__hakcipta">© 2026 TAKAR. Dikembangkan sebagai bagian dari penelitian skripsi Program Studi S-1 Matematika, Universitas Airlangga.</p>
+        <p className="ftr__hakcipta">{HAK_CIPTA}</p>
         <ul className="ftr__lembaga-daftar" aria-label="Lembaga rujukan">
           {LEMBAGA.map((l) => (
             <LogoLembaga key={l.berkas} lembaga={l} />

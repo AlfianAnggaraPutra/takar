@@ -26,10 +26,17 @@ function KeAtasSaatPindah() {
   return null
 }
 
+// Halaman tempat pengguna sedang mengisi atau mengurus sesuatu (konsultasi, hasilnya, dan panel admin). Footer lengkap
+// berisi banyak tautan keluar dan menu, yang justru mengalihkan perhatian dan mudah terklik tanpa sengaja di sini,
+// jadi footernya diringkas menjadi satu baris hak cipta.
+const HALAMAN_FOOTER_RINGKAS = /^\/(konsultasi|admin)(\/|$)/
+
 // Kerangka yang dipakai semua halaman: header di atas, footer di bawah.
 function Rangka() {
+  const { pathname } = useLocation()
+  const ringkas = HALAMAN_FOOTER_RINGKAS.test(pathname)
   return (
-    <>
+    <div className={ringkas ? 'rangka rangka--ringkas' : 'rangka'}>
       <Header />
       <main>
         <Routes>
@@ -48,8 +55,8 @@ function Rangka() {
           />
         </Routes>
       </main>
-      <Footer />
-    </>
+      <Footer ringkas={ringkas} />
+    </div>
   )
 }
 

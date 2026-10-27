@@ -1,6 +1,7 @@
 import { DAFTAR_INDIKATOR, PILIHAN_JAWABAN, REKOMENDASI_INSTRUMEN } from '../data/basisPengetahuan.js'
 import { KETERANGAN_INSTRUMEN, LABEL_RISIKO, URAIAN_PROFIL } from '../data/profilRisiko.js'
 import { formatNoHp } from './noHp.js'
+import { nilaiKepastian } from './kepastianHasil.js'
 
 // Pembuat laporan PDF hasil konsultasi TAKAR. Seluruh isi dibuat di browser pengguna dengan jsPDF,
 // jadi tidak ada data yang dikirim ke server. Huruf yang dipakai Times (bawaan PDF) supaya tampil
@@ -84,24 +85,9 @@ function namaBerkas(nama, waktu) {
   return `Laporan-TAKAR-${potong || 'Konsultasi'}-${waktu.getFullYear()}${dua(waktu.getMonth() + 1)}${dua(waktu.getDate())}.pdf`
 }
 
-// Catatan keandalan, sama dengan yang tampil di halaman hasil.
-function susunCatatan(hasil) {
-  const catatan = []
-  if (hasil.jumlahIndikatorTeramati < 5) {
-    catatan.push(`Baru ${hasil.jumlahIndikatorTeramati} pernyataan yang ditandai sesuai. Hasil ini bisa bergeser bila pernyataan dijawab lebih lengkap, jadi anggap sebagai gambaran awal.`)
-  }
-  if (hasil.jumlahIndikatorTeramati >= 30) {
-    catatan.push('Sebagian besar pernyataan ditandai sesuai, termasuk beberapa yang saling berlawanan. Untuk pola seperti ini sistem cenderung memberi profil Moderat.')
-  }
-  if (hasil.seri) {
-    catatan.push('Dua profil memiliki nilai yang sama persis, sehingga hasil ini sebaiknya dibaca bersama profil lain di samping.')
-  }
-  return catatan
-}
-
 /* ---------- Perakit dokumen ---------- */
 
-export function rakitLaporan(JsPDF, { identitas, jawaban, hasil, nomorKonsultasi, waktu = new Date() }) {
+export function rakitLaporan(JsPDF, { identitas, jawaban, hasil, waktu = new Date() }) {
   const doc = new JsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true })
   doc.setProperties({
     title: `Laporan Konsultasi TAKAR, ${identitas.nama}`,
@@ -113,7 +99,6 @@ export function rakitLaporan(JsPDF, { identitas, jawaban, hasil, nomorKonsultasi
   const tertinggi = hasil.profilTertinggi
   const uraian = URAIAN_PROFIL[tertinggi.kode]
   const warna = PALET[uraian.warna]
-  const nomor = nomorKonsultasi ? `TKR-${String(nomorKonsultasi).slice(0, 8).toUpperCase()}` : null
   let y = ATAS
   let nomorGambar = 0
   let nomorTabel = 0
@@ -327,7 +312,6 @@ export function rakitLaporan(JsPDF, { identitas, jawaban, hasil, nomorKonsultasi
   // Laporan lama (dibuat sebelum kolom nomor HP ada) tidak memilikinya, jadi barisnya hanya muncul bila ada.
   if (identitas.noHp) barisData.push(['Nomor HP / WhatsApp', formatNoHp(identitas.noHp)])
   barisData.push(['Tanggal konsultasi', tanggalIndonesia(waktu)])
-  if (nomor) barisData.push(['Nomor konsultasi', nomor])
   const hData = tinggiBaris(10.5, 1.3)
   const tinggiData = barisData.length * (hData + 2.8)
   ruang(tinggiData + 4)
@@ -374,6 +358,60 @@ export function rakitLaporan(JsPDF, { identitas, jawaban, hasil, nomorKonsultasi
   doc.text(`pada profil ${bersih(tertinggi.nama)}`, pusat, y + 33, { align: 'center' })
   y += 38 + 8
 
+  /* ----- Catatan kelayakan hasil: hanya muncul bila hasil kurang kuat ----- */
+  const kepastian = nilaiKepastian(hasil)
+  if (kepastian && kepastian.tingkat !== 'kuat') {
+    const w = kepastian.tingkat === 'rendah' ? PALET.terakota : PALET.emas
+    const ukuranIsi = 10
+    const lebarIsi = LEBAR - 14
+    const hIsi = tinggiBaris(ukuranIsi, 1.32)
+    const potong = (teks, ukuran, jenis = 'normal', lebar = lebarIsi) => {
+      gaya(jenis, ukuran)
+      return doc.splitTextToSize(bersih(teks), lebar)
+    }
+    const barisPengantar = potong(kepastian.pengantar, ukuranIsi)
+    const butir = kepastian.alasan.map((a) => potong(a.teks, ukuranIsi, 'normal', lebarIsi - 4).map((b, i) => ({ b, awal: i === 0 })))
+    const barisSaran = potong(kepastian.saran, ukuranIsi, 'italic')
+    const jumlahBaris = barisPengantar.length + butir.reduce((t, x) => t + x.length, 0) + barisSaran.length
+    const tinggiKotak = 12 + jumlahBaris * hIsi + butir.length * 1.2 + 3 + 6
+    ruang(tinggiKotak + 6)
+    doc.setFillColor(...w.lembut)
+    doc.setDrawColor(...w.isi)
+    doc.setLineWidth(0.4)
+    doc.roundedRect(KIRI, y, LEBAR, tinggiKotak, 2, 2, 'FD')
+    doc.setFillColor(...w.isi)
+    doc.rect(KIRI, y + 2, 1.4, tinggiKotak - 4, 'F')
+    let ty = y + 7.5
+    gaya('bold', 11.5, w.teks)
+    doc.text(bersih(kepastian.judul), KIRI + 7, ty)
+    ty += 2.2
+    gaya('normal', ukuranIsi)
+    barisPengantar.forEach((b) => {
+      ty += hIsi
+      doc.text(b, KIRI + 7, ty)
+    })
+    ty += 1.2
+    butir.forEach((baris) => {
+      baris.forEach((l) => {
+        ty += hIsi
+        if (l.awal) {
+          doc.setFillColor(...w.isi)
+          doc.circle(KIRI + 8.2, ty - hIsi * 0.32, 0.7, 'F')
+        }
+        gaya('normal', ukuranIsi)
+        doc.text(l.b, KIRI + 11, ty)
+      })
+      ty += 1.2
+    })
+    ty += 1.2
+    gaya('italic', ukuranIsi, TEKS)
+    barisSaran.forEach((b) => {
+      ty += hIsi
+      doc.text(b, KIRI + 7, ty)
+    })
+    y += tinggiKotak + 7
+  }
+
   /* ----- C. Distribusi probabilitas posterior ----- */
   const tinggiGrafik = 50
   judulSeksi('C', 'Distribusi Probabilitas Posterior', tinggiGrafik + 12)
@@ -418,7 +456,6 @@ export function rakitLaporan(JsPDF, { identitas, jawaban, hasil, nomorKonsultasi
   /* ----- D. Karakteristik dan saran ----- */
   judulSeksi('D', 'Karakteristik dan Saran', 14)
   paragraf(uraian.ringkasan, { jarakBawah: 2.5 })
-  susunCatatan(hasil).forEach((c) => paragraf(c, { jenis: 'italic', ukuran: 10, warnaTeks: REDUP, jarakBawah: 2 }))
   y += 1.5
   paragraf('Hal berikut tampak dari jawaban Anda:', { jarakBawah: 1.5 })
   butirDaftar(uraian.ciri)
@@ -542,7 +579,7 @@ export function rakitLaporan(JsPDF, { identitas, jawaban, hasil, nomorKonsultasi
     doc.setLineWidth(0.3)
     doc.line(KIRI, 285, KANAN, 285)
     gaya('normal', 8.5, REDUP)
-    doc.text(nomor ? `TAKAR | Tentukan Aset Bersama Pakar | ${nomor}` : 'TAKAR | Tentukan Aset Bersama Pakar', KIRI, 290)
+    doc.text('TAKAR | Tentukan Aset Bersama Pakar', KIRI, 290)
     doc.text(`Halaman ${h} dari ${jumlahHalaman}`, KANAN, 290, { align: 'right' })
   }
 

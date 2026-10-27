@@ -4,6 +4,7 @@ import gsap from 'gsap'
 import { PILIHAN_JAWABAN, REKOMENDASI_INSTRUMEN } from '../data/basisPengetahuan'
 import { KETERANGAN_INSTRUMEN, LABEL_RISIKO, URAIAN_PROFIL } from '../data/profilRisiko'
 import ModalKonfirmasi from '../components/ModalKonfirmasi'
+import { nilaiKepastian } from '../lib/kepastianHasil'
 import './HasilKonsultasi.css'
 
 /* ---------- Pemformatan angka gaya Indonesia ---------- */
@@ -104,21 +105,21 @@ const Ikon = {
 function StatusSimpan({ status, pesan, saatCobaLagi }) {
   if (status === 'menyimpan') {
     return (
-      <p className="hasil__simpan" role="status">
+      <p key="menyimpan" className="hasil__simpan" role="status">
         <span className="hasil__putar" aria-hidden="true" /> Menyimpan riwayat konsultasi
       </p>
     )
   }
   if (status === 'tersimpan') {
     return (
-      <p className="hasil__simpan hasil__simpan--baik" role="status">
+      <p key="tersimpan" className="hasil__simpan hasil__simpan--baik" role="status">
         {Ikon.centang} Riwayat konsultasi Anda sudah tersimpan
       </p>
     )
   }
   if (status === 'gagal') {
     return (
-      <div className="hasil__simpan hasil__simpan--galat" role="alert">
+      <div key="gagal" className="hasil__simpan hasil__simpan--galat" role="alert">
         <span>{pesan || 'Riwayat belum bisa disimpan. Hasil Anda tetap aman di halaman ini.'}</span>
         <button type="button" onClick={saatCobaLagi}>Coba simpan lagi</button>
       </div>
@@ -129,7 +130,7 @@ function StatusSimpan({ status, pesan, saatCobaLagi }) {
 
 /* ---------- Halaman hasil ---------- */
 
-export default function HasilKonsultasi({ identitas, hasil, jawaban, nomorKonsultasi, statusSimpan, pesanSimpan, saatSimpanUlang, saatUlangi, saatTinjau }) {
+export default function HasilKonsultasi({ identitas, hasil, jawaban, waktuKonsultasi, statusSimpan, pesanSimpan, saatSimpanUlang, saatUlangi, saatTinjau }) {
   const akar = useRef(null)
   const angka = useRef(null)
   const [batang, setBatang] = useState(false)
@@ -142,19 +143,74 @@ export default function HasilKonsultasi({ identitas, hasil, jawaban, nomorKonsul
 
   const kurangGerak = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-  /* Elemen muncul bergantian saat halaman hasil dibuka. */
+  /* Setiap blok muncul tepat ketika ia masuk ke layar, bukan semuanya sekaligus saat halaman dibuka.
+     Dulu semua blok dianimasikan di awal, sehingga blok yang berada di bawah layar sudah selesai bergerak
+     sebelum pengguna sempat menggulir ke sana dan terlihat seperti tidak beranimasi.
+     Blok yang sudah terlihat saat halaman dibuka muncul berurutan, sisanya muncul saat digulir. Isi di dalam
+     blok (butir daftar, titik risiko) menyusul sesaat setelahnya. */
   useLayoutEffect(() => {
-    if (kurangGerak) return
+    const akarEl = akar.current
+    if (!akarEl || kurangGerak) return
+    // Hanya opacity yang dipakai (bukan visibility), supaya blok yang belum muncul tetap terbaca pembaca layar dan bisa difokus keyboard.
+    const blok = [...akarEl.querySelectorAll('[data-masuk]')]
+    if (blok.length === 0) return
+    const lepas = 'opacity,transform'
+    const penunda = []
+
+    const munculkanIsi = (el, tunda) => {
+      const anak = el.querySelectorAll('[data-anak]')
+      if (anak.length) gsap.from(anak, { opacity: 0, y: 14, duration: 0.55, ease: 'power2.out', stagger: 0.07, delay: tunda, clearProps: lepas })
+      const titik = el.querySelectorAll('.hasil__risiko-titik i')
+      if (titik.length) gsap.from(titik, { scale: 0, duration: 0.45, ease: 'back.out(2.6)', stagger: 0.07, delay: tunda + 0.1, clearProps: 'transform' })
+    }
     const ctx = gsap.context(() => {
-      gsap.from('[data-masuk]', { autoAlpha: 0, y: 30, duration: 0.8, ease: 'power3.out', stagger: 0.09, clearProps: 'opacity,visibility,transform' })
-    }, akar)
-    return () => ctx.revert()
+      gsap.set(blok, { opacity: 0, y: 30 })
+    }, akarEl)
+
+    // Dijalankan lewat ctx.add supaya semua animasi yang dibuat belakangan ikut terhapus saat halaman ditutup.
+    const munculkan = (daftar) =>
+      ctx.add(() => {
+        gsap.to(daftar, { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out', stagger: 0.09, overwrite: 'auto', clearProps: lepas })
+        daftar.forEach((el, i) => {
+          munculkanIsi(el, 0.3 + i * 0.09)
+          // Batang persentase baru terisi setelah kartunya benar-benar tampil.
+          if (el.classList.contains('hasil__kartu')) penunda.push(window.setTimeout(() => setBatang(true), 350 + i * 90))
+        })
+      })
+
+    let pengamat = null
+    if (typeof IntersectionObserver === 'undefined') {
+      munculkan(blok)
+    } else {
+      // Garis bawah dinaikkan 40px supaya blok baru dimunculkan setelah benar-benar masuk, tetapi blok terakhir
+      // di dasar halaman tetap bisa terpicu.
+      pengamat = new IntersectionObserver(
+        (entri) => {
+          const masuk = entri
+            .filter((e) => e.isIntersecting)
+            .map((e) => e.target)
+            .sort((a, b) => (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1))
+          if (masuk.length === 0) return
+          masuk.forEach((el) => pengamat.unobserve(el))
+          munculkan(masuk)
+        },
+        { rootMargin: '0px 0px -40px 0px', threshold: 0 },
+      )
+      blok.forEach((el) => pengamat.observe(el))
+    }
+
+    return () => {
+      pengamat?.disconnect()
+      penunda.forEach((t) => window.clearTimeout(t))
+      gsap.killTweensOf(blok)
+      ctx.revert()
+      gsap.set(blok, { clearProps: lepas })
+    }
   }, [kurangGerak])
 
-  /* Batang persentase terisi dan angka utama menghitung naik. */
+  /* Batang persentase terisi saat kartunya tampil. Tanpa animasi, langsung terisi. */
   useEffect(() => {
-    const penunda = window.setTimeout(() => setBatang(true), kurangGerak ? 0 : 450)
-    return () => window.clearTimeout(penunda)
+    if (kurangGerak) setBatang(true)
   }, [kurangGerak])
 
   useEffect(() => {
@@ -278,7 +334,7 @@ export default function HasilKonsultasi({ identitas, hasil, jawaban, nomorKonsul
       return
     }
     try {
-      await modul.buatLaporanPdf({ identitas, jawaban, hasil, nomorKonsultasi })
+      await modul.buatLaporanPdf({ identitas, jawaban, hasil, waktu: waktuKonsultasi ?? undefined })
       setStatusPdf('selesai')
       setPernahUnduh(true)
     } catch (galat) {
@@ -320,16 +376,9 @@ export default function HasilKonsultasi({ identitas, hasil, jawaban, nomorKonsul
   const instrumen = REKOMENDASI_INSTRUMEN[tertinggi.kode] ?? []
   const namaDepan = identitas?.nama?.split(' ')[0] ?? ''
 
-  const catatan = []
-  if (hasil.jumlahIndikatorTeramati < 5) {
-    catatan.push(`Baru ${hasil.jumlahIndikatorTeramati} pernyataan yang Anda tandai sesuai. Hasil ini bisa bergeser bila Anda menjawab lebih lengkap, jadi anggap sebagai gambaran awal.`)
-  }
-  if (hasil.jumlahIndikatorTeramati >= 30) {
-    catatan.push('Anda menandai sebagian besar pernyataan sebagai sesuai, termasuk beberapa yang saling berlawanan. Untuk pola seperti ini sistem cenderung memberi profil Moderat. Coba ulangi dengan jawaban yang lebih membedakan bila Anda ingin hasil yang lebih tajam.')
-  }
-  if (hasil.seri) {
-    catatan.push('Dua profil memiliki nilai yang sama persis, sehingga hasil ini sebaiknya dibaca bersama profil lain di samping.')
-  }
+  // Penilaian kelayakan hasil: jumlah pernyataan yang dijadikan bukti dan seberapa menonjol profil teratas.
+  const kepastian = nilaiKepastian(hasil)
+  const adaCatatan = kepastian && kepastian.tingkat !== 'kuat'
 
   return (
     <div className="hasil" ref={akar}>
@@ -350,6 +399,9 @@ export default function HasilKonsultasi({ identitas, hasil, jawaban, nomorKonsul
               </p>
               <p className="hasil__persen-ket">tingkat keyakinan sistem pada profil {tertinggi.nama}</p>
             </div>
+            {adaCatatan && (
+              <p className={`hasil__tanda hasil__tanda--${kepastian.tingkat}`}>{kepastian.tanda}</p>
+            )}
           </div>
 
           <div className="hasil__kartu" data-masuk>
@@ -359,7 +411,7 @@ export default function HasilKonsultasi({ identitas, hasil, jawaban, nomorKonsul
               {hasil.urutan.map((p, indeks) => {
                 const warna = URAIAN_PROFIL[p.kode].warna
                 return (
-                  <li key={p.kode} data-warna={warna} className={indeks === 0 ? 'hasil__baris hasil__baris--juara' : 'hasil__baris'}>
+                  <li key={p.kode} data-warna={warna} className={indeks === 0 ? 'hasil__baris hasil__baris--juara' : 'hasil__baris'} data-anak>
                     <div className="hasil__baris-atas">
                       <span className="hasil__baris-nama">
                         <i aria-hidden="true" />
@@ -379,14 +431,23 @@ export default function HasilKonsultasi({ identitas, hasil, jawaban, nomorKonsul
           </div>
         </section>
 
-        {catatan.length > 0 && (
-          <div className="hasil__catatan" data-masuk>
-            {catatan.map((c) => (
-              <p key={c}>
-                {Ikon.info} <span>{c}</span>
-              </p>
-            ))}
-          </div>
+        {adaCatatan && (
+          <section className={`hasil__validitas hasil__validitas--${kepastian.tingkat}`} data-masuk aria-labelledby="hasil-validitas-judul">
+            <span className="hasil__validitas-ikon" aria-hidden="true">{Ikon.peringatan}</span>
+            <div className="hasil__validitas-isi">
+              <h2 id="hasil-validitas-judul">{kepastian.judul}</h2>
+              <p className="hasil__validitas-pengantar">{kepastian.pengantar}</p>
+              <ul>
+                {kepastian.alasan.map((a) => (
+                  <li key={a.kode} data-anak>{a.teks}</li>
+                ))}
+              </ul>
+              <p className="hasil__validitas-saran">{kepastian.saran}</p>
+              <button type="button" className="tombol tombol--garis hasil__validitas-tombol" onClick={saatTinjau}>
+                Tinjau jawaban saya {Ikon.panah}
+              </button>
+            </div>
+          </section>
         )}
 
         {/* Unduh laporan PDF */}
@@ -402,11 +463,11 @@ export default function HasilKonsultasi({ identitas, hasil, jawaban, nomorKonsul
               Laporan ini disusun rapi dan siap dibaca atau dicetak. Cocok untuk arsip pribadi, atau dibawa saat Anda ingin mengecek hasilnya bersama pakar.
             </p>
             <ul className="hasil__laporan-isi-daftar" aria-label="Isi laporan">
-              <li>Profil dan persentase</li>
-              <li>Grafik sebaran</li>
-              <li>Instrumen</li>
-              <li>Rincian hitungan</li>
-              <li>40 jawaban</li>
+              <li data-anak>Profil dan persentase</li>
+              <li data-anak>Grafik sebaran</li>
+              <li data-anak>Instrumen</li>
+              <li data-anak>Rincian hitungan</li>
+              <li data-anak>40 jawaban</li>
             </ul>
           </div>
           <div className="hasil__laporan-aksi">
@@ -440,7 +501,7 @@ export default function HasilKonsultasi({ identitas, hasil, jawaban, nomorKonsul
             <h2>Yang tampak dari jawaban Anda</h2>
             <ul className="hasil__ciri">
               {uraian.ciri.map((c) => (
-                <li key={c}>
+                <li key={c} data-anak>
                   <span>{Ikon.centang}</span>
                   {c}
                 </li>
@@ -489,14 +550,13 @@ export default function HasilKonsultasi({ identitas, hasil, jawaban, nomorKonsul
           <summary>
             <span>
               <strong>Lihat rincian perhitungan</strong>
-              <small>Setiap angka di bawah ini bisa dicocokkan dengan perhitungan manual di Bab IV</small>
             </span>
             <i aria-hidden="true">{Ikon.panahBawah}</i>
           </summary>
 
           <div className="hasil__rincian-isi">
             <p>
-              Sistem hanya memakai <strong>{hasil.jumlahIndikatorTeramati}</strong> pernyataan yang Anda jawab dengan keyakinan lebih dari nol. Untuk tiap profil, nilai awalnya adalah probabilitas prior,
+              Sistem hanya memakai {hasil.jumlahIndikatorTeramati} pernyataan yang Anda jawab dengan keyakinan lebih dari nol. Untuk tiap profil, nilai awalnya adalah probabilitas prior,
               lalu dikalikan hasil kali antara likelihood terkoreksi Laplace dan keyakinan Anda pada setiap pernyataan. Hasil kali ini disebut numerator, dan posterior diperoleh dengan membagi numerator
               dengan jumlah ketiga numerator.
             </p>

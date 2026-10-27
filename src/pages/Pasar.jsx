@@ -406,7 +406,7 @@ export default function Pasar() {
       gsap.set('[data-muncul]', { autoAlpha: 0, y: 34 })
       gsap
         .timeline({ delay: 0.3, defaults: { ease: 'power4.out' } })
-        .from('.ruang-hero__label, .ruang-hero__lead, .ruang-hero__aksi, .ruang-hero__daftar', { autoAlpha: 0, y: 26, duration: 0.9, stagger: 0.1 })
+        .from('.ruang-hero__lead, .ruang-hero__aksi, .ruang-hero__daftar', { autoAlpha: 0, y: 26, duration: 0.9, stagger: 0.1 }, 0.1)
         .from('.ruang-hero__baris-isi', { yPercent: 115, duration: 1.1, stagger: 0.12 }, 0)
         .from('.ruang-bursa', { autoAlpha: 0, y: 50, scale: 0.95, duration: 1.2 }, 0.25)
         .from('.ruang-sesi__butir', { autoAlpha: 0, x: 18, duration: 0.7, stagger: 0.1, clearProps: 'transform' }, 0.9)
@@ -467,7 +467,6 @@ export default function Pasar() {
 
         <div className="pembungkus ruang-hero__isi">
           <div className="ruang-hero__teks">
-            <p className="label-seksi ruang-hero__label">Pasar</p>
             <h1 className="ruang-hero__judul">
               <span className="ruang-hero__baris">
                 <span className="ruang-hero__baris-isi">Biasakan mata dengan</span>

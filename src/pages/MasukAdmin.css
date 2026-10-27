@@ -3,7 +3,6 @@
   position: relative;
   display: grid;
   place-items: center;
-  min-height: 100svh;
   padding: calc(var(--tinggi-header) + 32px) 0 56px;
   overflow: hidden;
   background: var(--laut-950);
@@ -467,5 +466,77 @@
     width: 56px;
     height: 56px;
     margin-bottom: 12px;
+  }
+}
+
+/* ---------- Pemberitahuan sesi berakhir ---------- */
+.masuk__sesi {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 13px 14px;
+  border: 1px solid rgba(236, 181, 78, 0.5);
+  border-radius: 14px;
+  background: rgba(236, 181, 78, 0.12);
+  color: var(--krem);
+  font-size: 0.86rem;
+  line-height: 1.5;
+  animation: masuk-sesi 0.6s cubic-bezier(0.2, 0.9, 0.2, 1) 0.35s both;
+}
+@keyframes masuk-sesi {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.masuk__sesi-ikon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(236, 181, 78, 0.18);
+  color: var(--kunyit-300);
+}
+.masuk__sesi-teks {
+  display: grid;
+  flex: 1;
+  gap: 2px;
+  min-width: 0;
+}
+.masuk__sesi-teks strong {
+  font-weight: 600;
+}
+.masuk__sesi-teks span {
+  color: var(--teks-redup);
+}
+.masuk__sesi-tutup {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin: -4px -4px 0 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--teks-halus);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.masuk__sesi-tutup:hover,
+.masuk__sesi-tutup:focus-visible {
+  background: rgba(246, 243, 236, 0.1);
+  color: var(--krem);
+}
+@media (prefers-reduced-motion: reduce) {
+  .masuk__sesi {
+    animation: none;
   }
 }

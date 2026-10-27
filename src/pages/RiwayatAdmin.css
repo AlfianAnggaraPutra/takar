@@ -1,7 +1,6 @@
 /* Halaman riwayat admin. Warna mengikuti palet TAKAR di index.css. */
 .riw {
   position: relative;
-  min-height: 100svh;
   padding: calc(var(--tinggi-header) + 44px) 0 90px;
   background: radial-gradient(ellipse 60% 40% at 85% 0%, rgba(236, 181, 78, 0.07), transparent 70%), radial-gradient(ellipse 55% 45% at 5% 10%, rgba(47, 86, 121, 0.4), transparent 70%), var(--laut-900);
 }
@@ -454,22 +453,6 @@
 .riw__sel-nama {
   min-width: 170px;
 }
-.riw__sel-nama > * {
-  vertical-align: middle;
-}
-.riw__avatar {
-  display: inline-grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  margin-right: 12px;
-  border: 1px solid rgba(236, 181, 78, 0.35);
-  border-radius: 50%;
-  background: rgba(236, 181, 78, 0.12);
-  color: var(--kunyit-300);
-  font-weight: 700;
-  font-size: 0.9rem;
-}
 .riw__nama {
   display: inline-block;
   max-width: 190px;
@@ -490,20 +473,12 @@
 .riw__lencana {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 5px 12px;
+  padding: 5px 13px;
   border: 1px solid transparent;
   border-radius: 999px;
   font-size: 0.8rem;
   font-weight: 700;
   white-space: nowrap;
-}
-.riw__lencana::before {
-  content: '';
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: currentColor;
 }
 .riw__lencana--teal {
   color: #7fd0dd;
@@ -559,6 +534,20 @@
 }
 .riw__yakin-isi--netral {
   background: var(--biru-muda);
+}
+/* Keterangan di bawah keyakinan bila hasil kurang kuat: teks biasa, tanpa kotak atau titik. */
+.riw__kepastian {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.riw__kepastian--rendah {
+  color: var(--terakota-300);
+}
+.riw__kepastian--sedang {
+  color: var(--kunyit-300);
 }
 @keyframes riw-isi {
   from {
@@ -696,10 +685,6 @@
 .riw__info {
   font-size: 0.88rem;
   color: var(--teks-redup);
-}
-.riw__info strong {
-  color: var(--krem);
-  font-weight: 700;
 }
 .riw__halaman {
   display: flex;
@@ -920,9 +905,6 @@
   .riw__tabel td.riw__sel-nama::before {
     display: none;
   }
-  .riw__avatar {
-    flex: none;
-  }
   .riw__nama {
     max-width: none;
     font-size: 1.02rem;
@@ -1059,5 +1041,136 @@
   }
   .riw__toast {
     bottom: 16px;
+  }
+}
+
+/* ---------- Status koneksi internet ---------- */
+.riw__koneksi {
+  position: fixed;
+  top: calc(var(--tinggi-header) + 12px);
+  left: 50%;
+  z-index: 90;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: min(600px, calc(100% - 32px));
+  padding: 13px 16px;
+  border: 1px solid rgba(236, 181, 78, 0.55);
+  border-radius: 16px;
+  background: #0d2740;
+  box-shadow: 0 18px 48px rgba(1, 6, 14, 0.55);
+  color: var(--krem);
+  font-size: 0.88rem;
+  line-height: 1.5;
+  transform: translateX(-50%);
+  animation: riw-koneksi 0.5s cubic-bezier(0.2, 0.9, 0.2, 1) both;
+}
+@keyframes riw-koneksi {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -14px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+.riw__koneksi--lama {
+  border-color: rgba(232, 131, 107, 0.6);
+}
+.riw__koneksi--pulih {
+  border-color: rgba(77, 179, 198, 0.6);
+}
+.riw__koneksi-ikon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(236, 181, 78, 0.16);
+  color: var(--kunyit-300);
+}
+.riw__koneksi--lama .riw__koneksi-ikon {
+  background: rgba(232, 131, 107, 0.18);
+  color: var(--terakota-300);
+}
+.riw__koneksi--pulih .riw__koneksi-ikon {
+  background: rgba(77, 179, 198, 0.18);
+  color: var(--teal-300);
+}
+.riw__koneksi:not(.riw__koneksi--pulih) .riw__koneksi-ikon {
+  animation: riw-koneksi-denyut 2s ease-in-out infinite;
+}
+@keyframes riw-koneksi-denyut {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(236, 181, 78, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 0 7px rgba(236, 181, 78, 0);
+  }
+}
+.riw__koneksi-teks {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.riw__koneksi-teks strong {
+  font-weight: 600;
+}
+.riw__koneksi-teks span {
+  color: var(--teks-redup);
+}
+.riw__koneksi-waktu {
+  flex: none;
+  padding: 3px 10px;
+  border: 1px solid var(--garis);
+  border-radius: 999px;
+  color: var(--kunyit-300);
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Peringatan sesi hampir berakhir ---------- */
+.riw__hitung {
+  height: 6px;
+  margin: 16px 0 12px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(246, 243, 236, 0.12);
+}
+.riw__hitung span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--terakota-300), var(--kunyit-400));
+  transition: width 1s linear;
+}
+.riw__hitung-angka {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.riw__hitung-ket {
+  color: var(--teks-halus);
+  font-size: 0.86rem;
+}
+
+@media (max-width: 520px) {
+  .riw__koneksi {
+    padding: 12px 13px;
+    gap: 10px;
+  }
+  .riw__koneksi-waktu {
+    align-self: flex-start;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .riw__koneksi,
+  .riw__koneksi:not(.riw__koneksi--pulih) .riw__koneksi-ikon {
+    animation: none;
+  }
+  .riw__hitung span {
+    transition: none;
   }
 }

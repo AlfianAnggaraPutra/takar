@@ -84,6 +84,13 @@ export default function Header() {
     setMenuTerbuka(false)
   }, [pathname])
 
+  // Halaman lain bisa meminta laci ditutup, misalnya setelah pengguna membatalkan kepergiannya lewat pop up konfirmasi.
+  useEffect(() => {
+    const tutup = () => setMenuTerbuka(false)
+    window.addEventListener('takar:tutup-menu', tutup)
+    return () => window.removeEventListener('takar:tutup-menu', tutup)
+  }, [])
+
   // Saat menu laci terbuka, halaman di belakangnya tidak ikut tergulir.
   useEffect(() => {
     if (!menuTerbuka) return

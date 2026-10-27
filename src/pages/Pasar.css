@@ -53,8 +53,8 @@
   position: relative;
   display: flex;
   align-items: center;
-  min-height: min(96svh, 840px);
-  padding: calc(var(--tinggi-header) + 44px) 0 clamp(72px, 9vw, 110px);
+  min-height: 0;
+  padding: calc(var(--tinggi-header) + 36px) 0 clamp(72px, 9vw, 110px);
   overflow: hidden;
   isolation: isolate;
 }
@@ -142,27 +142,6 @@
   grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
   align-items: center;
   gap: clamp(32px, 5vw, 76px);
-}
-.ruang-hero__label {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 26px;
-  padding: 8px 16px;
-  border: 1px solid rgba(236, 181, 78, 0.35);
-  border-radius: 999px;
-  background: rgba(227, 163, 43, 0.08);
-  letter-spacing: 0.16em;
-  color: var(--kunyit-300);
-}
-.ruang-hero__label::before {
-  content: '';
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--kunyit-400);
-  box-shadow: 0 0 0 0 rgba(236, 181, 78, 0.6);
-  animation: ruang-denyut 2.4s ease-out infinite;
 }
 @keyframes ruang-denyut {
   to {
@@ -1381,7 +1360,6 @@ html.layar-penuh-cadangan {
 
 @media (prefers-reduced-motion: reduce) {
   .ruang-lilin__satu,
-  .ruang-hero__label::before,
   .ruang-pita__titik,
   .ruang-bursa[data-kode='buka'] .ruang-bursa__titik,
   .ruang-meja__judul,

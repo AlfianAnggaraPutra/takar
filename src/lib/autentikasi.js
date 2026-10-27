@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
+import { bersihkanPenandaSesi, catatAktifTerakhir, hapusPesanSesi } from './batasSesi'
 
 // Aturan kolom login admin. Dipakai di formulir dan bisa diuji tanpa browser.
 export const BATAS_SANDI_MINIMAL = 8
@@ -35,7 +36,13 @@ export async function masukAdmin(email, sandi) {
   if (periksaEmail(email) || periksaSandi(sandi)) return { berhasil: false, jenis: 'isian', pesan: 'Periksa kembali email dan kata sandi Anda.' }
   try {
     const { data, error } = await supabase.auth.signInWithPassword({ email: rapikanEmail(email), password: sandi })
-    if (!error && data?.session) return { berhasil: true }
+    if (!error && data?.session) {
+      // Masuk baru: hitungan batas diam dimulai dari nol dan pemberitahuan sesi berakhir yang lama tidak perlu tampil lagi.
+      bersihkanPenandaSesi()
+      hapusPesanSesi()
+      catatAktifTerakhir()
+      return { berhasil: true }
+    }
     if (error?.status === 429 || /rate limit|too many/i.test(error?.message ?? '')) {
       return { berhasil: false, jenis: 'terlalu-sering', pesan: 'Terlalu banyak percobaan masuk. Tunggu beberapa menit lalu coba lagi.' }
     }
@@ -53,6 +60,7 @@ export async function masukAdmin(email, sandi) {
 }
 
 export async function keluarAdmin() {
+  bersihkanPenandaSesi()
   if (!supabase) return
   try {
     await supabase.auth.signOut()
@@ -68,6 +76,12 @@ export async function keluarAdmin() {
 }
 
 // Sesi admin saat ini. memuat = true selama sesi dari penyimpanan browser belum selesai diperiksa.
+// Dua sesi dianggap sama bila token dan penggunanya sama.
+function samaSesi(a, b) {
+  if (!a || !b) return !a && !b
+  return a.access_token === b.access_token && a.user?.id === b.user?.id
+}
+
 export function useSesiAdmin() {
   const [keadaan, setKeadaan] = useState({ memuat: Boolean(supabase), sesi: null })
 
@@ -83,10 +97,34 @@ export function useSesiAdmin() {
         if (aktif) setKeadaan({ memuat: false, sesi: null })
       })
     const { data: langganan } = supabase.auth.onAuthStateChange((_peristiwa, sesi) => {
-      if (aktif) setKeadaan({ memuat: false, sesi: sesi ?? null })
+      if (!aktif) return
+      // Supabase mengirim ulang sesi yang sama (objek baru, isi sama) setiap kali tab kembali aktif. Keadaan lama
+      // dipertahankan agar tampilan yang bergantung padanya tidak digambar ulang tanpa alasan.
+      setKeadaan((k) => (!k.memuat && samaSesi(k.sesi, sesi) ? k : { memuat: false, sesi: sesi ?? null }))
     })
+    // Halaman yang dipulihkan dari riwayat browser (tombol kembali) atau tab yang kembali aktif bisa saja sudah
+    // kehilangan sesinya, karena halaman lain sudah membuangnya. Sesi diperiksa ulang dan, bila sudah tidak ada,
+    // tampilan ikut keluar dari mode admin.
+    const periksaUlang = () => {
+      if (document.visibilityState === 'hidden') return
+      supabase.auth
+        .getSession()
+        .then(({ data }) => {
+          if (aktif && !data?.session) setKeadaan((k) => (k.sesi ? { memuat: false, sesi: null } : k))
+        })
+        .catch(() => {})
+    }
+    const saatTampilLagi = (e) => {
+      if (e.persisted) periksaUlang()
+    }
+    window.addEventListener('pageshow', saatTampilLagi)
+    window.addEventListener('focus', periksaUlang)
+    document.addEventListener('visibilitychange', periksaUlang)
     return () => {
       aktif = false
+      window.removeEventListener('pageshow', saatTampilLagi)
+      window.removeEventListener('focus', periksaUlang)
+      document.removeEventListener('visibilitychange', periksaUlang)
       langganan?.subscription?.unsubscribe()
     }
   }, [])

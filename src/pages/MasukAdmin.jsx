@@ -3,6 +3,7 @@ import { Link, Navigate, useNavigate } from 'react-router-dom'
 import gsap from 'gsap'
 import LatarKonsultasi from '../components/LatarKonsultasi'
 import LogoTimbangan from '../components/LogoTimbangan'
+import { bacaPesanSesi, hapusPesanSesi } from '../lib/batasSesi'
 import { BATAS_SANDI_MINIMAL, masukAdmin, periksaEmail, periksaSandi, useSesiAdmin } from '../lib/autentikasi'
 import './MasukAdmin.css'
 
@@ -44,6 +45,17 @@ const IkonGembok = () => (
   <svg {...ikonDasar}>
     <rect x="4" y="11" width="16" height="10" rx="2.5" />
     <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+  </svg>
+)
+const IkonJam = () => (
+  <svg {...ikonDasar}>
+    <circle cx="12" cy="12" r="8.5" />
+    <path d="M12 7.5V12l3 2" />
+  </svg>
+)
+const IkonTutup = () => (
+  <svg {...ikonDasar} width={14} height={14}>
+    <path d="M6 6l12 12M18 6 6 18" />
   </svg>
 )
 const IkonMata = () => (
@@ -101,6 +113,12 @@ export default function MasukAdmin() {
   const kolomEmail = useRef(null)
   const kolomSandi = useRef(null)
   const dariLogin = useRef(false)
+  // Pemberitahuan bila sesi sebelumnya berakhir sendiri (diam terlalu lama, koneksi terputus, atau sesi tidak berlaku).
+  // Dibaca sekali lalu dihapus dari penyimpanan, jadi tidak muncul lagi saat halaman dimuat ulang.
+  const [pesanSesi, setPesanSesi] = useState(() => bacaPesanSesi())
+  useEffect(() => {
+    hapusPesanSesi()
+  }, [])
 
   const galatEmail = periksaEmail(email)
   const galatSandi = periksaSandi(sandi)
@@ -228,6 +246,21 @@ export default function MasukAdmin() {
             <h1 className="masuk__judul">Masuk Admin</h1>
             <p className="masuk__uraian">Khusus pengelola TAKAR untuk melihat riwayat konsultasi pengguna.</p>
           </div>
+
+          {pesanSesi && (
+            <div className="masuk__sesi" role="status">
+              <span className="masuk__sesi-ikon">
+                <IkonJam />
+              </span>
+              <div className="masuk__sesi-teks">
+                <strong>{pesanSesi.judul}</strong>
+                <span>{pesanSesi.isi}</span>
+              </div>
+              <button type="button" className="masuk__sesi-tutup" onClick={() => setPesanSesi(null)} aria-label="Tutup pemberitahuan">
+                <IkonTutup />
+              </button>
+            </div>
+          )}
 
           {memuat ? (
             <div className="masuk__periksa" role="status">

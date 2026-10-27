@@ -45,8 +45,8 @@
   position: relative;
   display: flex;
   align-items: center;
-  min-height: min(100svh, 880px);
-  padding: calc(var(--tinggi-header) + 44px) 0 96px;
+  min-height: 0;
+  padding: calc(var(--tinggi-header) + 36px) 0 96px;
   overflow: hidden;
   isolation: isolate;
 }
@@ -94,32 +94,6 @@
   grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
   align-items: center;
   gap: clamp(32px, 5vw, 76px);
-}
-.tentang-hero__label {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 26px;
-  padding: 8px 16px;
-  border: 1px solid rgba(236, 181, 78, 0.35);
-  border-radius: 999px;
-  background: rgba(227, 163, 43, 0.08);
-  letter-spacing: 0.16em;
-  color: var(--kunyit-300);
-}
-.tentang-hero__label::before {
-  content: '';
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--kunyit-400);
-  box-shadow: 0 0 0 0 rgba(236, 181, 78, 0.6);
-  animation: tentang-denyut 2.4s ease-out infinite;
-}
-@keyframes tentang-denyut {
-  to {
-    box-shadow: 0 0 0 12px rgba(236, 181, 78, 0);
-  }
 }
 .tentang-hero__judul {
   font-family: var(--font-judul);
@@ -839,9 +813,6 @@
   line-height: 1.55;
   color: var(--teks-halus);
 }
-.tentang-hasil__kaki strong {
-  color: var(--kunyit-300);
-}
 /* Versi ringkas yang hanya dipakai di layar kecil */
 .tentang-hasil__kaki--bawah,
 .tentang-bar__tanda-pendek {
@@ -957,6 +928,10 @@
 .tentang-rumus__contoh p:not(.tentang-rumus__bukti) {
   font-size: 0.95rem;
   color: var(--teks-redup);
+}
+/* Langkah 2 punya dua paragraf (penjelasan prior, lalu syarat pernyataan). Diberi jarak agar tidak terbaca sebagai satu paragraf. */
+.tentang-rumus__langkah p:not(.tentang-rumus__rumus) + p:not(.tentang-rumus__rumus) {
+  margin-top: 10px;
 }
 .tentang-rumus__rumus {
   margin-bottom: 10px;

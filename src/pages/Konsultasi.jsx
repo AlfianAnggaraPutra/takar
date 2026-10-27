@@ -5,7 +5,10 @@ import { DAFTAR_PEKERJAAN, JUMLAH_PER_LANGKAH, LANGKAH_KONSULTASI } from '../dat
 import { hitungProfilRisiko } from '../lib/mesinInferensi'
 import { simpanRiwayatKonsultasi } from '../lib/riwayatKonsultasi'
 import { ambilAngka, periksaAwalanNoHp, periksaNoHp } from '../lib/noHp'
+import { periksaKarakterNama, periksaNama, rapikanNama } from '../lib/validasiNama'
 import { gulirKe } from '../hooks/useScrollHalus'
+import usePenjagaKeluar from '../hooks/usePenjagaKeluar'
+import ModalKonfirmasi from '../components/ModalKonfirmasi'
 import HasilKonsultasi from './HasilKonsultasi'
 import './Konsultasi.css'
 
@@ -37,18 +40,16 @@ const FORMAT_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
 
 /* ---------- Pemeriksaan data diri ---------- */
 
-function rapikanNama(teks) {
+// Untuk isian teks bebas (pekerjaan). Nama memakai rapikanNama di lib/validasiNama.
+function rapikanTeks(teks) {
   return teks.trim().replace(/\s+/g, ' ')
 }
 
 // Mengembalikan objek kesalahan per kolom. Objek kosong berarti semua kolom sudah benar.
 function periksaIdentitas(d) {
   const galat = {}
-  const nama = rapikanNama(d.nama)
-  if (!nama) galat.nama = 'Nama lengkap belum diisi.'
-  else if (nama.length < 3) galat.nama = 'Nama lengkap minimal 3 huruf.'
-  else if (nama.length > 80) galat.nama = 'Nama terlalu panjang, maksimal 80 karakter.'
-  else if (!/^\p{L}[\p{L}\s.'’-]*$/u.test(nama)) galat.nama = 'Nama hanya boleh berisi huruf dan spasi.'
+  const galatNama = periksaNama(d.nama)
+  if (galatNama) galat.nama = galatNama
 
   const usiaTeks = d.usia.trim()
   if (!usiaTeks) galat.usia = 'Usia belum diisi.'
@@ -58,7 +59,7 @@ function periksaIdentitas(d) {
   if (!d.pekerjaan) galat.pekerjaan = 'Pilih pekerjaan Anda.'
   else if (!DAFTAR_PEKERJAAN.includes(d.pekerjaan)) galat.pekerjaan = 'Pilih pekerjaan dari daftar.'
   else if (d.pekerjaan === 'Lainnya') {
-    const lain = rapikanNama(d.pekerjaanLain)
+    const lain = rapikanTeks(d.pekerjaanLain)
     if (lain.length < 3) galat.pekerjaanLain = 'Tuliskan pekerjaan Anda, minimal 3 huruf.'
     else if (lain.length > 50) galat.pekerjaanLain = 'Terlalu panjang, maksimal 50 karakter.'
   }
@@ -74,7 +75,7 @@ function bersihkanIdentitas(d) {
   return {
     nama: rapikanNama(d.nama),
     usia: Number(d.usia.trim()),
-    pekerjaan: d.pekerjaan === 'Lainnya' ? rapikanNama(d.pekerjaanLain) : d.pekerjaan,
+    pekerjaan: d.pekerjaan === 'Lainnya' ? rapikanTeks(d.pekerjaanLain) : d.pekerjaan,
     noHp: ambilAngka(d.noHp),
   }
 }
@@ -97,6 +98,7 @@ function keadaanAwal() {
     jawaban: {},
     statusSimpan: 'belum',
     idKonsultasi: null,
+    waktuSelesai: null,
   }
   try {
     const mentah = sessionStorage.getItem(KUNCI_DRAF)
@@ -139,7 +141,10 @@ function keadaanAwal() {
 
     const idKonsultasi = typeof d.idKonsultasi === 'string' && FORMAT_ID.test(d.idKonsultasi) ? d.idKonsultasi : null
 
-    return { tahap, identitas, langkah, langkahTerbuka, jawaban, statusSimpan, idKonsultasi }
+    // Saat hasil dihitung. Dipakai sebagai "Tanggal konsultasi" di laporan PDF, bukan saat PDF diunduh.
+    const waktuSelesai = tahap === 'hasil' && typeof d.waktuSelesai === 'string' && !Number.isNaN(Date.parse(d.waktuSelesai)) ? d.waktuSelesai : null
+
+    return { tahap, identitas, langkah, langkahTerbuka, jawaban, statusSimpan, idKonsultasi, waktuSelesai }
   } catch {
     return kosong
   }
@@ -169,6 +174,18 @@ const Ikon = {
       <path d="M12 7.5v5.5M12 16.6v.1" />
     </svg>
   ),
+  segitiga: (
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M12 3.5l9.2 16H2.8L12 3.5z" />
+      <path d="M12 10v4.4M12 17.4v.1" />
+    </svg>
+  ),
+  dataDiri: (
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="8.5" r="3.6" />
+      <path d="M4.8 20c.9-3.7 3.7-5.6 7.2-5.6s6.3 1.9 7.2 5.6" />
+    </svg>
+  ),
   profil: (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M12 3l7 3v5.5c0 4.2-2.9 7.6-7 9.5-4.1-1.9-7-5.3-7-9.5V6l7-3z" />
@@ -190,14 +207,32 @@ const Ikon = {
 
 /* ---------- Pilihan jawaban satu pernyataan ---------- */
 
-function PilihanJawaban({ kode, nilai, saatPilih, idGalat }) {
+function PilihanJawaban({ kode, nilai, saatPilih, saatHapus, idGalat }) {
   return (
     <div className="kons__skala" role="radiogroup" aria-describedby={idGalat}>
       {PILIHAN_JAWABAN.map((p, indeks) => {
         const dipilih = nilai === p.nilai
         return (
-          <label key={p.nilai} className={`kons__opsi${dipilih ? ' kons__opsi--pilih' : ''}`}>
-            <input type="radio" name={`jawab-${kode}`} value={p.nilai} checked={dipilih} onChange={() => saatPilih(kode, p.nilai)} />
+          <label key={p.nilai} className={`kons__opsi${dipilih ? ' kons__opsi--pilih' : ''}`} title={dipilih ? 'Klik lagi untuk membatalkan jawaban' : undefined}>
+            {/* Radio bawaan browser tidak bisa dilepas lewat klik. Klik pada opsi yang sudah terpilih (juga lewat
+                spasi di keyboard) ditangani sendiri: jawabannya dihapus, jadi pernyataan kembali belum dijawab. */}
+            <input
+              type="radio"
+              name={`jawab-${kode}`}
+              value={p.nilai}
+              checked={dipilih}
+              onChange={() => saatPilih(kode, p.nilai)}
+              onClick={() => {
+                if (dipilih) saatHapus(kode)
+              }}
+              onKeyDown={(e) => {
+                // Chrome tidak mengirim klik saat Spasi ditekan pada radio yang sudah terpilih, jadi keyboard ditangani langsung.
+                if (e.key === ' ' && dipilih) {
+                  e.preventDefault()
+                  saatHapus(kode)
+                }
+              }}
+            />
             <span className="kons__sinyal" aria-hidden="true">
               {[1, 2, 3, 4].map((n) => (
                 <i key={n} className={n <= indeks ? 'kons__sinyal-isi' : ''} />
@@ -227,10 +262,12 @@ export default function Konsultasi() {
   const [hitungCoba, setHitungCoba] = useState(0)
   const [statusSimpan, setStatusSimpan] = useState(awal.current.statusSimpan)
   const [pesanSimpan, setPesanSimpan] = useState('')
+  const [modalKeluar, setModalKeluar] = useState(null) // { jenis: 'pergi' | 'kembali' | 'dataDiri', tujuan? }
 
   const akar = useRef(null)
   const sedangMenyimpan = useRef(false)
   const idKonsultasi = useRef(awal.current.idKonsultasi)
+  const waktuSelesai = useRef(awal.current.waktuSelesai)
 
   const identitasFinal = useMemo(() => (Object.keys(periksaIdentitas(identitas)).length === 0 ? bersihkanIdentitas(identitas) : null), [identitas])
   const jumlahTerjawab = Object.keys(jawaban).length
@@ -250,12 +287,36 @@ export default function Konsultasi() {
   // Pernyataan berikutnya yang belum dijawab, disorot halus setelah pengguna mulai mengisi (tanpa menggulirkan halaman).
   const kodeGiliran = !sudahCoba && terjawabLangkah > 0 && belumLangkah > 0 ? daftarLangkah.find((i) => jawaban[i.kode] === undefined)?.kode : null
 
+  /* ----- Penjaga keluar: pengguna yang sudah mulai mengisi diminta memastikan dulu sebelum pergi ----- */
+
+  // Sudah "mulai" bila salah satu kolom data diri terisi. Di tahap pertanyaan data diri pasti sudah terisi.
+  const adaIsian = Boolean(identitas.nama.trim() || identitas.usia || identitas.pekerjaan || identitas.pekerjaanLain.trim() || identitas.noHp || identitas.setuju)
+  const penjagaAktif = (tahap === 'pembuka' && adaIsian) || tahap === 'pertanyaan'
+  const { lanjutPergi, batalPergi } = usePenjagaKeluar({ aktif: penjagaAktif, saatMinta: setModalKeluar })
+
+  const tetapDiSini = () => {
+    const m = modalKeluar
+    setModalKeluar(null)
+    if (m) batalPergi(m)
+  }
+  const lanjutKeluar = () => {
+    const m = modalKeluar
+    setModalKeluar(null)
+    if (!m) return
+    if (m.jenis === 'dataDiri') {
+      setSudahCoba(false)
+      setTahap('pembuka')
+      return
+    }
+    lanjutPergi(m)
+  }
+
   /* Draf dicatat di sessionStorage. Bila browser menolak, halaman tetap berjalan normal. */
   useEffect(() => {
     try {
       sessionStorage.setItem(
         KUNCI_DRAF,
-        JSON.stringify({ v: 1, tahap, identitas, langkah, langkahTerbuka, jawaban, statusSimpan, idKonsultasi: idKonsultasi.current }),
+        JSON.stringify({ v: 1, tahap, identitas, langkah, langkahTerbuka, jawaban, statusSimpan, idKonsultasi: idKonsultasi.current, waktuSelesai: waktuSelesai.current }),
       )
     } catch {
       /* diabaikan */
@@ -268,7 +329,8 @@ export default function Konsultasi() {
     if (window.__lenis) window.__lenis.scrollTo(0, { immediate: true })
     else window.scrollTo(0, 0)
 
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    // Halaman hasil mengatur animasi masuknya sendiri. Bila di sini ikut dijalankan, dua animasi berebut elemen yang sama.
+    if (tahap === 'hasil' || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
     const ctx = gsap.context(() => {
       gsap.from('[data-masuk]:not(.kons__aksi)', {
         autoAlpha: 0,
@@ -297,6 +359,13 @@ export default function Konsultasi() {
   const ubahKolom = (kolom, nilai) => {
     setIdentitas((lama) => ({ ...lama, [kolom]: nilai }))
     if (galat[kolom]) setGalat((lama) => ({ ...lama, [kolom]: undefined }))
+  }
+
+  // Nama: karakter terlarang (angka, simbol) langsung diberi tahu saat diketik. Kesalahan lain baru ditampilkan
+  // ketika kolom ditinggalkan atau tombol Mulai ditekan, supaya pengguna tidak ditegur saat nama belum selesai ditulis.
+  const ubahNama = (teks) => {
+    setIdentitas((lama) => ({ ...lama, nama: teks }))
+    setGalat((lama) => ({ ...lama, nama: periksaKarakterNama(teks) || undefined }))
   }
 
   // Nomor HP hanya menerima angka. Awalan yang keliru langsung diberi tahu, dan peringatan hilang begitu awalannya benar.
@@ -335,6 +404,17 @@ export default function Konsultasi() {
     setJawaban((lama) => ({ ...lama, [kode]: nilai }))
   }, [])
 
+  // Membatalkan jawaban: kuncinya dibuang (bukan diisi 0), supaya pernyataan benar-benar kembali belum dijawab.
+  // Jawaban "Tidak" tetap jawaban yang sah dan berbeda dari pernyataan yang dikosongkan.
+  const hapusJawaban = useCallback((kode) => {
+    setJawaban((lama) => {
+      if (lama[kode] === undefined) return lama
+      const baru = { ...lama }
+      delete baru[kode]
+      return baru
+    })
+  }, [])
+
   // Gulir halus (inersia mouse) dihentikan begitu tombol di bar bawah ditekan, supaya tombol tidak bergeser
   // di antara tekan dan lepas.
   const bekukanGulir = () => {
@@ -355,11 +435,13 @@ export default function Konsultasi() {
     setTahap('hasil')
     if (!hitung.dapatDitentukan) {
       idKonsultasi.current = null
+      waktuSelesai.current = null
       setStatusSimpan('belum')
       return
     }
-    // Nomor baru untuk setiap hasil yang dihitung. Nomor yang sama dipakai lagi bila pengguna menekan "coba simpan lagi".
+    // Pengenal baru untuk setiap hasil yang dihitung. Pengenal yang sama dipakai lagi bila pengguna menekan "coba simpan lagi".
     idKonsultasi.current = buatIdKonsultasi()
+    waktuSelesai.current = new Date().toISOString()
     kirimRiwayat(hitung)
   }
 
@@ -398,9 +480,18 @@ export default function Konsultasi() {
   }
 
   const kembali = () => {
+    if (langkah > 0) {
+      setSudahCoba(false)
+      setLangkah(langkah - 1)
+      return
+    }
+    // Dari langkah pertama, kembali ke data diri. Bila sudah ada jawaban, pengguna diminta memastikan dulu agar tidak salah tekan.
+    if (jumlahTerjawab > 0) {
+      setModalKeluar({ jenis: 'dataDiri' })
+      return
+    }
     setSudahCoba(false)
-    if (langkah > 0) setLangkah(langkah - 1)
-    else setTahap('pembuka')
+    setTahap('pembuka')
   }
 
   const keLangkah = (indeks) => {
@@ -418,6 +509,7 @@ export default function Konsultasi() {
       /* diabaikan */
     }
     idKonsultasi.current = null
+    waktuSelesai.current = null
     setJawaban({})
     setLangkah(0)
     setLangkahTerbuka(0)
@@ -434,6 +526,50 @@ export default function Konsultasi() {
     setTahap('pertanyaan')
   }
 
+  /* ---------- Pop up konfirmasi keluar ---------- */
+
+  const persenTotalModal = (jumlahTerjawab / JUMLAH_INDIKATOR) * 100
+  let modalEl = null
+  if (modalKeluar) {
+    const dataDiri = modalKeluar.jenis === 'dataDiri'
+    const sedangTanya = tahap === 'pertanyaan'
+    let isi
+    if (dataDiri) {
+      isi = 'Anda akan meninggalkan daftar pernyataan untuk memeriksa data diri. Jawaban yang sudah Anda isi tetap tersimpan, dan bisa dilanjutkan setelah Anda menekan Mulai konsultasi.'
+    } else if (sedangTanya && jumlahTerjawab > 0) {
+      isi = `Anda baru menjawab ${jumlahTerjawab} dari ${JUMLAH_INDIKATOR} pernyataan, jadi profil risiko Anda belum bisa dihitung. Jawaban Anda tersimpan sementara selama tab ini terbuka, tetapi akan hilang bila tab ditutup.`
+    } else if (sedangTanya) {
+      isi = 'Anda belum menjawab satu pun pernyataan, jadi profil risiko Anda belum bisa dihitung. Data diri Anda tersimpan sementara selama tab ini terbuka, tetapi akan hilang bila tab ditutup.'
+    } else {
+      isi = 'Data diri Anda belum lengkap dan konsultasi belum dimulai. Isian ini tersimpan sementara selama tab ini terbuka, tetapi akan hilang bila tab ditutup.'
+    }
+    modalEl = (
+      <ModalKonfirmasi
+        judul={dataDiri ? 'Kembali ke data diri?' : 'Tinggalkan konsultasi sekarang?'}
+        ikon={dataDiri ? Ikon.dataDiri : Ikon.segitiga}
+        nada="emas"
+        saatBatal={tetapDiSini}
+        tombol={[
+          { label: dataDiri ? 'Ya, ke data diri' : 'Ya, tinggalkan', aksi: lanjutKeluar, gaya: dataDiri ? 'garis' : 'bahaya' },
+          { label: dataDiri ? 'Tetap di sini' : sedangTanya ? 'Lanjutkan konsultasi' : 'Lanjutkan mengisi', aksi: tetapDiSini, gaya: 'emas', autoFokus: true },
+        ]}
+      >
+        <p>{isi}</p>
+        {sedangTanya && (
+          <div className="kons__modal-kemajuan">
+            <div className="kons__modal-kemajuan-baris">
+              <span>Kemajuan Anda</span>
+              <strong>{jumlahTerjawab} dari {JUMLAH_INDIKATOR} pernyataan</strong>
+            </div>
+            <div className="kons__bar kons__bar--tipis" aria-hidden="true">
+              <span style={{ width: `${persenTotalModal}%` }} />
+            </div>
+          </div>
+        )}
+      </ModalKonfirmasi>
+    )
+  }
+
   /* ---------- Tampilan ---------- */
 
   if (tahap === 'hasil' && hasil) {
@@ -443,7 +579,7 @@ export default function Konsultasi() {
           identitas={identitasFinal}
           hasil={hasil}
           jawaban={jawaban}
-          nomorKonsultasi={idKonsultasi.current}
+          waktuKonsultasi={waktuSelesai.current ? new Date(waktuSelesai.current) : null}
           statusSimpan={statusSimpan}
           pesanSimpan={pesanSimpan}
           saatSimpanUlang={() => kirimRiwayat(hasil)}
@@ -540,7 +676,7 @@ export default function Konsultasi() {
                           <span className="kons__tanda" aria-hidden="true">{dijawab ? Ikon.centang : null}</span>
                         </div>
                         <p className="kons__tanya" id={`kons-t-${i.kode}`}>{i.pertanyaan}</p>
-                        <PilihanJawaban kode={i.kode} nilai={nilai} saatPilih={pilihJawaban} idGalat={bermasalah ? `kons-g-${i.kode}` : undefined} />
+                        <PilihanJawaban kode={i.kode} nilai={nilai} saatPilih={pilihJawaban} saatHapus={hapusJawaban} idGalat={bermasalah ? `kons-g-${i.kode}` : undefined} />
                         {bermasalah && (
                           <p className="kons__pesan-galat" id={`kons-g-${i.kode}`} role="alert">
                             {Ikon.peringatan} Pernyataan ini belum dijawab.
@@ -562,7 +698,7 @@ export default function Konsultasi() {
                   </p>
                 ) : (
                   <p className="kons__aksi-teks">
-                    <strong>{terjawabLangkah}</strong> dari {JUMLAH_PER_LANGKAH} terjawab
+                    {terjawabLangkah} dari {JUMLAH_PER_LANGKAH} terjawab
                   </p>
                 )}
                 <div className="kons__bar kons__bar--tipis" aria-hidden="true">
@@ -585,6 +721,7 @@ export default function Konsultasi() {
             </div>
           </section>
         </div>
+        {modalEl}
       </div>
     )
   }
@@ -649,7 +786,7 @@ export default function Konsultasi() {
               placeholder="Contoh: Dewi Lestari"
               maxLength={80}
               value={identitas.nama}
-              onChange={(e) => ubahKolom('nama', e.target.value)}
+              onChange={(e) => ubahNama(e.target.value)}
               onBlur={() => identitas.nama && periksaSatuKolom('nama')}
               aria-invalid={galat.nama ? 'true' : 'false'}
               aria-describedby={galat.nama ? 'kons-nama-galat' : undefined}
@@ -750,12 +887,15 @@ export default function Konsultasi() {
             {galat.setuju && <p className="kons__pesan-galat" id="kons-setuju-galat" role="alert">{Ikon.peringatan} {galat.setuju}</p>}
           </div>
 
-          <button type="submit" className="tombol tombol--emas kons__mulai">
+          {/* Mouse down tidak memindahkan fokus dari kolom yang sedang diisi. Tanpa ini, pesan galat kolom itu muncul saat fokus
+              lepas, menggeser tombol ke bawah sebelum klik selesai, dan klik pertama pengguna meleset. */}
+          <button type="submit" className="tombol tombol--emas kons__mulai" onMouseDown={(e) => e.preventDefault()}>
             Mulai konsultasi {Ikon.panah}
           </button>
           <p className="kons__catatan">Hasilnya skrining awal yang disusun dari pengetahuan seorang pakar. Tidak menggantikan konsultasi langsung, tetapi menjadi bekal yang berguna untuk melangkah.</p>
         </form>
       </div>
+      {modalEl}
     </div>
   )
 }

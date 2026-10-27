@@ -64,6 +64,24 @@ body {
 #root {
   min-height: 100vh;
 }
+/* Kerangka halaman. Pada halaman dengan footer ringkas, isi halaman meregang mengisi layar supaya footer yang
+   tipis tetap berada di dasar layar, tanpa menambah ruang gulir yang tidak perlu. */
+.rangka {
+  display: contents;
+}
+.rangka--ringkas {
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+}
+.rangka--ringkas > main {
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+}
+.rangka--ringkas > main > * {
+  flex: 1 0 auto;
+}
 h1,
 h2,
 h3,

@@ -13,6 +13,7 @@ import {
   BOBOT_AWAL,
   CONTOH_JAWABAN,
   CONTOH_LAPLACE,
+  CONTOH_SKRIPSI,
   KETERBATASAN,
   KODE_SIMULATOR,
   ORANG,
@@ -42,6 +43,8 @@ const persen = (p) => {
   return `${v.toLocaleString('id-ID', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`
 }
 const angka = (n) => n.toLocaleString('id-ID', { maximumFractionDigits: 4 })
+// Prior ditulis dua desimal (0,55 / 0,35 / 0,10) agar sama dengan tabel di halaman Hasil dan laporan PDF.
+const duaDesimal = (n) => n.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
 /* ---------- Simulator: empat pernyataan asli, dihitung mesin yang sama dengan halaman Konsultasi ---------- */
 
@@ -63,10 +66,10 @@ function Simulator({ tampil }) {
   const catatan = (
     <>
       <p>
-        <strong>{terjawab}</strong> dari 40 pernyataan dipakai di sini.
+        {terjawab} dari 40 pernyataan dipakai di sini.
       </p>
       <p>
-        Bobot awal pakar: Konservatif {angka(BOBOT_AWAL.H1)}, Moderat {angka(BOBOT_AWAL.H2)}, Agresif {angka(BOBOT_AWAL.H3)}.
+        Bobot awal pakar: Konservatif {duaDesimal(BOBOT_AWAL.H1)}, Moderat {duaDesimal(BOBOT_AWAL.H2)}, Agresif {duaDesimal(BOBOT_AWAL.H3)} (jumlahnya 1).
       </p>
     </>
   )
@@ -306,7 +309,7 @@ export default function Tentang() {
       gsap.set('[data-muncul]', { autoAlpha: 0, y: 34 })
       gsap
         .timeline({ delay: 0.3, defaults: { ease: 'power4.out' } })
-        .from('.tentang-hero__label, .tentang-hero__lead, .tentang-hero__aksi, .tentang-hero__metode', { autoAlpha: 0, y: 26, duration: 0.9, stagger: 0.1 })
+        .from('.tentang-hero__lead, .tentang-hero__aksi, .tentang-hero__metode', { autoAlpha: 0, y: 26, duration: 0.9, stagger: 0.1 }, 0.1)
         .from('.tentang-hero__baris-isi', { yPercent: 115, duration: 1.1, stagger: 0.12 }, 0)
         .from('.tentang-hero__kartu', { autoAlpha: 0, y: 50, scale: 0.95, duration: 1.2 }, 0.25)
         .fromTo('.tentang-kurva__garis', { strokeDashoffset: 1, strokeDasharray: 1 }, { strokeDashoffset: 0, duration: 2.4, ease: 'power2.inOut' }, 0.6)
@@ -377,7 +380,6 @@ export default function Tentang() {
 
         <div className="pembungkus tentang-hero__isi">
           <div className="tentang-hero__teks">
-            <p className="label-seksi tentang-hero__label">Tentang TAKAR</p>
             <h1 className="tentang-hero__judul">
               <span className="tentang-hero__baris">
                 <span className="tentang-hero__baris-isi">Hitungannya dari</span>
@@ -552,6 +554,9 @@ export default function Tentang() {
                         <p className="tentang-rumus__rumus">
                           N<sub>j</sub> = P(H<sub>j</sub>) &times; &Pi; [ P(E<sub>i</sub>|H<sub>j</sub>)&prime; &times; CF<sub>i</sub> ]
                         </p>
+                        <p>
+                          P(H<sub>j</sub>) adalah probabilitas prior, yaitu peluang awal tiap profil sebelum Anda menjawab apa pun: Konservatif {duaDesimal(BOBOT_AWAL.H1)}, Moderat {duaDesimal(BOBOT_AWAL.H2)}, dan Agresif {duaDesimal(BOBOT_AWAL.H3)}. Ketiganya berjumlah 1.
+                        </p>
                         <p>Hanya pernyataan yang Anda tandai sesuai (CF di atas 0) yang ikut dikalikan. Pernyataan yang dijawab Tidak tidak memengaruhi hasil.</p>
                       </div>
                     </li>
@@ -573,7 +578,7 @@ export default function Tentang() {
                     </p>
                     <p className="tentang-rumus__bukti">
                       <IkonEdukasi nama="centang" ukuran={17} tebal={2.2} />
-                      Pada contoh kasus di skripsi, perhitungan manual dan sistem menghasilkan angka yang sama: Moderat 99,83%.
+                      Pada contoh kasus di skripsi, perhitungan manual dan sistem menghasilkan angka yang sama: {CONTOH_SKRIPSI.nama} {duaDesimal(CONTOH_SKRIPSI.persen)}%.
                     </p>
                   </div>
                 </div>
