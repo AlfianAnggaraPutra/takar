@@ -1026,12 +1026,6 @@
     height: 30px;
   }
 }
-.berita__catatan {
-  margin-top: 22px;
-  text-align: center;
-  font-size: 0.8rem;
-  color: var(--teks-halus);
-}
 
 /* ============ FAQ ============ */
 .faq__daftar {

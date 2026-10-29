@@ -110,3 +110,39 @@
   color: rgba(246, 243, 236, 0.75);
   opacity: 0;
 }
+
+/* ---------- Tablet sempit (600 sampai sekitar 690 px) ----------
+   Tagline dikecilkan sedikit supaya lebar seluruh susunan tidak nyaris menyentuh tepi layar.
+   Pada layar laptop dan tablet lebar (di atas sekitar 690 px) ukurannya tetap 18px seperti sebelumnya. */
+@media (min-width: 600px) {
+  .lp-tagline {
+    font-size: clamp(14px, 2.6vw, 18px);
+  }
+}
+
+/* ---------- Layar HP (di bawah 600 px) ----------
+   Di layar sempit tagline satu baris lebih lebar daripada kolom kanan (kolom AKAR), sehingga dulu terpaksa
+   terpecah dua baris dan menimpa huruf AKAR. Di sini susunannya dibuat begini:
+   - ikon dan AKAR sedikit diperkecil mengikuti lebar layar, supaya ada ruang di kiri dan kanan,
+   - tagline pindah ke bawah keduanya, rata tengah, satu baris, dengan jarak yang cukup dari ikon dan AKAR,
+   - ukuran tagline mengikuti lebar layar (dengan batas bawah dan atas) sehingga selalu muat dalam satu baris. */
+@media (max-width: 599px) {
+  .lp-lockup {
+    column-gap: clamp(8px, 2.6vw, 14px);
+  }
+  .lp-logo--kecil {
+    height: clamp(84px, min(27vw, 26vh), 150px);
+  }
+  .lp-akar {
+    font-size: clamp(44px, min(17vw, 16vh), 110px);
+  }
+  .lp-tagline {
+    grid-column: 1 / -1;
+    justify-self: center;
+    text-align: center;
+    white-space: nowrap;
+    margin-top: clamp(14px, 4vw, 22px);
+    font-size: clamp(10px, 3.2vw, 14px);
+    letter-spacing: 0.12em;
+  }
+}

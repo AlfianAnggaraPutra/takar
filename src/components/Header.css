@@ -140,6 +140,12 @@
   color: var(--kunyit-300);
   transition: background 0.35s, color 0.35s, transform 0.35s, border-color 0.35s;
 }
+/* Versi tombol (Logout) tampil sama dengan tautan Login Admin. */
+button.hdr__admin {
+  background: none;
+  font-family: inherit;
+  cursor: pointer;
+}
 .hdr__admin:hover {
   background: var(--kunyit-400);
   border-color: var(--kunyit-400);

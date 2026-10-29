@@ -4,7 +4,7 @@ import gsap from 'gsap'
 import LatarKonsultasi from '../components/LatarKonsultasi'
 import LogoTimbangan from '../components/LogoTimbangan'
 import { bacaPesanSesi, hapusPesanSesi } from '../lib/batasSesi'
-import { BATAS_SANDI_MINIMAL, masukAdmin, periksaEmail, periksaSandi, useSesiAdmin } from '../lib/autentikasi'
+import { masukAdmin, periksaEmail, periksaSandi, useSesiAdmin } from '../lib/autentikasi'
 import './MasukAdmin.css'
 
 const TUJUAN = '/admin/riwayat'
@@ -207,15 +207,9 @@ export default function MasukAdmin() {
 
   const saatTombolSandi = (e) => setCapsAktif(Boolean(e.getModifierState?.('CapsLock')))
 
-  // Petunjuk di bawah tombol saat tombol belum bisa dipakai.
-  let petunjuk = ''
-  if (terkunci) petunjuk = `Terlalu banyak percobaan. Coba lagi dalam ${sisaDetik} detik.`
-  else if (!valid && !sibuk) {
-    const kurang = []
-    if (galatEmail) kurang.push('email @gmail.com')
-    if (galatSandi) kurang.push(`kata sandi minimal ${BATAS_SANDI_MINIMAL} karakter`)
-    petunjuk = `Lengkapi ${kurang.join(' dan ')} untuk mengaktifkan tombol Masuk.`
-  }
+  // Keterangan di bawah tombol hanya muncul saat masuk dikunci sementara. Kekurangan isian cukup ditunjukkan
+  // oleh pesan di bawah kotak email dan kata sandi masing-masing.
+  const petunjuk = terkunci ? `Terlalu banyak percobaan. Coba lagi dalam ${sisaDetik} detik.` : ''
 
   // Sudah masuk sebelum halaman dibuka: tidak perlu menampilkan formulir.
   if (sesi && !dariLogin.current) return <Navigate to={TUJUAN} replace />
@@ -329,7 +323,7 @@ export default function MasukAdmin() {
                     autoCapitalize="none"
                     autoCorrect="off"
                     spellCheck={false}
-                    placeholder={`Minimal ${BATAS_SANDI_MINIMAL} karakter`}
+                    placeholder="********"
                     value={sandi}
                     disabled={sibuk}
                     maxLength={100}

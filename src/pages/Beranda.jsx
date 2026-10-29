@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import IkonEdukasi from '../components/IkonEdukasi'
-import FotoHero from '../components/FotoHero'
+import HeroPerisai from '../components/HeroPerisai'
 import GambarAman from '../components/GambarAman'
 import IlustrasiBerita from '../components/IlustrasiBerita'
 import { DAFTAR_INSTRUMEN, LABEL_RISIKO, warnaRisiko } from '../data/edukasi'
@@ -370,7 +370,7 @@ export default function Beranda() {
   const akar = useRef(null)
   const jalur = useRef(null)
   const seret = useRef({ sedang: false, awalX: 0, awalKiri: 0, bergeser: 0 })
-  const [faqBuka, setFaqBuka] = useState(0)
+  const [faqBuka, setFaqBuka] = useState(-1) // semua jawaban tertutup sampai pengunjung mengeklik pertanyaannya
   const [indeksBerita, setIndeksBerita] = useState(0)
   const [muatBerita, setMuatBerita] = useState(false)
   const { hash, key } = useLocation()
@@ -495,9 +495,9 @@ export default function Beranda() {
   /* ---- Ajakan akhir: tombol Mulai Konsultasi dibuat menarik perhatian ----
      Dua kelas dipasang pada bagian #mulai. cta--terlihat menyalakan gerak pelan yang berulang selama bagian itu ada di
      layar (denyut cincin, kilau, panah). cta--sorot memutar sorotan yang lebih kuat sekitar 4,5 detik: tombol membesar
-     sebentar disusul cincin yang menyebar. Sorotan ini berjalan saat bagian ajakan pertama kali terlihat, dan
-     setiap kali pengguna tiba di sana lewat menu Konsultasi. Semua gerak ini dimatikan bila pengguna memilih
-     mengurangi gerak (CSS). */
+     sebentar disusul cincin yang menyebar. Sorotan ini diputar setiap kali pengguna menggulir sampai ke bagian ajakan
+     (juga bila menjauh lalu kembali), dan saat tiba lewat tautan #mulai. Menu Konsultasi di header sendiri langsung
+     membuka halaman Konsultasi. Semua gerak ini dimatikan bila pengguna memilih mengurangi gerak (CSS). */
   const sorotkanAjakan = useCallback(() => {
     const seksi = document.getElementById('mulai')
     if (!seksi || seksi.classList.contains('cta--sorot')) return
@@ -508,7 +508,7 @@ export default function Beranda() {
     w.selesai = setTimeout(() => seksi.classList.remove('cta--sorot'), 4600)
   }, [])
 
-  // Setelah menggulir ke ajakan lewat menu, sorotan dimulai begitu gulir berhenti dan tombol terlihat penuh.
+  // Setelah menggulir ke ajakan lewat tautan #mulai, sorotan dimulai begitu gulir berhenti dan tombol terlihat penuh.
   const sorotkanSetelahTenang = useCallback(() => {
     const w = sorot.current
     clearTimeout(w.periksa)
@@ -544,14 +544,21 @@ export default function Beranda() {
       seksi.classList.add('cta--terlihat')
       return () => seksi.classList.remove('cta--terlihat')
     }
-    let pernah = false
     const pengamat = new IntersectionObserver(
       ([e]) => {
         seksi.classList.toggle('cta--terlihat', e.isIntersecting)
-        // Saat tiba lewat menu, sorotan menunggu gulir berhenti (sorotkanSetelahTenang), jadi tidak diputar dua kali.
-        if (e.isIntersecting && !pernah && !w.menunggu) {
-          pernah = true
-          w.tunda = setTimeout(sorotkanAjakan, 350)
+        if (e.isIntersecting) {
+          // Setiap kali pengguna menggulir sampai ke ajakan, sorotan diputar dari awal. Bila tiba lewat tautan #mulai,
+          // sorotan menunggu gulir berhenti (sorotkanSetelahTenang), jadi tidak diputar dua kali.
+          if (!w.menunggu) {
+            clearTimeout(w.tunda)
+            w.tunda = setTimeout(sorotkanAjakan, 350)
+          }
+        } else {
+          // Menjauh dari ajakan: sorotan dihentikan, supaya saat pengguna kembali bisa diputar lagi dari awal.
+          clearTimeout(w.tunda)
+          clearTimeout(w.selesai)
+          seksi.classList.remove('cta--sorot')
         }
       },
       { threshold: 0.5 },
@@ -706,7 +713,7 @@ export default function Beranda() {
           </div>
 
           <div className="hero__visual">
-            <FotoHero />
+            <HeroPerisai />
           </div>
         </div>
 
@@ -972,7 +979,6 @@ export default function Beranda() {
               <button key={b.id} type="button" aria-label={`Ke berita ${i + 1}`} className={`titik ${i === indeksBerita ? 'titik--aktif' : ''}`} onClick={() => keBerita(i)} />
             ))}
           </div>
-          <p className="berita__catatan">Berita dipilih per 4 Oktober 2026 dari media dan siaran pers resmi. Foto dan artikel adalah milik media sumbernya.</p>
         </div>
       </section>
 

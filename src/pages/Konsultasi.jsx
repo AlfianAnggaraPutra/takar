@@ -783,7 +783,7 @@ export default function Konsultasi() {
               id="kons-nama"
               type="text"
               autoComplete="name"
-              placeholder="Contoh: Dewi Lestari"
+              placeholder="Contoh: Alfian Afandy"
               maxLength={80}
               value={identitas.nama}
               onChange={(e) => ubahNama(e.target.value)}
@@ -892,7 +892,7 @@ export default function Konsultasi() {
           <button type="submit" className="tombol tombol--emas kons__mulai" onMouseDown={(e) => e.preventDefault()}>
             Mulai konsultasi {Ikon.panah}
           </button>
-          <p className="kons__catatan">Hasilnya skrining awal yang disusun dari pengetahuan seorang pakar. Tidak menggantikan konsultasi langsung, tetapi menjadi bekal yang berguna untuk melangkah.</p>
+          <p className="kons__catatan">Hasil konsultasi nantinya berupa skrining awal profil risiko Anda, disusun dari pengetahuan seorang pakar. Hasilnya tidak menggantikan konsultasi langsung, tetapi menjadi bekal yang berguna untuk melangkah.</p>
         </form>
       </div>
       {modalEl}

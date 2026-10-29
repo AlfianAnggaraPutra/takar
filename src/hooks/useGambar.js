@@ -11,7 +11,7 @@ const BATAS_WAKTU = 9000
   Hanya gambar yang benar-benar sudah selesai dimuat yang dipasang ke halaman, sehingga munculnya mulus (tanpa
   gambar yang terpotong separuh jalan).
 
-  - sumber   : daftar alamat gambar, misalnya ['/hero-konsultasi.jpg', '/hero-konsultasi.webp']
+  - sumber   : daftar alamat gambar, misalnya ['/logo-lembaga/unair.svg', '/logo-lembaga/unair.png']
   - mulai    : false menunda pemuatan (dipakai untuk bagian halaman yang masih jauh di bawah)
   - minimum  : sisi terpendek (piksel) yang dianggap gambar sungguhan. Gambar yang lebih kecil, misalnya piksel
                pelacak 1x1 milik situs lain, dianggap gagal.

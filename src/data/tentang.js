@@ -5,7 +5,6 @@
 
 import { DAFTAR_INDIKATOR, PARAMETER_LAPLACE, PROBABILITAS_PRIOR } from './basisPengetahuan.js'
 import { LANGKAH_KONSULTASI } from './profilRisiko.js'
-import { hitungProfilRisiko } from '../lib/mesinInferensi.js'
 
 /* ---------- Orang di balik TAKAR ---------- */
 // Kolom nama atau uraian yang dikosongkan tidak ditampilkan, dan kartunya hanya memuat bagian yang terisi.
@@ -23,7 +22,7 @@ export const ORANG = [
     nama: '',
     ikon: 'pakar',
     warna: 'teal',
-    uraian: 'Seorang Certified Financial Planner (CFP) yang diwawancarai. Beliau menilai probabilitas prior (bobot awal tiap profil), probabilitas likelihood (bobot tiap indikator), dan pemetaan profil ke instrumen. Namanya tidak dicantumkan atas permintaan beliau.',
+    uraian: 'Seorang Certified Financial Planner (CFP) yang diwawancarai. Beliau menilai probabilitas prior (bobot awal tiap profil), probabilitas likelihood (bobot tiap indikator), dan pemetaan profil ke instrumen.',
   },
   {
     peran: 'Dosen pembimbing I',
@@ -119,14 +118,6 @@ export const SINGKAT_JAWABAN = { 0: 'Tidak', 0.4: 'Sedikit', 0.6: 'Cukup', 0.8: 
 
 // Probabilitas prior tiap profil. Ketiganya berjumlah 1 (lihat basisPengetahuan.js).
 export const BOBOT_AWAL = PROBABILITAS_PRIOR
-
-// Contoh kasus di skripsi (Bab IV): sembilan pernyataan yang dijawab. Hasilnya dihitung oleh mesin yang sama dengan
-// halaman Konsultasi, jadi angka yang tertulis di halaman Tentang ikut berubah bila bobot pakar direvisi.
-const JAWABAN_BAB_IV = { E2: 1, E7: 0.8, E13: 0.4, E15: 0.8, E21: 0.6, E24: 0.8, E25: 0.6, E34: 0.4, E38: 0.8 }
-export const CONTOH_SKRIPSI = (() => {
-  const hasil = hitungProfilRisiko(JAWABAN_BAB_IV)
-  return { nama: hasil.profilTertinggi.nama, persen: hasil.persentase }
-})()
 
 // Contoh pada penjelasan koreksi Laplace: E3 untuk profil Konservatif, bobot pakar 0.
 export const CONTOH_LAPLACE = (() => {

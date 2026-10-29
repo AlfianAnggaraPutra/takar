@@ -218,6 +218,19 @@ export default function RiwayatAdmin() {
     }
   }, [])
 
+  // Tombol Logout di header meminta pop up konfirmasi keluar dari halaman ini. Menandai permintaan sebagai
+  // ditangani supaya header tidak mengeluarkan admin sendiri tanpa konfirmasi.
+  useEffect(() => {
+    const saatMinta = (e) => {
+      if (e.detail) e.detail.ditangani = true
+      if (sedangKeluar || sedangPindah) return
+      setModalPindah(null)
+      setModalKeluar(true)
+    }
+    window.addEventListener('takar:minta-keluar-admin', saatMinta)
+    return () => window.removeEventListener('takar:minta-keluar-admin', saatMinta)
+  }, [sedangKeluar, sedangPindah])
+
   const akar = useRef(null)
   const kartuTabel = useRef(null)
   const idPermintaan = useRef(0)
@@ -629,10 +642,6 @@ export default function RiwayatAdmin() {
               <span className="riw__titik" aria-hidden="true" />
               <span className="riw__email-teks">{emailTerakhir.current || 'Admin'}</span>
             </span>
-            <button type="button" className="riw__keluar" onClick={() => setModalKeluar(true)}>
-              {Ikon.keluar}
-              Keluar
-            </button>
           </div>
         </div>
 

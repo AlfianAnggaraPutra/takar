@@ -1,0 +1,336 @@
+/*
+  Gambar hero Beranda: tiga perisai kaca di atas panggung bercahaya, tanpa bingkai dan tanpa latar.
+  Pola bertingkat supaya gerak tidak saling menimpa: lapisan luar untuk gerak masuk dan lompat klik, lapisan
+  tengah untuk melayang, lapisan dalam untuk geser kursor dan sorot. Animasi CSS hanya dipasang pada elemen
+  yang tidak digerakkan GSAP.
+*/
+.hp {
+  position: relative;
+  /* Lebar dibatasi tinggi layar supaya gambar tidak melebihi layar laptop yang pendek. */
+  width: min(100%, 560px, max(300px, calc((100svh - var(--tinggi-header) - 190px) * 1.1)));
+  aspect-ratio: 996 / 896;
+  margin: 0 auto;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Cahaya zamrud lembut di belakang gambar: pengganti bingkai, memberi kedalaman tanpa tepi keras. */
+.hp__aura {
+  position: absolute;
+  left: -20%;
+  right: -20%;
+  top: -16%;
+  bottom: -8%;
+  pointer-events: none;
+}
+.hp__aura > span {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 46% 44% at 50% 60%, rgba(52, 211, 153, 0.2), rgba(31, 150, 160, 0.09) 52%, transparent 100%),
+    radial-gradient(circle closest-side at 78% 26%, rgba(236, 181, 78, 0.08), transparent);
+  animation: hp-aura 7s ease-in-out infinite;
+}
+@keyframes hp-aura {
+  0%,
+  100% {
+    opacity: 0.72;
+    transform: scale(0.97);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+}
+
+.hp__papan {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+}
+.hp__lap,
+.hp__ayun,
+.hp__angkat {
+  position: absolute;
+  inset: 0;
+}
+.hp__panggung {
+  z-index: 1;
+}
+.hp__perisai--merah,
+.hp__perisai--emas {
+  z-index: 2;
+}
+.hp__perisai--hijau {
+  z-index: 3;
+}
+.hp__gambar {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  transition: filter 0.45s ease;
+}
+
+/* Perisai yang ditunjuk kursor lebih terang dan berpendar sewarna dirinya. */
+.hp[data-sorot='merah'] .hp__perisai--merah .hp__gambar {
+  filter: brightness(1.1) saturate(1.08) drop-shadow(0 0 16px rgba(255, 90, 110, 0.5));
+}
+.hp[data-sorot='hijau'] .hp__perisai--hijau .hp__gambar {
+  filter: brightness(1.1) saturate(1.08) drop-shadow(0 0 16px rgba(90, 240, 170, 0.5));
+}
+.hp[data-sorot='emas'] .hp__perisai--emas .hp__gambar {
+  filter: brightness(1.1) saturate(1.08) drop-shadow(0 0 16px rgba(255, 205, 90, 0.5));
+}
+.hp[data-sorot='panggung'] .hp__panggung .hp__gambar {
+  filter: brightness(1.1);
+}
+
+/* Inti cahaya di tengah panggung: berdenyut pelan, dengan kilau memanjang seperti lensa. */
+.hp__inti {
+  position: absolute;
+  left: 27.4%;
+  top: 67.1%;
+  width: 46%;
+  height: 17.7%;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+.hp__denyut {
+  position: absolute;
+  inset: 0;
+  opacity: 0.8;
+  background: radial-gradient(ellipse closest-side, rgba(220, 255, 238, 0.5) 0%, rgba(90, 240, 175, 0.3) 30%, rgba(40, 200, 140, 0.1) 60%, transparent 100%);
+  animation: hp-denyut 3.8s ease-in-out infinite;
+}
+.hp__denyut::before,
+.hp__denyut::after {
+  content: '';
+  position: absolute;
+}
+.hp__denyut::before {
+  left: -16%;
+  right: -16%;
+  top: calc(50% - 1px);
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(205, 255, 232, 0.9) 50%, transparent);
+}
+.hp__denyut::after {
+  top: -34%;
+  bottom: -34%;
+  left: calc(50% - 1px);
+  width: 2px;
+  background: linear-gradient(180deg, transparent, rgba(205, 255, 232, 0.65) 50%, transparent);
+}
+@keyframes hp-denyut {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.92);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.07);
+  }
+}
+
+/* Cincin cahaya yang menyebar di permukaan panggung: pelan saat diam, tegas saat diklik. */
+.hp__cincin {
+  position: absolute;
+  left: 15.4%;
+  top: 64.5%;
+  width: 70%;
+  height: 23%;
+  border: 2px solid rgba(120, 245, 190, 0.85);
+  border-radius: 50%;
+  box-shadow: 0 0 16px rgba(70, 225, 160, 0.5), inset 0 0 14px rgba(70, 225, 160, 0.3);
+  opacity: 0;
+  transform: scale(0.15);
+  pointer-events: none;
+}
+.hp--siap .hp__cincin--diam {
+  animation: hp-ping 6.5s cubic-bezier(0.2, 0.7, 0.2, 1) 1.8s infinite;
+}
+@keyframes hp-ping {
+  0% {
+    opacity: 0;
+    transform: scale(0.2);
+  }
+  4% {
+    opacity: 0.5;
+  }
+  32%,
+  100% {
+    opacity: 0;
+    transform: scale(1.12);
+  }
+}
+.hp__cincin--klik {
+  animation: hp-cincin 1.15s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+}
+@keyframes hp-cincin {
+  0% {
+    opacity: 0;
+    transform: scale(0.18);
+  }
+  12% {
+    opacity: 0.95;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.18);
+  }
+}
+
+/* Kilau yang melintas di permukaan kaca. Dipotong mengikuti bentuk perisai lewat mask dari PNG-nya sendiri. */
+.hp__kilat {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  -webkit-mask-image: var(--topeng);
+  mask-image: var(--topeng);
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+.hp__perisai--merah .hp__kilat {
+  --topeng: url('/hero/perisai-merah.png');
+}
+.hp__perisai--hijau .hp__kilat {
+  --topeng: url('/hero/perisai-hijau.png');
+}
+.hp__perisai--emas .hp__kilat {
+  --topeng: url('/hero/perisai-emas.png');
+}
+.hp__sapu {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 55%;
+  background: linear-gradient(105deg, transparent 22%, rgba(255, 255, 255, 0) 34%, rgba(255, 255, 255, 0.5) 50%, rgba(255, 255, 255, 0) 66%, transparent 78%);
+}
+.hp__sapu--diam {
+  transform: translateX(-100%);
+}
+.hp--siap .hp__sapu--diam {
+  animation: hp-sapu 8s cubic-bezier(0.45, 0.05, 0.3, 1) infinite;
+}
+.hp--siap .hp__perisai--merah .hp__sapu--diam {
+  animation-delay: 2.4s;
+}
+.hp--siap .hp__perisai--hijau .hp__sapu--diam {
+  animation-delay: 2.8s;
+}
+.hp--siap .hp__perisai--emas .hp__sapu--diam {
+  animation-delay: 3.2s;
+}
+@keyframes hp-sapu {
+  0% {
+    transform: translateX(-100%);
+  }
+  24%,
+  100% {
+    transform: translateX(185%);
+  }
+}
+
+/* Kerlip kecil di sudut perisai, bergantian dan tidak serempak. */
+.hp__kerlip {
+  position: absolute;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  color: #d9fff0;
+  filter: drop-shadow(0 0 5px currentColor);
+  pointer-events: none;
+}
+.hp__perisai--merah .hp__kerlip {
+  color: #ffe3e8;
+}
+.hp__perisai--emas .hp__kerlip {
+  color: #fff0c8;
+}
+.hp__kerlip i {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, #fff 0 20%, currentColor 45%, rgba(255, 255, 255, 0) 100%);
+  clip-path: polygon(50% 0, 56% 44%, 100% 50%, 56% 56%, 50% 100%, 44% 56%, 0 50%, 44% 44%);
+  opacity: 0;
+  transform: scale(0);
+}
+.hp--siap .hp__kerlip i {
+  animation: hp-kerlip 6.4s ease-in-out var(--tunda, 0s) infinite;
+}
+@keyframes hp-kerlip {
+  0%,
+  58%,
+  100% {
+    opacity: 0;
+    transform: scale(0) rotate(-30deg);
+  }
+  66% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+  74% {
+    opacity: 0.9;
+    transform: scale(0.55) rotate(25deg);
+  }
+  84% {
+    opacity: 0;
+    transform: scale(0) rotate(60deg);
+  }
+}
+
+/* Berhenti saat gambar di luar layar. */
+.hp--jeda *,
+.hp--jeda *::before,
+.hp--jeda *::after {
+  animation-play-state: paused !important;
+}
+
+/* Tablet dan ponsel: gambar tampil di bawah teks, sedikit lebih kecil. */
+@media (max-width: 1024px) {
+  .hp {
+    width: min(100%, 540px);
+  }
+}
+@media (max-width: 560px) {
+  .hp {
+    width: min(100%, 420px);
+  }
+  .hp__cincin {
+    border-width: 1.5px;
+  }
+}
+
+/* Kurangi gerak: gambar diam utuh, tanpa kilau, kerlip, dan cincin. */
+.hp--statis .hp__aura > span,
+.hp--statis .hp__denyut {
+  animation: none;
+}
+.hp--statis .hp__kerlip,
+.hp--statis .hp__cincin,
+.hp--statis .hp__kilat {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hp *,
+  .hp *::before,
+  .hp *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  .hp__kerlip,
+  .hp__cincin,
+  .hp__kilat {
+    display: none;
+  }
+}

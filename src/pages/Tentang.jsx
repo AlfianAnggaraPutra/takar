@@ -13,7 +13,6 @@ import {
   BOBOT_AWAL,
   CONTOH_JAWABAN,
   CONTOH_LAPLACE,
-  CONTOH_SKRIPSI,
   KETERBATASAN,
   KODE_SIMULATOR,
   ORANG,
@@ -25,6 +24,66 @@ import {
 import './Tentang.css'
 
 gsap.registerPlugin(ScrollTrigger)
+
+/*
+  Animasi masuk kartu alur di hero. Kondisi awal dipasang sebelum browser menggambar (dipanggil dari
+  useLayoutEffect), lalu satu timeline menjalankan langkah demi langkah:
+    langkah n muncul (ikon membesar dengan cincin cahaya, judul tersapu dari kiri, uraian naik)
+    -> garis tumbuh dari sebuah titik bercahaya tepat di bawah ikon langkah n ke ikon langkah n + 1
+    -> langkah n + 1 muncul sedikit sebelum garis tiba, supaya terasa bersambung.
+  Garis digambar dengan clip-path (bukan menskalakan), jadi warna gradasinya tetap di tempatnya dan hanya
+  terbuka sedikit demi sedikit. Panjang tiap segmen diukur saat segmen itu mulai, karena tinggi tiap baris
+  bergantung pada lebar layar dan huruf yang sudah termuat.
+*/
+const DURASI_RUAS = 0.65 // detik, lama garis tumbuh antar dua langkah
+const JEDA_RUAS = 0.3 // detik, langkah terlihat dulu sebelum garis mulai tumbuh
+function susunAlur(akarHalaman) {
+  const alur = akarHalaman.querySelector('.tentang-alur')
+  if (!alur) return
+  const garis = alur.querySelector('.tentang-alur__garis')
+  const isiGaris = alur.querySelector('.tentang-alur__garis-isi')
+  const titik = alur.querySelector('.tentang-alur__titik')
+  const baris = [...alur.querySelectorAll('.tentang-alur__langkah')].map((li) => ({
+    li,
+    ikon: li.querySelector('.tentang-alur__ikon'),
+    judul: li.querySelector('.tentang-alur__teks strong'),
+    isi: li.querySelector('.tentang-alur__teks > span'),
+  }))
+  if (!garis || !isiGaris || !titik || baris.some((b) => !b.ikon || !b.judul || !b.isi)) return
+
+  // Pecahan panjang garis sampai pusat ikon langkah ke-n (indeks dari 0). Langkah terakhir selalu penuh.
+  const pecahan = (n) => {
+    if (n >= baris.length - 1) return 1
+    const g = garis.getBoundingClientRect()
+    const r = baris[n].ikon.getBoundingClientRect()
+    return Math.min(1, Math.max(0, (r.top + r.height / 2 - g.top) / g.height))
+  }
+
+  gsap.set(garis, { backgroundColor: 'rgba(246, 243, 236, 0)' })
+  gsap.set(isiGaris, { clipPath: 'inset(0% 0% 100% 0%)' })
+  gsap.set(titik, { autoAlpha: 0, y: 0 })
+  baris.forEach((b) => gsap.set([b.ikon, b.judul, b.isi], { autoAlpha: 0 }))
+
+  const tl = gsap.timeline({ delay: 1.05 })
+  const selangLangkah = JEDA_RUAS + DURASI_RUAS - 0.12
+  baris.forEach((b, n) => {
+    const t = n * selangLangkah
+    tl.add(() => b.li.classList.add('tentang-alur__langkah--muncul'), t)
+    tl.fromTo(b.ikon, { autoAlpha: 0, scale: 0.55, rotation: -10 }, { autoAlpha: 1, scale: 1, rotation: 0, duration: 0.75, ease: 'back.out(1.9)', clearProps: 'transform' }, t)
+    tl.fromTo(b.judul, { autoAlpha: 0, x: -8, clipPath: 'inset(0% 100% 0% 0%)' }, { autoAlpha: 1, x: 0, clipPath: 'inset(0% -2% 0% 0%)', duration: 0.7, ease: 'power3.out', clearProps: 'transform,clipPath' }, t + 0.12)
+    tl.fromTo(b.isi, { autoAlpha: 0, y: 10 }, { autoAlpha: 1, y: 0, duration: 0.7, ease: 'power3.out', clearProps: 'transform' }, t + 0.26)
+
+    if (n === baris.length - 1) return
+    const mulai = t + JEDA_RUAS
+    tl.to(titik, { autoAlpha: 1, duration: 0.15, ease: 'none' }, mulai)
+    tl.to(isiGaris, { clipPath: () => `inset(0% 0% ${(1 - pecahan(n + 1)) * 100}% 0%)`, duration: DURASI_RUAS, ease: 'power2.inOut' }, mulai)
+    tl.to(titik, { y: () => pecahan(n + 1) * garis.offsetHeight, duration: DURASI_RUAS, ease: 'power2.inOut' }, mulai)
+    tl.to(titik, { autoAlpha: 0, duration: 0.25, ease: 'power1.in' }, mulai + DURASI_RUAS - 0.05)
+  })
+  // Setelah selesai, kembalikan ke gaya bawaan stylesheet supaya tata letak responsif tidak terganggu.
+  tl.set(isiGaris, { clearProps: 'clipPath' })
+  tl.set(garis, { clearProps: 'backgroundColor' })
+}
 
 const WARNA_PROFIL = { H1: 'teal', H2: 'emas', H3: 'terakota' }
 const PERNYATAAN = KODE_SIMULATOR.map((kode) => DAFTAR_INDIKATOR.find((i) => i.kode === kode))
@@ -314,8 +373,10 @@ export default function Tentang() {
         .from('.tentang-hero__kartu', { autoAlpha: 0, y: 50, scale: 0.95, duration: 1.2 }, 0.25)
         .fromTo('.tentang-kurva__garis', { strokeDashoffset: 1, strokeDasharray: 1 }, { strokeDashoffset: 0, duration: 2.4, ease: 'power2.inOut' }, 0.6)
         .from('.tentang-kurva__area', { autoAlpha: 0, duration: 1.4 }, 1.4)
-        .fromTo('.tentang-alur__garis', { '--p': 0 }, { '--p': 1, duration: 1.8, ease: 'power2.inOut' }, 0.9)
-        .from('.tentang-alur__langkah', { autoAlpha: 0, x: 22, duration: 0.8, stagger: 0.22, clearProps: 'transform' }, 0.9)
+
+      // Kartu alur "dari jawaban sampai profil": langkah 1 muncul, garis tumbuh dari titik kecil di bawah ikonnya
+      // sampai ke ikon langkah 2, lalu langkah 2 muncul, dan seterusnya sampai langkah 4.
+      susunAlur(akar.current)
 
       gsap.to('.tentang-hero__grid', { yPercent: 16, ease: 'none', scrollTrigger: { trigger: '.tentang-hero', start: 'top top', end: 'bottom top', scrub: true } })
 
@@ -339,6 +400,7 @@ export default function Tentang() {
     return () => {
       batal = true
       ctx.revert()
+      akar.current?.querySelectorAll('.tentang-alur__langkah--muncul').forEach((e) => e.classList.remove('tentang-alur__langkah--muncul'))
     }
   }, [])
 
@@ -425,6 +487,7 @@ export default function Tentang() {
             <div className="tentang-alur">
               <span className="tentang-alur__garis" aria-hidden="true">
                 <span className="tentang-alur__garis-isi" />
+                <span className="tentang-alur__titik" />
               </span>
               <ol className="tentang-alur__daftar">
                 {ALUR.map((a, i) => (
@@ -504,13 +567,12 @@ export default function Tentang() {
             </div>
 
             <ol className="tentang-bahan" data-muncul>
-              {BAHAN.map((b, i) => (
+              {BAHAN.map((b) => (
                 <li className="tentang-bahan__butir" key={b.judul}>
                   <span className="tentang-bahan__atas">
                     <span className="tentang-bahan__ikon">
                       <IkonEdukasi nama={b.ikon} ukuran={22} />
                     </span>
-                    <span className="tentang-bahan__nomor">Bahan {i + 1}</span>
                   </span>
                   <h3>{b.judul}</h3>
                   <p>{b.isi}</p>
@@ -575,10 +637,6 @@ export default function Tentang() {
                     <h4>Mengapa perlu koreksi Laplace?</h4>
                     <p>
                       Pada indikator {CONTOH_LAPLACE.kode} ({CONTOH_LAPLACE.nama.toLowerCase()}), pakar memberi bobot {angka(CONTOH_LAPLACE.awal)} untuk profil Konservatif. Tanpa koreksi, satu jawaban Sesuai pada {CONTOH_LAPLACE.kode} saja sudah membuat peluang Konservatif menjadi nol, apa pun jawaban Anda yang lain. Dengan koreksi, bobotnya menjadi 1 &divide; {CONTOH_LAPLACE.n + CONTOH_LAPLACE.k} &asymp; {angka(CONTOH_LAPLACE.hasil)}: sangat kecil, tetapi profil itu masih boleh menang bila jawaban lain mendukungnya.
-                    </p>
-                    <p className="tentang-rumus__bukti">
-                      <IkonEdukasi nama="centang" ukuran={17} tebal={2.2} />
-                      Pada contoh kasus di skripsi, perhitungan manual dan sistem menghasilkan angka yang sama: {CONTOH_SKRIPSI.nama} {duaDesimal(CONTOH_SKRIPSI.persen)}%.
                     </p>
                   </div>
                 </div>

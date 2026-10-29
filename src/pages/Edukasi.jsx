@@ -666,7 +666,7 @@ export default function Edukasi() {
             Mulai Konsultasi
             <IkonEdukasi nama="panah" ukuran={18} tebal={2} />
           </Link>
-          <p className="edu-ajakan__catatan">Materi di halaman ini disusun dari basis pengetahuan seorang pakar sebagai bahan belajar. Untuk keputusan yang besar, diskusikan juga dengan perencana keuangan berizin.</p>
+          <p className="edu-ajakan__catatan">Untuk keputusan yang besar, diskusikan juga dengan perencana keuangan berizin.</p>
         </div>
       </section>
     </div>
