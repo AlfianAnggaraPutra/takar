@@ -2,7 +2,7 @@ import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import gsap from 'gsap'
 import LatarKonsultasi from '../components/LatarKonsultasi'
-import LogoTimbangan from '../components/LogoTimbangan'
+import LogoPerisai from '../components/LogoPerisai'
 import { bacaPesanSesi, hapusPesanSesi } from '../lib/batasSesi'
 import { masukAdmin, periksaEmail, periksaSandi, useSesiAdmin } from '../lib/autentikasi'
 import './MasukAdmin.css'
@@ -233,8 +233,8 @@ export default function MasukAdmin() {
           <span className="masuk__kilau" aria-hidden="true" />
 
           <div className="masuk__kepala masuk__muncul" style={{ '--urut': 0 }}>
-            <span className="masuk__logo-bungkus">
-              <LogoTimbangan className="masuk__logo" />
+            <span className="masuk__logo-bungkus lgp-induk">
+              <LogoPerisai className="masuk__logo" />
             </span>
             <p className="masuk__label">Area pengelola</p>
             <h1 className="masuk__judul">Masuk Admin</h1>

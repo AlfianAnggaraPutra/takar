@@ -24,6 +24,13 @@ const KODE_PER_LANGKAH = LANGKAH_KONSULTASI.map((l) => l.kelompok.flatMap((k) =>
 
 const IDENTITAS_KOSONG = { nama: '', usia: '', pekerjaan: '', pekerjaanLain: '', noHp: '', setuju: false }
 
+// Rentang usia yang diterima, kedua batasnya ikut diterima (17 dan 120 sama-sama sah).
+// - 17 tahun: usia seseorang mulai memiliki KTP dan dapat membuka rekening investasi atas namanya sendiri.
+// - 120 tahun: sedikit di atas usia tertua yang tercatat resmi pada manusia (122 tahun). Batas ini hanya penyaring salah ketik,
+//   jadi tidak ada pengguna sungguhan yang tertolak.
+const USIA_MINIMAL = 17
+const USIA_MAKSIMAL = 120
+
 // Nomor unik satu konsultasi. Dipakai supaya "coba simpan lagi" tidak membuat riwayat ganda.
 function buatIdKonsultasi() {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') return crypto.randomUUID()
@@ -54,7 +61,8 @@ function periksaIdentitas(d) {
   const usiaTeks = d.usia.trim()
   if (!usiaTeks) galat.usia = 'Usia belum diisi.'
   else if (!/^\d{1,3}$/.test(usiaTeks)) galat.usia = 'Usia ditulis dengan angka saja.'
-  else if (Number(usiaTeks) < 17 || Number(usiaTeks) > 90) galat.usia = 'Usia harus antara 17 dan 90 tahun.'
+  else if (Number(usiaTeks) < USIA_MINIMAL) galat.usia = `Usia minimal untuk berkonsultasi adalah ${USIA_MINIMAL} tahun.`
+  else if (Number(usiaTeks) > USIA_MAKSIMAL) galat.usia = `Usia maksimal adalah ${USIA_MAKSIMAL} tahun. Periksa kembali angka yang Anda tulis.`
 
   if (!d.pekerjaan) galat.pekerjaan = 'Pilih pekerjaan Anda.'
   else if (!DAFTAR_PEKERJAAN.includes(d.pekerjaan)) galat.pekerjaan = 'Pilih pekerjaan dari daftar.'
@@ -81,6 +89,16 @@ function bersihkanIdentitas(d) {
 }
 
 /* ---------- Draf tersimpan di sesi browser, supaya refresh tidak menghapus isian ---------- */
+
+// Draf hanya ada agar muat ulang halaman tidak menghilangkan isian. Begitu pengguna meninggalkan halaman Konsultasi,
+// draf dihapus, jadi saat kembali ke Konsultasi ia mulai lagi dari data diri yang kosong.
+function hapusDraf() {
+  try {
+    sessionStorage.removeItem(KUNCI_DRAF)
+  } catch {
+    /* diabaikan */
+  }
+}
 
 function langkahPertamaBelumLengkap(jawaban) {
   for (let l = 0; l < JUMLAH_LANGKAH; l++) {
@@ -287,6 +305,28 @@ export default function Konsultasi() {
   // Pernyataan berikutnya yang belum dijawab, disorot halus setelah pengguna mulai mengisi (tanpa menggulirkan halaman).
   const kodeGiliran = !sudahCoba && terjawabLangkah > 0 && belumLangkah > 0 ? daftarLangkah.find((i) => jawaban[i.kode] === undefined)?.kode : null
 
+  // Mengosongkan semua jawaban beserta hasilnya. Data diri tidak disentuh.
+  const hapusSemuaJawaban = () => {
+    idKonsultasi.current = null
+    waktuSelesai.current = null
+    setJawaban({})
+    setLangkah(0)
+    setLangkahTerbuka(0)
+    setSudahCoba(false)
+    setStatusSimpan('belum')
+    setPesanSimpan('')
+  }
+
+  // Saat halaman Konsultasi ditutup (pengguna pindah halaman setelah menyetujui pop up), draf di sesi ikut dihapus.
+  // Muat ulang halaman tidak menutup komponen ini, jadi isian tetap aman saat di-refresh.
+  useEffect(() => hapusDraf, [])
+  // Setelah pengguna menyetujui pergi, draf tidak boleh tertulis lagi (misalnya oleh status simpan yang baru selesai).
+  const sudahPergi = useRef(false)
+  const tutupDraf = () => {
+    sudahPergi.current = true
+    hapusDraf()
+  }
+
   /* ----- Penjaga keluar: pengguna yang sudah mulai mengisi diminta memastikan dulu sebelum pergi ----- */
 
   // Sudah "mulai" bila salah satu kolom data diri terisi. Di tahap pertanyaan data diri pasti sudah terisi.
@@ -304,15 +344,19 @@ export default function Konsultasi() {
     setModalKeluar(null)
     if (!m) return
     if (m.jenis === 'dataDiri') {
-      setSudahCoba(false)
+      // Kembali ke data diri berarti mengulang: semua jawaban dihapus, data diri tetap ada untuk diperiksa.
+      hapusSemuaJawaban()
       setTahap('pembuka')
       return
     }
+    // Pindah halaman: draf dihapus sekarang juga, tidak menunggu halaman ini selesai ditutup (efek di atas tetap menjadi jaring pengaman).
+    tutupDraf()
     lanjutPergi(m)
   }
 
   /* Draf dicatat di sessionStorage. Bila browser menolak, halaman tetap berjalan normal. */
   useEffect(() => {
+    if (sudahPergi.current) return
     try {
       sessionStorage.setItem(
         KUNCI_DRAF,
@@ -502,20 +546,9 @@ export default function Konsultasi() {
 
   /* ----- Hasil ----- */
 
+  // Dipakai di halaman "profil belum dapat ditentukan": jawaban dikosongkan dan pengguna menjawab lagi dari pernyataan pertama.
   const ulangiKonsultasi = () => {
-    try {
-      sessionStorage.removeItem(KUNCI_DRAF)
-    } catch {
-      /* diabaikan */
-    }
-    idKonsultasi.current = null
-    waktuSelesai.current = null
-    setJawaban({})
-    setLangkah(0)
-    setLangkahTerbuka(0)
-    setSudahCoba(false)
-    setStatusSimpan('belum')
-    setPesanSimpan('')
+    hapusSemuaJawaban()
     setTahap('pertanyaan')
   }
 
@@ -533,25 +566,27 @@ export default function Konsultasi() {
   if (modalKeluar) {
     const dataDiri = modalKeluar.jenis === 'dataDiri'
     const sedangTanya = tahap === 'pertanyaan'
+    // Semua pilihan "ya" di pop up ini menghapus isian (lihat lanjutKeluar dan efek penutup halaman), jadi kalimatnya
+    // menyebut dengan jelas apa yang hilang dan dari mana pengguna mulai lagi.
     let isi
     if (dataDiri) {
-      isi = 'Anda akan meninggalkan daftar pernyataan untuk memeriksa data diri. Jawaban yang sudah Anda isi tetap tersimpan, dan bisa dilanjutkan setelah Anda menekan Mulai konsultasi.'
+      isi = `Anda sudah menjawab ${jumlahTerjawab} dari ${JUMLAH_INDIKATOR} pernyataan. Bila kembali ke data diri, semua jawaban itu akan dihapus dan Anda menjawab lagi dari pernyataan pertama setelah menekan Mulai konsultasi. Data diri Anda tetap ada dan bisa diperiksa atau diubah.`
     } else if (sedangTanya && jumlahTerjawab > 0) {
-      isi = `Anda baru menjawab ${jumlahTerjawab} dari ${JUMLAH_INDIKATOR} pernyataan, jadi profil risiko Anda belum bisa dihitung. Jawaban Anda tersimpan sementara selama tab ini terbuka, tetapi akan hilang bila tab ditutup.`
+      isi = `Anda baru menjawab ${jumlahTerjawab} dari ${JUMLAH_INDIKATOR} pernyataan, jadi profil risiko Anda belum bisa dihitung. Bila pergi sekarang, data diri dan semua jawaban Anda akan dihapus, dan Konsultasi berikutnya dimulai lagi dari data diri.`
     } else if (sedangTanya) {
-      isi = 'Anda belum menjawab satu pun pernyataan, jadi profil risiko Anda belum bisa dihitung. Data diri Anda tersimpan sementara selama tab ini terbuka, tetapi akan hilang bila tab ditutup.'
+      isi = 'Anda belum menjawab satu pun pernyataan, jadi profil risiko Anda belum bisa dihitung. Bila pergi sekarang, data diri yang sudah Anda isi akan dihapus, dan Konsultasi berikutnya dimulai lagi dari data diri.'
     } else {
-      isi = 'Data diri Anda belum lengkap dan konsultasi belum dimulai. Isian ini tersimpan sementara selama tab ini terbuka, tetapi akan hilang bila tab ditutup.'
+      isi = 'Data diri yang sudah Anda isi akan dihapus bila Anda meninggalkan halaman ini. Saat membuka Konsultasi lagi, Anda mulai dari formulir yang kosong.'
     }
     modalEl = (
       <ModalKonfirmasi
-        judul={dataDiri ? 'Kembali ke data diri?' : 'Tinggalkan konsultasi sekarang?'}
+        judul={dataDiri ? 'Kembali ke data diri?' : sedangTanya ? 'Tinggalkan konsultasi sekarang?' : 'Tinggalkan formulir data diri?'}
         ikon={dataDiri ? Ikon.dataDiri : Ikon.segitiga}
         nada="emas"
         saatBatal={tetapDiSini}
         tombol={[
-          { label: dataDiri ? 'Ya, ke data diri' : 'Ya, tinggalkan', aksi: lanjutKeluar, gaya: dataDiri ? 'garis' : 'bahaya' },
-          { label: dataDiri ? 'Tetap di sini' : sedangTanya ? 'Lanjutkan konsultasi' : 'Lanjutkan mengisi', aksi: tetapDiSini, gaya: 'emas', autoFokus: true },
+          { label: dataDiri ? 'Ya, hapus dan kembali' : 'Ya, tinggalkan', aksi: lanjutKeluar, gaya: 'bahaya' },
+          { label: dataDiri ? 'Lanjutkan menjawab' : sedangTanya ? 'Lanjutkan konsultasi' : 'Lanjutkan mengisi', aksi: tetapDiSini, gaya: 'emas', autoFokus: true },
         ]}
       >
         <p>{isi}</p>
@@ -583,6 +618,7 @@ export default function Konsultasi() {
           statusSimpan={statusSimpan}
           pesanSimpan={pesanSimpan}
           saatSimpanUlang={() => kirimRiwayat(hasil)}
+          saatPergi={tutupDraf}
           saatUlangi={ulangiKonsultasi}
           saatTinjau={tinjauJawaban}
         />

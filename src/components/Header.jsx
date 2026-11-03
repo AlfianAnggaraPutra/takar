@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import LogoTimbangan from './LogoTimbangan'
+import LogoPerisai from './LogoPerisai'
 import { keluarAdmin, useSesiAdmin } from '../lib/autentikasi'
 import './Header.css'
 
@@ -147,8 +147,8 @@ export default function Header() {
       <div className="hdr__progres" ref={barProgres} aria-hidden="true" />
 
       <div className="hdr__dalam">
-        <Link to="/" className="hdr__merek" aria-label="TAKAR, kembali ke beranda" onClick={() => pathname === '/' && keAtas()}>
-          <LogoTimbangan className="hdr__logo" />
+        <Link to="/" className="hdr__merek lgp-induk" aria-label="TAKAR, kembali ke beranda" onClick={() => pathname === '/' && keAtas()}>
+          <LogoPerisai className="hdr__logo" />
           <span className="hdr__teks">
             <span className="hdr__nama">TAKAR</span>
             <span className="hdr__tagline">Tentukan Aset Bersama Pakar</span>

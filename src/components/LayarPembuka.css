@@ -1,13 +1,24 @@
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Plus+Jakarta+Sans:wght@500&display=swap');
 
+/*
+  Layar pembuka TAKAR. Susunan akhirnya: logo tiga perisai di kiri, nama TAKAR dan tagline di kanan,
+  sama persis dengan logo di header. Panggung hanya ada selama adegan pembuka lalu surut sebelum logo bergeser.
+
+  Ukuran dipusatkan di tiga variabel supaya mudah disetel:
+    --h-kecil : tinggi logo pada susunan akhir (di samping tulisan)
+    --h-besar : tinggi logo saat masih sendirian di tengah layar
+    --f-nama  : ukuran huruf TAKAR
+*/
 .lp-panggung {
+  --h-kecil: clamp(96px, min(21vw, 25vh), 230px);
+  --h-besar: clamp(150px, min(50vw, 40vh), 360px);
+  --f-nama: clamp(40px, min(13vw, 16vh), 112px);
   position: fixed;
   inset: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding-bottom: 8vh;
   background:
     radial-gradient(circle at 50% 46%, rgba(47, 86, 121, 0.5), rgba(10, 31, 51, 0) 62%),
     var(--biru-laut-900, #0a1f33);
@@ -18,84 +29,212 @@
   padding-bottom: max(8vh, env(safe-area-inset-bottom, 0px));
 }
 
-/* .lp-lockup adalah CSS Grid 2 kolom (ikon | teks) — cara paling tepat
-   untuk kebutuhan ini: kolom kanan (AKAR & tagline) HARUS rata kiri sejajar
-   satu sama lain (huruf T di "Tentukan" pas di bawah huruf A pertama di
-   "AKAR"). Semua ini murni CSS, tanpa pengukuran JavaScript sama sekali:
-   - baris 1: ikon (kolom 1) + "AKAR" (kolom 2, rata kiri)
-   - baris 2: tagline (kolom 2 saja, rata kiri — otomatis sejajar "AKAR")
-   Saat fase masih "sendirian" (cuma ikon, kolom 2 kosong), lebar wrapper
-   ini otomatis menciut mengikuti ikon saja karena kolom "1fr" yang kosong
-   tidak memaksa lebar tambahan pada grid yang ukurannya mengikuti isi
-   (inline-grid). Ikon dibuat sedikit lebih tinggi dari huruf "AKAR" (lihat
-   .lp-logo--kecil) justru supaya tatakan bawahnya turun sampai kira-kira
-   level tagline, tanpa perlu elemen garis maupun margin negatif. */
+/* Susunan akhir: kolom 1 logo, kolom 2 nama dan tagline (rata kiri, tagline tepat di bawah huruf T). Semua murni CSS. */
 .lp-lockup {
   display: inline-grid;
   grid-template-columns: auto 1fr;
   align-items: center;
   column-gap: clamp(10px, 2vw, 22px);
-  row-gap: 0; /* tagline langsung di bawah baris ikon+AKAR, jaraknya diatur
-                 lewat margin-top kecil di .lp-tagline sendiri */
+  row-gap: 0;
 }
 
 .lp-logo {
   grid-column: 1;
   grid-row: 1;
+  position: relative;
+  justify-self: start;
   width: auto;
+  aspect-ratio: 957 / 594;
   overflow: visible;
-  opacity: 0; /* dimunculkan lewat autoAlpha oleh GSAP di awal timeline */
   transform-origin: 50% 50%;
-  will-change: transform; /* ikon digerakkan lewat transform, jadi dibuat lapisan sendiri agar geraknya halus */
+  will-change: transform; /* digerakkan lewat transform: dibuat lapisan sendiri agar halus */
   backface-visibility: hidden;
 }
-
-/* Ukuran BESAR: dipakai selama ikon masih sendirian, jadi boleh cukup
-   dominan di layar. Ukuran KECIL: ukuran akhir berdampingan dengan teks —
-   nilainya dibuat mendekati cap-height "AKAR" di .lp-akar supaya serasi. */
 .lp-logo--besar {
-  height: clamp(120px, min(42vw, 38vh), 260px);
+  height: var(--h-besar);
 }
 .lp-logo--kecil {
-  /* Sedikit lebih besar dari tinggi huruf "AKAR" (bukan lebih kecil lagi
-     seperti sebelumnya) — supaya tatakan bawah timbangan turun sedikit
-     melewati baseline "AKAR", dan tagline di bawahnya terasa sejajar
-     level dengan tatakan itu. */
-  height: clamp(120px, min(30vw, 32vh), 300px);
+  height: var(--h-kecil);
 }
 
-.lp-akar {
+/* Cahaya zamrud lembut di belakang logo. */
+.lp-aura {
+  position: absolute;
+  left: -22%;
+  right: -22%;
+  top: -42%;
+  bottom: -30%;
+  pointer-events: none;
+  background: radial-gradient(ellipse closest-side, rgba(52, 211, 153, 0.17), rgba(31, 150, 160, 0.08) 56%, transparent 100%);
+  opacity: 0;
+}
+
+/* ---------- Panggung (hanya selama adegan pembuka) ----------
+   Menggantung di bawah bingkai perisai. Letak dan ukurannya dalam persen bingkai perisai. */
+.lp-pentas {
+  position: absolute;
+  left: 7.21%;
+  top: 98.15%;
+  width: 85.37%;
+  height: 46.97%;
+  z-index: 1;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+.lp-pentas > img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  -webkit-user-drag: none;
+}
+/* Inti cahaya di tengah panggung. */
+.lp-inti {
+  position: absolute;
+  left: 22.5%;
+  top: -0.5%;
+  width: 56.1%;
+  height: 56.8%;
+  mix-blend-mode: screen;
+  opacity: 0;
+}
+.lp-denyut {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse closest-side, rgba(220, 255, 238, 0.55) 0%, rgba(90, 240, 175, 0.32) 30%, rgba(40, 200, 140, 0.1) 60%, transparent 100%);
+}
+.lp-denyut::before,
+.lp-denyut::after {
+  content: '';
+  position: absolute;
+}
+.lp-denyut::before {
+  left: -16%;
+  right: -16%;
+  top: calc(50% - 1px);
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(205, 255, 232, 0.9) 50%, transparent);
+}
+.lp-denyut::after {
+  top: -34%;
+  bottom: -34%;
+  left: calc(50% - 1px);
+  width: 2px;
+  background: linear-gradient(180deg, transparent, rgba(205, 255, 232, 0.65) 50%, transparent);
+}
+/* Cincin cahaya yang menyebar di permukaan panggung saat tiap perisai mendarat. */
+.lp-cincin {
+  position: absolute;
+  left: 7.8%;
+  top: -9%;
+  width: 85.3%;
+  height: 73.9%;
+  border: 2px solid rgba(var(--warna), 0.9);
+  border-radius: 50%;
+  box-shadow: 0 0 16px rgba(var(--warna), 0.5), inset 0 0 14px rgba(var(--warna), 0.3);
+  opacity: 0;
+}
+
+/* ---------- Perisai ---------- */
+.lp-lap {
+  position: absolute;
+  inset: 0;
+  visibility: hidden;
+  opacity: 0;
+  will-change: transform;
+}
+.lp-lap--merah,
+.lp-lap--emas {
+  z-index: 2;
+}
+.lp-lap--hijau {
+  z-index: 3;
+}
+.lp-ayun {
+  position: absolute;
+  inset: 0;
+}
+.lp-ayun > img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
+/* Pendar sewarna perisai yang membuncah saat mendarat. */
+.lp-pendar {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(var(--warna), 0.6), rgba(var(--warna), 0.2) 55%, transparent 100%);
+  mix-blend-mode: screen;
+  opacity: 0;
+  pointer-events: none;
+}
+/* Kilau yang melintas di permukaan kaca, dipotong mengikuti bentuk perisai lewat mask dari gambarnya sendiri. */
+.lp-kilat {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+.lp-lap--merah .lp-kilat {
+  -webkit-mask-image: url('/logo/splash-merah.webp');
+  mask-image: url('/logo/splash-merah.webp');
+}
+.lp-lap--hijau .lp-kilat {
+  -webkit-mask-image: url('/logo/splash-hijau.webp');
+  mask-image: url('/logo/splash-hijau.webp');
+}
+.lp-lap--emas .lp-kilat {
+  -webkit-mask-image: url('/logo/splash-emas.webp');
+  mask-image: url('/logo/splash-emas.webp');
+}
+/* Pita kilau. Posisi dasarnya sudah di luar bingkai (kiri); gerak melintasnya diatur GSAP lewat xPercent.
+   Jangan memberi transform di CSS: GSAP membaca transform awal sebagai pergeseran piksel lalu menjumlahkannya
+   dengan xPercent, sehingga posisi akhir pita meleset dan tertinggal di atas perisai. */
+.lp-sapu {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -65.9%;
+  width: 60%;
+  background: linear-gradient(105deg, transparent 20%, rgba(255, 255, 255, 0) 34%, rgba(255, 255, 255, 0.7) 50%, rgba(255, 255, 255, 0) 66%, transparent 80%);
+}
+
+/* ---------- Tulisan ---------- */
+.lp-teks {
   grid-column: 2;
   grid-row: 1;
   justify-self: start;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.lp-nama {
   margin: 0;
   display: flex;
   font-family: 'Fraunces', Georgia, serif;
   font-weight: 600;
-  font-size: clamp(48px, min(19vw, 18vh), 128px);
+  font-size: var(--f-nama);
   letter-spacing: 0.02em;
   line-height: 1;
   color: var(--krem-kertas, #f6f3ec);
 }
 .lp-huruf {
   display: inline-block;
-  opacity: 0; /* jaring pengaman — nilai nyata & animasinya diatur GSAP */
+  opacity: 0; /* jaring pengaman: nilai nyata dan animasinya diatur GSAP */
 }
-
 .lp-tagline {
-  /* Kolom 2 saja + rata kiri (justify-self:start) — otomatis sejajar
-     persis dengan huruf "A" pertama di "AKAR" di atasnya, karena keduanya
-     sama-sama sel kolom 2 yang rata kiri. Ini yang membuat huruf T di
-     "Tentukan" pas di bawah A, tanpa perlu dihitung manual.
-     Garis horizontal sudah dihapus (tidak diperlukan), jadi tagline kini
-     langsung di baris grid ke-2, tepat setelah baris ikon+AKAR — dan
-     karena ikon sekarang dibuat sedikit lebih tinggi dari huruf "AKAR",
-     tatakan bawah timbangan turun sampai kira-kira level tagline ini,
-     tanpa perlu margin negatif yang rawan tabrakan seperti sebelumnya. */
-  grid-column: 2;
-  grid-row: 2;
-  justify-self: start;
-  margin-top: -40px;
+  margin: clamp(8px, 1.3vh, 14px) 0 0;
   text-align: left;
   text-transform: uppercase;
   font-family: 'Fraunces', Georgia, serif;
@@ -103,17 +242,12 @@
   font-weight: 500;
   font-size: clamp(14px, 3.4vw, 18px);
   letter-spacing: 0.14em;
-  /* Krem-kertas yang sama dengan "AKAR" tapi diredupkan ke 75% opacity —
-     supaya "AKAR" tetap jadi fokus utama mata (hierarki tipografi), dan
-     tagline terasa seperti keterangan resmi di bawahnya, bukan bersaing
-     sama terangnya dengan headline. */
+  /* Krem yang sama dengan nama, diredupkan: nama tetap jadi fokus, tagline terasa seperti keterangan resmi. */
   color: rgba(246, 243, 236, 0.75);
   opacity: 0;
 }
 
-/* ---------- Tablet sempit (600 sampai sekitar 690 px) ----------
-   Tagline dikecilkan sedikit supaya lebar seluruh susunan tidak nyaris menyentuh tepi layar.
-   Pada layar laptop dan tablet lebar (di atas sekitar 690 px) ukurannya tetap 18px seperti sebelumnya. */
+/* Tablet sempit (600 sampai sekitar 690 px): tagline dikecilkan sedikit supaya lebar susunan tidak mendekati tepi layar. */
 @media (min-width: 600px) {
   .lp-tagline {
     font-size: clamp(14px, 2.6vw, 18px);
@@ -121,23 +255,27 @@
 }
 
 /* ---------- Layar HP (di bawah 600 px) ----------
-   Di layar sempit tagline satu baris lebih lebar daripada kolom kanan (kolom AKAR), sehingga dulu terpaksa
-   terpecah dua baris dan menimpa huruf AKAR. Di sini susunannya dibuat begini:
-   - ikon dan AKAR sedikit diperkecil mengikuti lebar layar, supaya ada ruang di kiri dan kanan,
-   - tagline pindah ke bawah keduanya, rata tengah, satu baris, dengan jarak yang cukup dari ikon dan AKAR,
-   - ukuran tagline mengikuti lebar layar (dengan batas bawah dan atas) sehingga selalu muat dalam satu baris. */
+   Logo dan nama sedikit diperkecil mengikuti lebar layar, tagline pindah ke bawah keduanya, rata tengah, satu baris. */
 @media (max-width: 599px) {
+  .lp-panggung {
+    --h-kecil: clamp(64px, min(21vw, 20vh), 120px);
+    --h-besar: clamp(130px, min(42vw, 34vh), 240px);
+    --f-nama: clamp(34px, min(13.5vw, 13vh), 88px);
+  }
   .lp-lockup {
     column-gap: clamp(8px, 2.6vw, 14px);
   }
-  .lp-logo--kecil {
-    height: clamp(84px, min(27vw, 26vh), 150px);
+  .lp-teks {
+    display: contents;
   }
-  .lp-akar {
-    font-size: clamp(44px, min(17vw, 16vh), 110px);
+  .lp-nama {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: start;
   }
   .lp-tagline {
     grid-column: 1 / -1;
+    grid-row: 2;
     justify-self: center;
     text-align: center;
     white-space: nowrap;

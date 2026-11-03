@@ -42,11 +42,11 @@ export const TINGKAT_KEPASTIAN = { kuat: 'kuat', sedang: 'sedang', rendah: 'rend
 const URUTAN = { kuat: 0, sedang: 1, rendah: 2 }
 const TOTAL_PERNYATAAN = DAFTAR_INDIKATOR.length
 
-const koma1 = (x) => {
+// Persentase pada kalimat catatan ditulis dua angka di belakang koma, sama dengan angka utama di halaman hasil dan kolom Keyakinan.
+const koma2 = (x) => {
   // Angka yang masih di bawah 100 tidak boleh tampil sebagai 100 karena pembulatan.
-  if (x < 100 && x.toFixed(1) === '100.0') return '99,9'
-  const s = x.toFixed(1).replace('.', ',')
-  return s.endsWith(',0') ? s.slice(0, -2) : s
+  const bulat = Math.round(x * 100) / 100
+  return (bulat >= 100 && x < 100 ? 99.99 : bulat).toFixed(2).replace('.', ',')
 }
 
 // Pilihan jawaban yang paling sering dipakai di antara pernyataan yang dijawab selain "Tidak".
@@ -111,20 +111,20 @@ export function nilaiKepastian(hasil) {
   if (persenTeratas < A.persenCukup) {
     const banyak = persenKetiga >= A.persenIkutDisebut
     const lain = banyak
-      ? `profil ${kedua.nama} (${koma1(persenKedua)}%) dan ${ketiga.nama} (${koma1(persenKetiga)}%) juga masih besar`
-      : `profil ${kedua.nama} mendapat ${koma1(persenKedua)}%`
+      ? `profil ${kedua.nama} (${koma2(persenKedua)}%) dan ${ketiga.nama} (${koma2(persenKetiga)}%) juga masih besar`
+      : `profil ${kedua.nama} mendapat ${koma2(persenKedua)}%`
     tambah(
       'bersaing',
       TINGKAT_KEPASTIAN.rendah,
-      `Profil ${pertama.nama} memiliki persentase tertinggi, yaitu ${koma1(persenTeratas)}%, sedangkan ${lain}. Jawaban Anda belum mengarah jelas ke satu profil, sehingga profil ${pertama.nama} belum bisa dianggap menggambarkan Anda secara pasti.`,
-      `${pertama.nama} tertinggi dengan ${koma1(persenTeratas)}%, tetapi ${banyak ? `${kedua.nama} dan ${ketiga.nama}` : kedua.nama} masih besar, jadi belum mengarah jelas ke satu profil.`,
+      `Profil ${pertama.nama} memiliki persentase tertinggi, yaitu ${koma2(persenTeratas)}%, sedangkan ${lain}. Jawaban Anda belum mengarah jelas ke satu profil, sehingga profil ${pertama.nama} belum bisa dianggap menggambarkan Anda secara pasti.`,
+      `${pertama.nama} tertinggi dengan ${koma2(persenTeratas)}%, tetapi ${banyak ? `${kedua.nama} dan ${ketiga.nama}` : kedua.nama} masih besar, jadi belum mengarah jelas ke satu profil.`,
     )
   } else if (persenTeratas < A.persenKuat) {
     tambah(
       'cukup-menonjol',
       TINGKAT_KEPASTIAN.sedang,
-      `Profil ${pertama.nama} memiliki persentase tertinggi, yaitu ${koma1(persenTeratas)}%, disusul profil ${kedua.nama} dengan ${koma1(persenKedua)}%. Jawaban Anda memang condong ke ${pertama.nama}, tetapi ciri profil ${kedua.nama} juga cukup terlihat, sehingga hasil ini lebih tepat dibaca sebagai kecenderungan, bukan kepastian.`,
-      `${pertama.nama} tertinggi dengan ${koma1(persenTeratas)}%, disusul ${kedua.nama} ${koma1(persenKedua)}%, jadi hasil baru berupa kecenderungan.`,
+      `Profil ${pertama.nama} memiliki persentase tertinggi, yaitu ${koma2(persenTeratas)}%, disusul profil ${kedua.nama} dengan ${koma2(persenKedua)}%. Jawaban Anda memang condong ke ${pertama.nama}, tetapi ciri profil ${kedua.nama} juga cukup terlihat, sehingga hasil ini lebih tepat dibaca sebagai kecenderungan, bukan kepastian.`,
+      `${pertama.nama} tertinggi dengan ${koma2(persenTeratas)}%, disusul ${kedua.nama} ${koma2(persenKedua)}%, jadi hasil baru berupa kecenderungan.`,
     )
   }
 
@@ -160,7 +160,7 @@ export function nilaiKepastian(hasil) {
   }
 
   // Ringkasan satu atau dua kalimat pendek untuk kolom Catatan di Excel.
-  const ringkasan = alasan.length > 0 ? alasan.map((a) => a.ringkas).join(' ') : `Profil teratas ${koma1(persenTeratas)}%, tidak ada catatan.`
+  const ringkasan = alasan.length > 0 ? alasan.map((a) => a.ringkas).join(' ') : `Profil teratas ${koma2(persenTeratas)}%, tidak ada catatan.`
 
   return {
     tingkat,

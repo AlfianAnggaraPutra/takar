@@ -65,6 +65,11 @@ const Ikon = {
       <path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1M3.5 4v4.5H8" />
     </svg>
   ),
+  kembali: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M19 12H5M11 6l-6 6 6 6" />
+    </svg>
+  ),
   panah: (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M5 12h14M13 6l6 6-6 6" />
@@ -130,13 +135,13 @@ function StatusSimpan({ status, pesan, saatCobaLagi }) {
 
 /* ---------- Halaman hasil ---------- */
 
-export default function HasilKonsultasi({ identitas, hasil, jawaban, waktuKonsultasi, statusSimpan, pesanSimpan, saatSimpanUlang, saatUlangi, saatTinjau }) {
+export default function HasilKonsultasi({ identitas, hasil, jawaban, waktuKonsultasi, statusSimpan, pesanSimpan, saatSimpanUlang, saatPergi, saatUlangi, saatTinjau }) {
   const akar = useRef(null)
   const angka = useRef(null)
   const [batang, setBatang] = useState(false)
   const [statusPdf, setStatusPdf] = useState('siap') // siap, membuat, selesai, galat, galatMuat
   const [pernahUnduh, setPernahUnduh] = useState(false)
-  const [modal, setModal] = useState(null) // { jenis: 'pergi' | 'kembali' | 'ulangi', tujuan }
+  const [modal, setModal] = useState(null) // { jenis: 'pergi' | 'kembali', tujuan }
   const bolehKeluar = useRef(false)
   const navigate = useNavigate()
   const adaHasil = hasil.dapatDitentukan
@@ -307,11 +312,8 @@ export default function HasilKonsultasi({ identitas, hasil, jawaban, waktuKonsul
     const m = modal
     setModal(null)
     if (!m) return
-    if (m.jenis === 'ulangi') {
-      saatUlangi()
-      return
-    }
     bolehKeluar.current = true
+    saatPergi?.()
     if (m.jenis === 'kembali') window.history.back()
     else navigate(m.tujuan)
   }
@@ -631,9 +633,11 @@ export default function HasilKonsultasi({ identitas, hasil, jawaban, waktuKonsul
         </p>
 
         <div className="hasil__aksi hasil__aksi--bawah" data-masuk>
-          <button type="button" className="tombol tombol--garis" onClick={() => setModal({ jenis: 'ulangi' })}>
-            {Ikon.ulang} Ulangi konsultasi
-          </button>
+          {/* Kiri: jalan keluar yang tenang. Kanan: langkah lanjut yang disarankan, sejalan dengan bar tombol di halaman pertanyaan.
+              Kedua tautan lewat penjaga halaman, jadi pop up konfirmasi tetap muncul sebelum pengguna pergi. */}
+          <Link to="/" className="tombol tombol--garis">
+            {Ikon.kembali} Kembali ke Beranda
+          </Link>
           <Link to="/edukasi" className="tombol tombol--emas">
             Pelajari instrumen {Ikon.panah}
           </Link>
@@ -642,19 +646,17 @@ export default function HasilKonsultasi({ identitas, hasil, jawaban, waktuKonsul
 
       {modal && (
         <ModalKonfirmasi
-          judul={modal.jenis === 'ulangi' ? 'Ulangi konsultasi dari awal?' : 'Tinggalkan halaman hasil?'}
+          judul="Tinggalkan halaman hasil?"
           ikon={pernahUnduh ? Ikon.centangBulat : Ikon.peringatan}
           nada={pernahUnduh ? 'teal' : 'emas'}
           saatBatal={tetapDiSini}
           tombol={[
-            { label: modal.jenis === 'ulangi' ? 'Ya, ulangi dari awal' : 'Ya, tinggalkan halaman', aksi: lanjutPergi, gaya: 'bahaya' },
-            { label: modal.jenis === 'ulangi' ? 'Batal' : 'Tetap di halaman ini', aksi: tetapDiSini, gaya: 'emas', autoFokus: true },
+            { label: 'Ya, tinggalkan halaman', aksi: lanjutPergi, gaya: 'bahaya' },
+            { label: 'Tetap di halaman ini', aksi: tetapDiSini, gaya: 'emas', autoFokus: true },
           ]}
         >
           <p>
-            {modal.jenis === 'ulangi'
-              ? 'Seluruh jawaban dan hasil di halaman ini akan dihapus, lalu Anda mulai lagi dari pernyataan pertama.'
-              : 'Hasil konsultasi ini hanya tampil di halaman ini. Setelah Anda pergi, hasilnya tidak bisa dibuka kembali dengan mudah.'}
+            Hasil dan jawaban Anda hanya tampil di halaman ini. Setelah Anda pergi, semuanya dihapus dan tidak bisa dibuka lagi, dan Konsultasi berikutnya dimulai dari data diri.
           </p>
           <div className={`hasil__pengingat${pernahUnduh ? ' hasil__pengingat--sudah' : ''}`}>
             <span className="hasil__pengingat-ikon" aria-hidden="true">

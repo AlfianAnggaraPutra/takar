@@ -24,6 +24,10 @@ const PALET = {
   terakota: { isi: [217, 105, 79], teks: [170, 66, 42], lembut: [251, 232, 226] },
 }
 
+// Ukuran piksel gambar logo kop (public/logo/logo-takar-pdf.jpg), untuk menjaga perbandingannya.
+const LOGO_LEBAR = 420
+const LOGO_TINGGI = 261
+
 const KIRI = 20
 const KANAN = 190
 const LEBAR = KANAN - KIRI
@@ -87,7 +91,7 @@ function namaBerkas(nama, waktu) {
 
 /* ---------- Perakit dokumen ---------- */
 
-export function rakitLaporan(JsPDF, { identitas, jawaban, hasil, waktu = new Date() }) {
+export function rakitLaporan(JsPDF, { identitas, jawaban, hasil, waktu = new Date(), logo = null }) {
   const doc = new JsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true })
   doc.setProperties({
     title: `Laporan Konsultasi TAKAR, ${identitas.nama}`,
@@ -122,12 +126,21 @@ export function rakitLaporan(JsPDF, { identitas, jawaban, hasil, waktu = new Dat
   doc.rect(0, 0, 210, 36, 'F')
   doc.setFillColor(...KUNYIT)
   doc.rect(0, 36, 210, 1.1, 'F')
+  // Logo tiga perisai di kiri kop (gambar sudah dilatari warna kop). Tulisan bergeser ke kanan sebesar lebar logo.
+  // Bila logo tidak berhasil dimuat, kop tampil seperti biasa tanpa logo.
+  let xNama = KIRI
+  if (logo) {
+    const tinggiLogo = 21
+    const lebarLogo = (tinggiLogo * LOGO_LEBAR) / LOGO_TINGGI
+    doc.addImage(logo, 'JPEG', KIRI, (36 - tinggiLogo) / 2, lebarLogo, tinggiLogo, 'logo-takar', 'FAST')
+    xNama = KIRI + lebarLogo + 4.5
+  }
   gaya('bold', 25, KRIM)
   doc.setCharSpace(1.2)
-  doc.text('TAKAR', KIRI, 19)
+  doc.text('TAKAR', xNama, 19)
   doc.setCharSpace(0)
   gaya('italic', 10.5, KUNYIT)
-  doc.text('Tentukan Aset Bersama Pakar', KIRI, 26.5)
+  doc.text('Tentukan Aset Bersama Pakar', xNama, 26.5)
   gaya('bold', 12, KRIM)
   doc.text('LAPORAN HASIL KONSULTASI', KANAN, 17.5, { align: 'right' })
   gaya('normal', 10.5, KRIM)
@@ -586,12 +599,24 @@ export function rakitLaporan(JsPDF, { identitas, jawaban, hasil, waktu = new Dat
   return doc
 }
 
+// Logo kop diambil dari folder public saat PDF dibuat. Gagal dimuat (misalnya koneksi putus) bukan alasan membatalkan
+// unduhan: laporan tetap dibuat tanpa logo.
+async function muatLogoKop() {
+  try {
+    const jawab = await fetch('/logo/logo-takar-pdf.jpg')
+    if (!jawab.ok) return null
+    return new Uint8Array(await jawab.arrayBuffer())
+  } catch {
+    return null
+  }
+}
+
 // Dipanggil dari halaman hasil. jsPDF diunduh baru saat dibutuhkan agar halaman lain tetap ringan.
 export async function buatLaporanPdf(data) {
-  const { jsPDF } = await import('jspdf')
+  const [{ jsPDF }, logo] = await Promise.all([import('jspdf'), muatLogoKop()])
   // Dari halaman riwayat admin, waktu konsultasi asli dikirim agar PDF memuat tanggal saat konsultasi terjadi.
   const waktu = data.waktu instanceof Date && !Number.isNaN(data.waktu.getTime()) ? data.waktu : new Date()
-  const doc = rakitLaporan(jsPDF, { ...data, waktu })
+  const doc = rakitLaporan(jsPDF, { ...data, waktu, logo })
   const berkas = namaBerkas(data.identitas.nama, waktu)
   doc.save(berkas)
   return { namaBerkas: berkas, jumlahHalaman: doc.getNumberOfPages() }

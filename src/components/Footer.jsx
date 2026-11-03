@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
-import LogoTimbangan from './LogoTimbangan'
+import LogoPerisai from './LogoPerisai'
 import useGambar from '../hooks/useGambar'
 import './Footer.css'
 
@@ -78,8 +78,8 @@ export default function Footer({ ringkas = false }) {
     <footer className="ftr">
       <div className="pembungkus ftr__atas">
         <div className="ftr__merek">
-          <Link to="/" className="ftr__tautan-merek" aria-label="TAKAR, kembali ke beranda" onClick={() => saatKlik('/')}>
-            <LogoTimbangan className="ftr__logo" />
+          <Link to="/" className="ftr__tautan-merek lgp-induk" aria-label="TAKAR, kembali ke beranda" onClick={() => saatKlik('/')}>
+            <LogoPerisai className="ftr__logo" />
             <span className="ftr__teks">
               <span className="ftr__nama">TAKAR</span>
               <span className="ftr__tagline">Tentukan Aset Bersama Pakar</span>

@@ -647,6 +647,10 @@
     flex: 1 1 100%;
     justify-content: center;
   }
+  /* Saat tombol bertumpuk di ponsel, langkah lanjut yang disarankan ada di atas dan jalan keluar di bawahnya. */
+  .hasil__aksi--bawah .tombol--emas {
+    order: -1;
+  }
 }
 
 /* Kartu unduh laporan PDF */

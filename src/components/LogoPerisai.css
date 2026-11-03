@@ -1,0 +1,161 @@
+/*
+  Logo tiga perisai (header, footer, masuk admin). Tinggi diatur oleh kelas pemanggil, lebar otomatis dari perbandingan bingkai.
+
+  Gerak saat kursor menyentuh tautan induk (kelas lgp-induk), hanya di perangkat yang punya kursor:
+  perisai melompat bergantian dari kiri ke kanan (merah, hijau, emas) lalu mendarat, kilau putih melintas
+  di permukaan kaca tiap perisai, dan logo menyala tipis. Semua dimatikan bila perangkat meminta gerak dikurangi.
+*/
+.lgp {
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+  height: 46px;
+  width: auto;
+  aspect-ratio: 384 / 238;
+  vertical-align: middle;
+  transition: transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.55s ease;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.lgp__lap {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 80%;
+  will-change: transform;
+}
+.lgp__lap--merah,
+.lgp__lap--emas {
+  z-index: 1;
+}
+.lgp__lap--hijau {
+  z-index: 2;
+}
+.lgp__lap img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
+
+/* Kilau: pita cahaya miring yang dipotong mengikuti bentuk tiap perisai (mask dari gambarnya sendiri). */
+.lgp__kilat {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+.lgp__lap--merah .lgp__kilat {
+  -webkit-mask-image: url('/logo/logo-merah.webp');
+  mask-image: url('/logo/logo-merah.webp');
+}
+.lgp__lap--hijau .lgp__kilat {
+  -webkit-mask-image: url('/logo/logo-hijau.webp');
+  mask-image: url('/logo/logo-hijau.webp');
+}
+.lgp__lap--emas .lgp__kilat {
+  -webkit-mask-image: url('/logo/logo-emas.webp');
+  mask-image: url('/logo/logo-emas.webp');
+}
+.lgp__kilat::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 70%;
+  background: linear-gradient(105deg, transparent 18%, rgba(255, 255, 255, 0) 32%, rgba(255, 255, 255, 0.85) 50%, rgba(255, 255, 255, 0) 68%, transparent 82%);
+  transform: translateX(-110%);
+}
+
+@media (hover: hover) {
+  .lgp-induk:hover .lgp,
+  .lgp-induk:focus-visible .lgp {
+    transform: scale(1.06);
+    filter: drop-shadow(0 0 7px rgba(77, 179, 198, 0.42));
+  }
+  .lgp-induk:active .lgp {
+    transform: scale(0.97);
+  }
+
+  .lgp-induk:hover .lgp__lap,
+  .lgp-induk:focus-visible .lgp__lap {
+    animation: lgp-lompat 0.9s cubic-bezier(0.3, 0.6, 0.3, 1) both;
+  }
+  .lgp-induk:hover .lgp__lap--merah,
+  .lgp-induk:focus-visible .lgp__lap--merah {
+    --miring: -3deg;
+    --tinggi-lompat: -11%;
+  }
+  .lgp-induk:hover .lgp__lap--hijau,
+  .lgp-induk:focus-visible .lgp__lap--hijau {
+    --miring: 0deg;
+    --tinggi-lompat: -15%;
+    animation-delay: 0.08s;
+  }
+  .lgp-induk:hover .lgp__lap--emas,
+  .lgp-induk:focus-visible .lgp__lap--emas {
+    --miring: 3deg;
+    --tinggi-lompat: -11%;
+    animation-delay: 0.16s;
+  }
+
+  .lgp-induk:hover .lgp__kilat::before,
+  .lgp-induk:focus-visible .lgp__kilat::before {
+    animation: lgp-sapu 0.85s cubic-bezier(0.45, 0.05, 0.3, 1) both;
+  }
+  .lgp-induk:hover .lgp__lap--merah .lgp__kilat::before,
+  .lgp-induk:focus-visible .lgp__lap--merah .lgp__kilat::before {
+    animation-delay: 0.12s;
+  }
+  .lgp-induk:hover .lgp__lap--hijau .lgp__kilat::before,
+  .lgp-induk:focus-visible .lgp__lap--hijau .lgp__kilat::before {
+    animation-delay: 0.22s;
+  }
+  .lgp-induk:hover .lgp__lap--emas .lgp__kilat::before,
+  .lgp-induk:focus-visible .lgp__lap--emas .lgp__kilat::before {
+    animation-delay: 0.32s;
+  }
+}
+
+@keyframes lgp-lompat {
+  0% {
+    transform: translateY(0) rotate(0deg);
+  }
+  30% {
+    transform: translateY(var(--tinggi-lompat, -12%)) rotate(var(--miring, 0deg));
+  }
+  62% {
+    transform: translateY(2.5%) rotate(0deg);
+  }
+  82% {
+    transform: translateY(-1.2%);
+  }
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+}
+@keyframes lgp-sapu {
+  from {
+    transform: translateX(-110%);
+  }
+  to {
+    transform: translateX(185%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lgp,
+  .lgp__lap,
+  .lgp__kilat::before {
+    transition: none !important;
+    animation: none !important;
+  }
+}

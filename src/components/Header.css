@@ -64,12 +64,7 @@
   flex-shrink: 0;
 }
 .hdr__logo {
-  width: auto;
-  height: 46px;
-  transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-.hdr__merek:hover .hdr__logo {
-  transform: rotate(-6deg) scale(1.06);
+  height: 44px;
 }
 .hdr__teks {
   display: flex;
@@ -254,7 +249,7 @@ button.hdr__admin {
     display: none;
   }
   .hdr__logo {
-    height: 40px;
+    height: 36px;
   }
   .hdr__nama {
     font-size: 1.25rem;

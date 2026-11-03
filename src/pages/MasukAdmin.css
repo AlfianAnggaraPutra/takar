@@ -122,8 +122,7 @@
   }
 }
 .masuk__logo {
-  width: 36px;
-  height: 36px;
+  height: 26px;
 }
 .masuk__label {
   margin-bottom: 6px;
@@ -466,6 +465,9 @@
     width: 56px;
     height: 56px;
     margin-bottom: 12px;
+  }
+  .masuk__logo {
+    height: 22px;
   }
 }
 

@@ -44,6 +44,13 @@ const WARNA_PROFIL = { Konservatif: 'teal', Moderat: 'emas', Agresif: 'terakota'
 // 83 detik menjadi "1:23".
 const formatDurasi = (detik) => `${Math.floor(detik / 60)}:${String(detik % 60).padStart(2, '0')}`
 
+// Persentase keyakinan ditulis dengan dua angka di belakang koma, sama dengan halaman hasil dan ekspor Excel
+// (99,84%, bukan 99,8%). Nilai yang masih di bawah 100 tidak boleh tampil sebagai 100 karena pembulatan.
+function formatKeyakinan(persen) {
+  const bulat = Math.round(persen * 100) / 100
+  return (bulat >= 100 && persen < 100 ? 99.99 : bulat).toFixed(2).replace('.', ',')
+}
+
 /* ---------- Ikon ---------- */
 
 const dasar = { width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.9, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true }
@@ -811,7 +818,7 @@ export default function RiwayatAdmin() {
                             '-'
                           ) : (
                             <span className="riw__yakin">
-                              <span className="riw__yakin-angka">{persen.toFixed(1).replace('.', ',')}%</span>
+                              <span className="riw__yakin-angka">{formatKeyakinan(persen)}%</span>
                               <span className="riw__yakin-bar" aria-hidden="true">
                                 <span style={{ width: `${persen}%` }} className={`riw__yakin-isi riw__yakin-isi--${warna}`} />
                               </span>
