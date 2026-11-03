@@ -572,7 +572,7 @@ export function rakitLaporan(JsPDF, { identitas, jawaban, hasil, waktu = new Dat
   /* ----- H. Catatan penting ----- */
   judulSeksi('H', 'Langkah Selanjutnya', 30)
   paragraf(
-    'Laporan ini adalah skrining awal yang dihitung dari jawaban Anda dan basis pengetahuan seorang Certified Financial Planner, sehingga layak Anda jadikan pegangan awal untuk mengenali profil risiko sendiri. Laporan ini tidak menggantikan konsultasi langsung. Untuk keputusan yang besar, bawa laporan ini ke perencana keuangan berizin dan diskusikan bersama tujuan serta kondisi keuangan Anda.',
+    'Laporan ini adalah skrining awal yang dihitung dari jawaban Anda dan basis pengetahuan seorang Certified Financial Planner, sehingga dapat menjadi pegangan awal untuk mengenali profil risiko sendiri. Laporan ini tidak menggantikan konsultasi langsung. Untuk keputusan yang besar, diskusikan laporan ini bersama perencana keuangan berizin, sesuai tujuan dan kondisi keuangan Anda.',
     { jarakBawah: 2 },
   )
 

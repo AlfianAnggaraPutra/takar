@@ -328,9 +328,6 @@ function Tautan() {
 // Satu kartu berita. Fotonya diambil dari sumber yang diurutkan (lihat BERITA), dan bila tak satu pun berhasil
 // dimuat, yang tampil adalah ilustrasi sesuai jenis beritanya.
 function KartuBerita({ b, mulai }) {
-  const [asal, setAsal] = useState('')
-  const saatStatus = useCallback(({ status, indeks }) => setAsal(status === 'siap' ? b.foto[indeks] : ''), [b.foto])
-  const fotoMilikMedia = /^https?:/.test(asal)
 
   return (
     <a className="kartu-berita" data-warna={b.warna} href={b.url} target="_blank" rel="noopener noreferrer" draggable={false}>
@@ -341,11 +338,9 @@ function KartuBerita({ b, mulai }) {
           mulai={mulai}
           minimum={60}
           className="kartu-berita__foto"
-          saatStatus={saatStatus}
           cadangan={({ status }) => (status === 'gagal' ? <IlustrasiBerita ikon={b.ikon} /> : <span className="kartu-berita__memuat" />)}
         />
         <span className="kartu-berita__selaput" />
-        {fotoMilikMedia && <span className="kartu-berita__kredit">Foto: {b.sumber}</span>}
       </div>
       <div className="kartu-berita__isi">
         <p className="kartu-berita__meta">
@@ -697,9 +692,8 @@ export default function Beranda() {
               </span>
             </h1>
             <p className="hero__lead">
-              TAKAR membaca jawaban Anda atas 40 pernyataan singkat, lalu menyimpulkan apakah Anda lebih cocok sebagai investor
-              konservatif, moderat, atau agresif, lengkap dengan instrumen yang sesuai. Penilaiannya disusun bersama Certified Financial
-              Planner dan dihitung dengan metode Naive Bayes dan Certainty Factor.
+              Setiap orang punya batas sendiri saat nilai uangnya naik dan turun. Jawab 40 pernyataan singkat, lalu TAKAR menunjukkan
+              apakah Anda investor konservatif, moderat, atau agresif, lengkap dengan instrumen yang selaras dengan profil itu.
             </p>
             <div className="hero__aksi">
               <Link to="/konsultasi" className="tombol tombol--emas">
@@ -941,7 +935,7 @@ export default function Beranda() {
             <p className="label-seksi">Kabar terbaru</p>
             <h2 className="judul-seksi">Berita pasar modal yang perlu Anda ikuti</h2>
             <p className="lead-seksi">
-              Delapan berita pilihan tentang SID, emas, saham, dan reksa dana. Geser untuk melihat lainnya, lalu klik kartu untuk membukanya di situs sumber.
+              Perkembangan seputar SID, emas, saham, dan reksa dana dari media dan lembaga keuangan terpercaya. Klik kartu untuk membaca selengkapnya di situs aslinya.
             </p>
           </div>
           <div className="berita__panah">

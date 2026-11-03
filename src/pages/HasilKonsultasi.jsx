@@ -462,7 +462,7 @@ export default function HasilKonsultasi({ identitas, hasil, jawaban, waktuKonsul
             <p className="label-seksi">Laporan konsultasi</p>
             <h2 id="hasil-laporan-judul">Simpan hasil Anda dalam bentuk PDF</h2>
             <p>
-              Laporan ini disusun rapi dan siap dibaca atau dicetak. Cocok untuk arsip pribadi, atau dibawa saat Anda ingin mengecek hasilnya bersama pakar.
+              Disusun rapi dan siap dibaca atau dicetak. Simpan sebagai arsip pribadi, atau bawa saat Anda berdiskusi dengan perencana keuangan.
             </p>
             <ul className="hasil__laporan-isi-daftar" aria-label="Isi laporan">
               <li data-anak>Profil dan persentase</li>
@@ -629,7 +629,7 @@ export default function HasilKonsultasi({ identitas, hasil, jawaban, waktuKonsul
         </details>
 
         <p className="hasil__peringatan" data-masuk>
-          Hasil ini adalah skrining awal yang dihitung dari jawaban Anda dan basis pengetahuan seorang Certified Financial Planner, jadi layak Anda jadikan pegangan awal untuk mengenali diri sendiri. Hasil ini tidak menggantikan konsultasi langsung. Untuk keputusan yang besar, bawa hasil ini ke perencana keuangan berizin dan diskusikan bersama tujuan serta kondisi keuangan Anda.
+          Hasil ini adalah skrining awal yang dihitung dari jawaban Anda dan basis pengetahuan seorang Certified Financial Planner, sehingga dapat menjadi pegangan awal untuk mengenali diri sendiri. Hasil ini tidak menggantikan konsultasi langsung. Untuk keputusan yang besar, diskusikan hasil ini bersama perencana keuangan berizin, sesuai tujuan dan kondisi keuangan Anda.
         </p>
 
         <div className="hasil__aksi hasil__aksi--bawah" data-masuk>

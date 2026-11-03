@@ -51,8 +51,115 @@ function jalurHalus(titik) {
 const JALUR_KURVA = jalurHalus(TITIK)
 const JALUR_AREA = `${JALUR_KURVA} L${TITIK[TITIK.length - 1].x} 312 L${TITIK[0].x} 312 Z`
 
+// Ukuran lingkaran titik (dalam satuan gambar). Berubah lewat radius, bukan skala, supaya bentuknya tetap bulat dan tepat di tengah titik.
+const R = { halo: 15, haloSorot: 20, haloAktif: 22, inti: 7.5, intiSorot: 9, intiAktif: 9.5 }
+// Tooltip: tinggi, jarak dari titik, tepi gambar yang boleh dipakai, jarak aman dari titik lain dan dari garis kurva.
+const PIL = { tinggi: 50, jarak: 28, tepi: { kiri: 40, kanan: 540, atas: 6, bawah: 316 }, aman: 24, amanGaris: 10, naik: 34 }
+
+// Titik-titik rapat di sudut kiri bawah: garis kurva diurai menjadi banyak titik kecil supaya tooltip bisa dijauhkan darinya.
+const SAMPEL_KURVA = (() => {
+  const hasil = []
+  for (let i = 0; i < TITIK.length - 1; i++) {
+    const p0 = TITIK[i - 1] ?? TITIK[i]
+    const p1 = TITIK[i]
+    const p2 = TITIK[i + 1]
+    const p3 = TITIK[i + 2] ?? p2
+    const c1 = { x: p1.x + (p2.x - p0.x) / 6, y: p1.y + (p2.y - p0.y) / 6 }
+    const c2 = { x: p2.x - (p3.x - p1.x) / 6, y: p2.y - (p3.y - p1.y) / 6 }
+    for (let k = 0; k <= 16; k++) {
+      const u = k / 16
+      const m = 1 - u
+      hasil.push({
+        x: m * m * m * p1.x + 3 * m * m * u * c1.x + 3 * m * u * u * c2.x + u * u * u * p2.x,
+        y: m * m * m * p1.y + 3 * m * m * u * c1.y + 3 * m * u * u * c2.y + u * u * u * p2.y,
+      })
+    }
+  }
+  return hasil
+})()
+
+// Memilih letak tooltip: tidak keluar dari gambar, tidak menutupi titik lain, dan tidak menindih garis kurva.
+// Urutan pilihan: dekat dengan titiknya dulu; bila sempit (misalnya di sudut kiri bawah) naik ke ruang kosong di atas kurva.
+// Bila tetap tidak ada yang lega, dipilih yang paling lapang.
+function tempatPil(t, lebar) {
+  const { tinggi: h, jarak: g, tepi, aman, amanGaris, naik } = PIL
+  const tengah = t.y - h / 2
+  const kandidat = []
+  for (const n of [0, 1, 2]) {
+    const atas = t.y - h - g - n * naik
+    kandidat.push({ x: t.x - lebar + 12, y: atas }, { x: t.x - lebar / 2, y: atas }, { x: t.x - 12, y: atas })
+    if (n === 0) {
+      kandidat.push({ x: t.x - lebar - g, y: tengah })
+      const bawah = t.y + g
+      kandidat.push({ x: t.x - lebar + 12, y: bawah }, { x: t.x - lebar / 2, y: bawah }, { x: t.x - 12, y: bawah }, { x: t.x + g, y: tengah })
+    }
+  }
+  const muat = (k) => k.x >= tepi.kiri && k.x + lebar <= tepi.kanan && k.y >= tepi.atas && k.y + h <= tepi.bawah
+  const jarakKe = (k, o) => Math.hypot(o.x - Math.max(k.x, Math.min(o.x, k.x + lebar)), o.y - Math.max(k.y, Math.min(o.y, k.y + h)))
+  const lainnya = TITIK.filter((o) => o.slug !== t.slug)
+  const garis = SAMPEL_KURVA.filter((o) => Math.hypot(o.x - t.x, o.y - t.y) > R.haloAktif + 4)
+  const ruang = (k) => Math.min(Math.min(...lainnya.map((o) => jarakKe(k, o))) - aman, Math.min(...garis.map((o) => jarakKe(k, o))) - amanGaris)
+  const layak = kandidat.filter(muat)
+  const pilihan = layak.find((k) => ruang(k) > 0) ?? [...layak].sort((p, q) => ruang(q) - ruang(p))[0] ?? kandidat[1]
+  return { x: Math.min(Math.max(pilihan.x, tepi.kiri), Math.max(tepi.kiri, tepi.kanan - lebar)), y: pilihan.y }
+}
+
 function GrafikRisiko({ aktif, saatPilih }) {
-  const it = TITIK.find((t) => t.slug === aktif)
+  const [sorot, setSorot] = useState(null) // titik yang tooltipnya tampil: kursor mouse di atasnya, atau fokus papan ketik
+  const [lebarPil, setLebarPil] = useState(0)
+  const halo = useRef([])
+  const inti = useRef([])
+  const denyut = useRef([])
+  const teksNama = useRef(null)
+  const teksInfo = useRef(null)
+  const tSorot = TITIK.find((t) => t.slug === sorot)
+
+  // Lebar tooltip mengikuti panjang tulisan, diukur sebelum layar digambar.
+  useLayoutEffect(() => {
+    if (!tSorot || !teksNama.current || !teksInfo.current) return
+    setLebarPil(Math.ceil(Math.max(teksNama.current.getComputedTextLength(), teksInfo.current.getComputedTextLength() + 14)) + 28)
+  }, [tSorot])
+
+  // Ukuran lingkaran mengikuti keadaan: biasa, disorot, atau terpilih.
+  useEffect(() => {
+    const kurangGerak = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const durasi = kurangGerak ? 0 : 0.4
+    TITIK.forEach((t, i) => {
+      const terpilih = aktif === t.slug
+      const disorot = sorot === t.slug
+      gsap.to(halo.current[i], { attr: { r: terpilih ? R.haloAktif : disorot ? R.haloSorot : R.halo }, opacity: terpilih ? 0.4 : disorot ? 0.32 : 0.18, duration: durasi, ease: 'power3.out', overwrite: 'auto' })
+      gsap.to(inti.current[i], { attr: { r: terpilih ? R.intiAktif : disorot ? R.intiSorot : R.inti }, duration: durasi, ease: 'power3.out', overwrite: 'auto' })
+    })
+  }, [aktif, sorot])
+
+  // Cincin tipis yang memancar pelan dari titik terpilih.
+  useEffect(() => {
+    if (!aktif || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const el = denyut.current[TITIK.findIndex((t) => t.slug === aktif)]
+    if (!el) return
+    const tl = gsap.timeline({ repeat: -1, repeatDelay: 0.6 })
+    tl.fromTo(el, { attr: { r: 12 }, opacity: 0.75 }, { attr: { r: 31 }, opacity: 0, duration: 1.5, ease: 'power2.out' })
+    return () => {
+      tl.kill()
+      gsap.set(el, { opacity: 0 })
+    }
+  }, [aktif])
+
+  const pil = tSorot ? tempatPil(tSorot, lebarPil || 140) : null
+  const warnaPil = tSorot ? warnaRisiko(tSorot.risiko) : 'teal'
+  // Bila tooltip terpaksa naik jauh dari titiknya, sebuah garis tipis menghubungkan keduanya supaya jelas milik titik yang mana.
+  let tangkai = null
+  if (pil && lebarPil) {
+    // Titik terdekat pada tepi tooltip. Garis hanya digambar bila jaraknya jauh lebih besar dari jarak normal.
+    const ex = Math.max(pil.x, Math.min(tSorot.x, pil.x + lebarPil))
+    const ey = Math.max(pil.y, Math.min(tSorot.y, pil.y + PIL.tinggi))
+    const jauh = Math.hypot(ex - tSorot.x, ey - tSorot.y)
+    if (jauh > PIL.jarak + 10) {
+      const awal = R.haloSorot + 2
+      tangkai = { x1: tSorot.x + ((ex - tSorot.x) / jauh) * awal, y1: tSorot.y + ((ey - tSorot.y) / jauh) * awal, x2: ex, y2: ey }
+    }
+  }
+
   return (
     <svg className="edu-grafik" viewBox={`0 0 ${GAMBAR.lebar} ${GAMBAR.tinggi}`} role="group" aria-label="Grafik gambaran risiko dan potensi hasil tujuh instrumen">
       <defs>
@@ -91,38 +198,63 @@ function GrafikRisiko({ aktif, saatPilih }) {
         Potensi hasil makin besar
       </text>
 
-      {TITIK.map((t) => {
-        const warna = warnaRisiko(t.risiko)
-        const sedang = aktif === t.slug
-        return (
-          <g
-            key={t.slug}
-            className={`edu-titik edu-titik--${warna} ${sedang ? 'edu-titik--aktif' : ''}`}
-            transform={`translate(${t.x} ${t.y})`}
-            role="button"
-            tabIndex={0}
-            aria-pressed={sedang}
-            aria-label={`${t.nama}, risiko ${LABEL_RISIKO[t.risiko].toLowerCase()}`}
-            onClick={() => saatPilih(t.slug)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault()
-                saatPilih(t.slug)
-              }
-            }}
-          >
-            <circle className="edu-titik__sentuh" r="32" />
-            <circle className="edu-titik__lingkar" r="17" />
-            <circle className="edu-titik__inti" r="8.5" />
-          </g>
-        )
-      })}
+      <g className="edu-titik-daftar">
+        {TITIK.map((t, i) => {
+          const warna = warnaRisiko(t.risiko)
+          const terpilih = aktif === t.slug
+          const pindah = (arah) => (e) => {
+            e.preventDefault()
+            e.currentTarget.parentNode.children[i + arah]?.focus()
+          }
+          return (
+            <g
+              key={t.slug}
+              className={`edu-titik edu-titik--${warna} ${terpilih ? 'edu-titik--aktif' : ''}`}
+              transform={`translate(${t.x} ${t.y})`}
+              role="button"
+              tabIndex={0}
+              aria-pressed={terpilih}
+              aria-label={`${t.nama}, risiko ${LABEL_RISIKO[t.risiko].toLowerCase()}`}
+              onClick={() => saatPilih(t.slug)}
+              onPointerEnter={(e) => e.pointerType === 'mouse' && setSorot(t.slug)}
+              onPointerLeave={() => setSorot((s) => (s === t.slug ? null : s))}
+              onFocus={(e) => e.currentTarget.matches(':focus-visible') && setSorot(t.slug)}
+              onBlur={() => setSorot((s) => (s === t.slug ? null : s))}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  saatPilih(t.slug)
+                } else if (e.key === 'ArrowRight') pindah(1)(e)
+                else if (e.key === 'ArrowLeft') pindah(-1)(e)
+              }}
+            >
+              <g className="edu-titik__muncul" data-i={i}>
+                <circle className="edu-titik__sentuh" r="32" />
+                <circle className="edu-titik__denyut" r="12" ref={(el) => (denyut.current[i] = el)} />
+                <circle className="edu-titik__lingkar" r={R.halo} ref={(el) => (halo.current[i] = el)} />
+                <circle className="edu-titik__inti" r={R.inti} ref={(el) => (inti.current[i] = el)} />
+              </g>
+            </g>
+          )
+        })}
+      </g>
 
-      {it && (
-        <g className="edu-grafik__label" transform={`translate(${it.x} ${it.y - 30})`} pointerEvents="none">
-          <text textAnchor={it.x > 440 ? 'end' : it.x < 120 ? 'start' : 'middle'} x={it.x > 440 ? 18 : it.x < 120 ? -18 : 0}>
-            {it.nama}
-          </text>
+      {/* Tooltip hanya muncul saat kursor atau fokus papan ketik berada di sebuah titik. Letaknya dipilih supaya tidak menutupi titik lain. */}
+      {tSorot && (
+        <g className={`edu-pil edu-titik--${warnaPil}`} pointerEvents="none" opacity={lebarPil ? 1 : 0}>
+          {tangkai && <line className="edu-pil__tangkai" x1={tangkai.x1} y1={tangkai.y1} x2={tangkai.x2} y2={tangkai.y2} />}
+          <g transform={`translate(${pil.x} ${pil.y})`}>
+            <g className="edu-pil__isi" key={tSorot.slug}>
+              <rect className="edu-pil__latar" width={lebarPil || 140} height={PIL.tinggi} rx="12" />
+              <text className="edu-pil__nama" x="14" y="21" ref={teksNama}>
+                {tSorot.nama}
+              </text>
+              <circle className="edu-pil__titik" cx="18" cy="35.5" r="3.5" />
+              <text className="edu-pil__info" x="28" y="40" ref={teksInfo}>
+                Risiko {LABEL_RISIKO[tSorot.risiko].toLowerCase()}
+              </text>
+            </g>
+          </g>
         </g>
       )}
     </svg>
@@ -191,7 +323,14 @@ export default function Edukasi() {
         .from('.edu-hero__kartu', { autoAlpha: 0, y: 50, scale: 0.95, duration: 1.2 }, 0.25)
         .fromTo('.edu-grafik__garis', { strokeDashoffset: 1, strokeDasharray: 1 }, { strokeDashoffset: 0, duration: 2, ease: 'power2.inOut' }, 0.8)
         .from('.edu-grafik__area', { autoAlpha: 0, duration: 1.2 }, 1.6)
-        .from('.edu-titik__inti, .edu-titik__lingkar', { scale: 0, transformOrigin: '50% 50%', duration: 0.6, stagger: 0.07, ease: 'back.out(2.2)', clearProps: 'transform' }, 1.0)
+        .from('.edu-grafik__zona text', { autoAlpha: 0, y: 8, duration: 0.8, stagger: 0.12, ease: 'power3.out', clearProps: 'transform' }, 0.6)
+        .from('.edu-grafik__sumbu', { autoAlpha: 0, duration: 0.8 }, 0.7)
+      // Tiap titik muncul tepat saat garis tiba di sana (garis digambar 2 detik dengan power2.inOut mulai detik ke 0,8).
+      const keTitik = (f) => (f < 0.5 ? Math.sqrt(f / 2) : 1 - Math.sqrt((1 - f) / 2))
+      TITIK.forEach((t, i) => {
+        const f = (t.x - TITIK[0].x) / (TITIK[TITIK.length - 1].x - TITIK[0].x)
+        gsap.from(`.edu-titik__muncul[data-i="${i}"]`, { scale: 0, autoAlpha: 0, transformOrigin: '50% 50%', duration: 0.6, ease: 'back.out(2.4)', delay: 0.3 + 0.8 + 2 * keTitik(f) - 0.1, clearProps: 'transform,opacity,visibility' })
+      })
 
       gsap.to('.edu-hero__grid', { yPercent: 16, ease: 'none', scrollTrigger: { trigger: '.edu-hero', start: 'top top', end: 'bottom top', scrub: true } })
 
@@ -290,7 +429,7 @@ export default function Edukasi() {
               </span>
             </h1>
             <p className="lead-seksi edu-hero__lead">
-              Hasil konsultasi TAKAR akan menyebut satu nama profil dan beberapa instrumen. Halaman ini menjelaskan artinya, supaya Anda paham kenapa yang satu cocok dan yang lain sebaiknya dipikir ulang.
+              Keputusan investasi yang baik berawal dari mengenali diri sendiri, lalu memahami pilihannya. Pelajari bagaimana tiap profil risiko menyikapi naik turunnya nilai uang, dan cara kerja setiap instrumen, sebelum Anda menaruh uang di mana pun.
             </p>
             <div className="edu-hero__aksi">
               <button type="button" className="tombol tombol--emas" onClick={() => gulirKe('#profil', -110)}>
@@ -317,22 +456,25 @@ export default function Edukasi() {
           <div className="edu-hero__kartu">
             <div className="edu-hero__kartu-kepala">
               <p>Risiko dan potensi hasil berjalan beriringan</p>
-              <span>Gambaran relatif</span>
             </div>
             <GrafikRisiko aktif={titikHero} saatPilih={setTitikHero} />
             <div className="edu-hero__sorotan" aria-live="polite">
               {titikAktif ? (
                 <>
-                  <div>
+                  <div className="edu-hero__sorotan-isi" key={titikAktif.slug}>
                     <p className="edu-hero__sorotan-nama">{titikAktif.nama}</p>
-                    <p className="edu-hero__sorotan-info">Risiko {LABEL_RISIKO[titikAktif.risiko].toLowerCase()}</p>
+                    <div className={`edu-hero__sorotan-risiko edu-titik--${warnaRisiko(titikAktif.risiko)}`}>
+                      <Meter nilai={titikAktif.risiko} warna={warnaRisiko(titikAktif.risiko)} />
+                      <p className="edu-hero__sorotan-info">Risiko {LABEL_RISIKO[titikAktif.risiko].toLowerCase()}</p>
+                    </div>
+                    <p className="edu-hero__sorotan-ringkas">{titikAktif.ringkas}</p>
                   </div>
                   <button type="button" className="edu-tautan" onClick={() => keInstrumen(titikAktif.slug)}>
                     Baca penjelasannya <IkonEdukasi nama="panah" ukuran={16} tebal={2.2} />
                   </button>
                 </>
               ) : (
-                <p className="edu-hero__sorotan-info">Pilih salah satu titik untuk melihat instrumennya. Makin ke kanan, makin besar peluang sekaligus risikonya.</p>
+                <p className="edu-hero__sorotan-info">Pilih satu titik untuk melihat instrumennya. Makin ke kanan, makin besar potensi hasil sekaligus risikonya.</p>
               )}
             </div>
           </div>

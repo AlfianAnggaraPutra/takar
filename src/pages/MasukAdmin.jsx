@@ -238,7 +238,7 @@ export default function MasukAdmin() {
             </span>
             <p className="masuk__label">Area pengelola</p>
             <h1 className="masuk__judul">Masuk Admin</h1>
-            <p className="masuk__uraian">Khusus pengelola TAKAR untuk melihat riwayat konsultasi pengguna.</p>
+            <p className="masuk__uraian">Silakan masuk dengan akun pengelola TAKAR.</p>
           </div>
 
           {pesanSesi && (

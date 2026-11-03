@@ -773,7 +773,7 @@ export default function Konsultasi() {
             Kenali dulu seberapa kuat Anda menghadapi risiko, baru tentukan ke mana uang Anda berjalan.
           </h1>
           <p className="kons__pengantar" data-masuk>
-            Anda cukup menanggapi 40 pernyataan singkat tentang kebiasaan dan cara pandang Anda soal uang. Sistem pakar TAKAR lalu menghitung profil risiko Anda dan menunjukkan instrumen yang masuk akal untuk dipertimbangkan.
+            Anda cukup menanggapi 40 pernyataan singkat tentang kebiasaan dan cara pandang Anda soal uang. Dari jawaban itu, sistem akan menghitung dan menentukan profil risiko Anda, lalu menunjukkan instrumen yang layak dipertimbangkan.
           </p>
 
           <ul className="kons__angka" data-masuk>
@@ -810,7 +810,7 @@ export default function Konsultasi() {
         <form className="kons__formulir" onSubmit={kirimIdentitas} noValidate data-masuk>
           <div className="kons__formulir-kepala">
             <h2>Sebelum mulai, kenalan dulu</h2>
-            <p>Empat data singkat ini membantu kami mencatat riwayat konsultasi. Hanya pengelola TAKAR yang dapat melihatnya.</p>
+            <p>Lengkapi empat data singkat berikut agar konsultasi dapat dimulai.</p>
           </div>
 
           <div className={`kons__kolom${galat.nama ? ' kons__kolom--galat' : ''}`}>

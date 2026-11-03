@@ -86,8 +86,8 @@ export default function Footer({ ringkas = false }) {
             </span>
           </Link>
           <p className="ftr__uraian">
-            Sistem pakar untuk mengenali profil risiko investor dan instrumen investasi yang sesuai, dihitung dengan metode Naive Bayes
-            dan Certainty Factor.
+            Sistem pakar penentuan profil risiko investor menggunakan metode Naive Bayes dan Certainty Factor sebagai dasar rekomendasi
+            instrumen investasi.
           </p>
         </div>
 
@@ -120,9 +120,8 @@ export default function Footer({ ringkas = false }) {
         <div className="ftr__kolom ftr__kolom--tentang">
           <h2>Tentang hasilnya</h2>
           <p className="ftr__catatan">
-            TAKAR memberi gambaran awal yang terukur tentang profil risiko Anda, dengan basis pengetahuan dari seorang Certified Financial
-            Planner. Hasilnya tidak menggantikan konsultasi langsung dengan perencana keuangan, tetapi bisa menjadi titik mulai yang jelas
-            sebelum Anda melangkah.
+            TAKAR memberi gambaran awal yang terukur tentang profil risiko Anda. Hasilnya tidak menggantikan konsultasi langsung dengan
+            perencana keuangan, tetapi bisa menjadi titik mulai yang jelas sebelum Anda melangkah.
           </p>
           <div className="ftr__tautan-aksi">
             <Link to="/konsultasi" className="ftr__coba">

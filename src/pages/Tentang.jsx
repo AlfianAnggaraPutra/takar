@@ -458,7 +458,7 @@ export default function Tentang() {
               </span>
             </h1>
             <p className="lead-seksi tentang-hero__lead">
-              TAKAR lahir dari penelitian skripsi di Program Studi S-1 Matematika, Universitas Airlangga. Tujuannya satu: membantu Anda mengenali seberapa besar risiko yang nyaman Anda tanggung, sebelum memilih tempat menaruh uang.
+              Kenali cara TAKAR bekerja: dari jawaban Anda, bobot penilaian pakar, sampai perhitungan yang menghasilkan profil risiko Anda. Semuanya terbuka dan bisa ditelusuri.
             </p>
             <div className="tentang-hero__aksi">
               <button type="button" className="tombol tombol--emas" onClick={() => gulirKe('#cara', -110)}>
@@ -482,7 +482,6 @@ export default function Tentang() {
           <div className="tentang-hero__kartu">
             <div className="tentang-hero__kartu-kepala">
               <p>Dari jawaban sampai profil</p>
-              <span>Satu konsultasi</span>
             </div>
             <div className="tentang-alur">
               <span className="tentang-alur__garis" aria-hidden="true">

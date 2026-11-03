@@ -937,25 +937,12 @@
     background-position: -120% 0;
   }
 }
-/* Gradasi tipis di bawah foto supaya keterangan foto terbaca di atas foto yang terang. */
+/* Gradasi tipis di atas dan bawah foto supaya tepi foto menyatu dengan kartu. */
 .kartu-berita__selaput {
   position: absolute;
   inset: 0;
   pointer-events: none;
   background: linear-gradient(180deg, rgba(7, 23, 42, 0.25) 0%, rgba(7, 23, 42, 0) 38%, rgba(7, 23, 42, 0) 62%, rgba(7, 23, 42, 0.62) 100%);
-}
-.kartu-berita__kredit {
-  position: absolute;
-  right: 12px;
-  bottom: 9px;
-  max-width: calc(100% - 24px);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 0.68rem;
-  letter-spacing: 0.02em;
-  color: rgba(246, 243, 236, 0.82);
-  text-shadow: 0 1px 6px rgba(3, 12, 24, 0.7);
 }
 .kartu-berita__isi {
   display: flex;

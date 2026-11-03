@@ -477,7 +477,7 @@ export default function Pasar() {
                 </span>
               </span>
             </h1>
-            <p className="lead-seksi ruang-hero__lead">IHSG, saham besar, emas, dan kurs rupiah ada dalam satu halaman. Grafiknya bergerak sungguhan, jadi Anda bisa belajar membaca pergerakan harga sebelum uang sungguhan ikut bermain.</p>
+            <p className="lead-seksi ruang-hero__lead">Pasar terasa lebih bersahabat saat Anda sudah akrab dengan iramanya. Pantau IHSG, saham unggulan, emas, dan kurs rupiah di satu tempat.</p>
             <div className="ruang-hero__aksi">
               <button type="button" className="tombol tombol--emas" onClick={() => gulirKe('#grafik', -110)}>
                 Buka ruang grafik

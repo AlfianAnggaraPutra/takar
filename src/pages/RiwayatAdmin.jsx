@@ -642,7 +642,7 @@ export default function RiwayatAdmin() {
           <div className="riw__judul-bungkus">
             <p className="label-seksi">Panel admin</p>
             <h1 className="riw__judul">Riwayat Konsultasi</h1>
-            <p className="riw__uraian">Daftar semua konsultasi pengguna, urut dari yang terbaru. Rincian jawaban tiap pengguna ada di PDF, dan seluruh data bisa diunduh sebagai Excel.</p>
+            <p className="riw__uraian">Pantau konsultasi yang masuk, diurutkan dari yang terbaru.</p>
           </div>
           <div className="riw__akun">
             <span className="riw__email" title={emailTerakhir.current}>

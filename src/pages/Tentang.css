@@ -184,13 +184,6 @@
   font-size: 1.25rem;
   line-height: 1.3;
 }
-.tentang-hero__kartu-kepala span {
-  font-size: 0.74rem;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--teks-halus);
-}
 .tentang-alur {
   position: relative;
 }
