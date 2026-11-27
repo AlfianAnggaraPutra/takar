@@ -166,6 +166,8 @@
   align-items: center;
   border: 1px solid rgba(246, 243, 236, 0.2);
   border-radius: 14px;
+  /* Isi kolom dipotong mengikuti lengkung sudut, supaya latar isian otomatis browser tidak menyembul di pojok */
+  overflow: hidden;
   background: rgba(5, 15, 28, 0.62);
   transition: border-color 0.3s, box-shadow 0.3s, background 0.3s;
 }
@@ -220,15 +222,29 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
-/* Latar isian otomatis browser tidak boleh memutihkan kolom */
+/* Latar isian otomatis browser tidak boleh memutihkan kolom. Warnanya disamakan dengan seluruh kolom (ikon ikut),
+   dan sudut kanan input dibulatkan, sehingga tidak ada blok persegi yang berbeda warna di pojok kolom. */
+.masuk__input {
+  border-radius: 0 13px 13px 0;
+}
 .masuk__input:-webkit-autofill {
   -webkit-text-fill-color: var(--krem);
   caret-color: var(--krem);
   -webkit-box-shadow: 0 0 0 100px #0a1b2e inset;
   transition: background-color 9999s ease-in-out 0s;
 }
+.masuk__input:autofill {
+  -webkit-text-fill-color: var(--krem);
+  caret-color: var(--krem);
+  box-shadow: 0 0 0 100px #0a1b2e inset;
+}
+.masuk__kolom:has(.masuk__input:-webkit-autofill),
+.masuk__kolom:has(.masuk__input:-webkit-autofill):focus-within {
+  background: #0a1b2e;
+}
 .masuk__input--sandi {
   padding-right: 4px;
+  border-radius: 0;
 }
 .masuk__mata {
   display: grid;

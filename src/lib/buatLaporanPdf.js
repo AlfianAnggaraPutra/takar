@@ -67,11 +67,11 @@ function ilmiah(nilai) {
 
 // Font standar PDF hanya mengenal huruf Latin dasar. Tanda kutip dan strip melengkung diganti,
 // karakter di luar jangkauan dibuang supaya tidak muncul kotak atau tanda tanya.
-const PENGGANTI = { '‘': "'", '’': "'", '“': '"', '”': '"', '–': '-', '—': '-', '…': '...', ' ': ' ' }
+const PENGGANTI = { '\u2018': "'", '\u2019': "'", '\u201c': '"', '\u201d': '"', '\u2013': '-', '\u2014': '-', '\u2026': '...', '\u00a0': ' ' }
 function bersih(teks) {
   return String(teks)
-    .replace(/[‘’“”–—… ]/g, (c) => PENGGANTI[c])
-    .replace(/[^ -~¡-ÿ]/g, '')
+    .replace(/[\u2018\u2019\u201c\u201d\u2013\u2014\u2026\u00a0]/g, (c) => PENGGANTI[c])
+    .replace(/[^ -~\u00a1-\u00ff]/g, '')
 }
 
 const labelJawaban = (cf) => {
